@@ -1,4 +1,4 @@
-module github.com/nobe4/gh-notification
+module github.com/nobe4/ghnot
 
 go 1.22.3
 
