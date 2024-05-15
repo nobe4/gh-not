@@ -1,0 +1,12 @@
+{
+  "groups": [
+    {
+      "name": "test",
+      "filters": [
+        ".repository.full_name | contains(\"ent\")",
+        ".repository.full_name | startswith(\"github/e\")"
+      ],
+      "action": "print"
+    }
+  ]
+}
