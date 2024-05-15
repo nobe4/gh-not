@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/nobe4/ghnot/internal/actors"
 	"github.com/nobe4/ghnot/internal/config"
 	"github.com/nobe4/ghnot/internal/gh"
 	"github.com/nobe4/ghnot/internal/jq"
@@ -17,6 +18,11 @@ func main() {
 	}
 
 	filteredNotifications := []notifications.Notification{}
+
+	actorsMap := map[string]actors.Actor{
+		"debug": &actors.DebugActor{},
+		"print": &actors.PrintActor{},
+	}
 
 	config, err := config.Load("config.json")
 	if err != nil {
@@ -35,7 +41,11 @@ func main() {
 		filteredNotifications = notifications.Uniq(filteredNotifications)
 
 		for _, notification := range filteredNotifications {
-			fmt.Printf("%s %v\n", group.Action, notification)
+			if actor, ok := actorsMap[group.Action]; ok == true {
+				actor.Run(notification)
+			} else {
+				log.Fatalf("unknown action '%s'", group.Action)
+			}
 		}
 	}
 }

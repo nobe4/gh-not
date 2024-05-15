@@ -3,10 +3,16 @@
     {
       "name": "test",
       "filters": [
-        ".repository.full_name | contains(\"ent\")",
-        ".repository.full_name | startswith(\"github/e\")"
+        ".repository.full_name | startswith(\"github/ent\")"
       ],
       "action": "print"
+    },
+    {
+      "name": "test2",
+      "filters": [
+        ".repository.full_name | contains(\"ab\")"
+      ],
+      "action": "debug"
     }
   ]
 }
