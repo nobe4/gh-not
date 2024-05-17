@@ -3,7 +3,7 @@ package actors
 import (
 	"fmt"
 
-	"github.com/nobe4/ghnot/internal/notifications"
+	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 type Actor interface {

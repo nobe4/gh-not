@@ -1,4 +1,4 @@
-module github.com/nobe4/ghnot
+module github.com/nobe4/gh-not
 
 go 1.22.3
 

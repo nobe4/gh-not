@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/itchyny/gojq"
-	"github.com/nobe4/ghnot/internal/notifications"
+	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 // Filter applies a `.[] | select(filter)` on the notifications.

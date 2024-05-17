@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/nobe4/ghnot/internal/notifications"
+	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 func Run(args []string) ([]notifications.Notification, error) {

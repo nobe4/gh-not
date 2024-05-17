@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/nobe4/ghnot/internal/actors"
-	"github.com/nobe4/ghnot/internal/config"
-	"github.com/nobe4/ghnot/internal/gh"
-	"github.com/nobe4/ghnot/internal/jq"
-	"github.com/nobe4/ghnot/internal/notifications"
+	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/config"
+	"github.com/nobe4/gh-not/internal/gh"
+	"github.com/nobe4/gh-not/internal/jq"
+	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-# ghnot
+# gh-not
 GitHub notifications managements, better
 
 # Early roadmap
