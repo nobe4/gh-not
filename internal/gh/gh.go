@@ -1,32 +1,28 @@
 package gh
 
 import (
-	"encoding/json"
-	"fmt"
-	"os/exec"
-
+	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-func Run(args []string) ([]notifications.Notification, error) {
-	// cmd := exec.Command("gh", args...)
-	fmt.Println("mocking gh ", args)
-	cmd := exec.Command("cat", "notifications.test")
+type Client struct {
+	*api.RESTClient
+}
 
-	stdout, err := cmd.StdoutPipe()
+func NewClient() (*Client, error) {
+	client, err := api.DefaultRESTClient()
 	if err != nil {
-		panic(err)
-	}
-	if err := cmd.Start(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
+	return &Client{client}, err
+}
+
+func (c *Client) Notifications() ([]notifications.Notification, error) {
 	var allNotifications []notifications.Notification
-	if err := json.NewDecoder(stdout).Decode(&allNotifications); err != nil {
-		panic(err)
-	}
-	if err := cmd.Wait(); err != nil {
-		panic(err)
+
+	if err := c.Get("notifications", &allNotifications); err != nil {
+		return nil, err
 	}
 
 	return allNotifications, nil

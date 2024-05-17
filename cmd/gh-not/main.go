@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/nobe4/gh-not/internal/actors"
@@ -11,11 +12,17 @@ import (
 )
 
 func main() {
-	allNotifications, err := gh.Run([]string{"api", "/notifications?all=true&per_page=3"})
-
+	client, err := gh.NewClient()
 	if err != nil {
 		panic(err)
 	}
+
+	allNotifications, err := client.Notifications()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("all notifications %v", allNotifications)
 
 	filteredNotifications := []notifications.Notification{}
 
