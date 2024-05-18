@@ -3,16 +3,22 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+const CacheTTL = time.Hour * 4
+
 func main() {
-	client, err := gh.NewClient()
+	cache := cache.NewFileCache(CacheTTL, "/tmp/cache-test.json")
+
+	client, err := gh.NewClient(cache)
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("all notifications %v", allNotifications)
+	fmt.Printf("all notifications %v\n", allNotifications)
 
 	filteredNotifications := []notifications.Notification{}
 
