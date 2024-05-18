@@ -1,6 +1,6 @@
 module github.com/nobe4/gh-not
 
-go 1.22.3
+go 1.22
 
 require (
 	github.com/cli/go-gh/v2 v2.9.0
