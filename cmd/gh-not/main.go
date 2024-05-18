@@ -2,15 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
-	"github.com/nobe4/gh-not/internal/jq"
-	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 const CacheTTL = time.Hour * 4
@@ -28,37 +25,27 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("all notifications %v\n", allNotifications)
-
-	filteredNotifications := []notifications.Notification{}
+	fmt.Println(allNotifications.ToString())
 
 	actorsMap := map[string]actors.Actor{
 		"debug": &actors.DebugActor{},
 		"print": &actors.PrintActor{},
+		"hide":  &actors.HideActor{},
 	}
 
-	config, err := config.Load("config.json")
+	config, err := config.New("config.json")
 	if err != nil {
 		panic(err)
 	}
 
-	for _, group := range config.Groups {
-		for _, filter := range group.Filters {
-			selectedNotifications, err := jq.Filter(filter, allNotifications)
-			if err != nil {
-				panic(err)
-			}
+	allNotifications, err = config.Apply(allNotifications, actorsMap)
+	if err != nil {
+		panic(err)
+	}
 
-			filteredNotifications = append(filteredNotifications, selectedNotifications...)
-		}
-		filteredNotifications = notifications.Uniq(filteredNotifications)
+	fmt.Println(allNotifications.ToString())
 
-		for _, notification := range filteredNotifications {
-			if actor, ok := actorsMap[group.Action]; ok == true {
-				actor.Run(notification)
-			} else {
-				log.Fatalf("unknown action '%s'", group.Action)
-			}
-		}
+	if err := cache.Write(allNotifications); err != nil {
+		panic(err)
 	}
 }

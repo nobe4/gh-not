@@ -1,7 +1,6 @@
 package gh
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/cli/go-gh/v2/pkg/api"
@@ -26,42 +25,28 @@ func NewClient(cache cache.ExpiringReadWriter) (*Client, error) {
 	}, err
 }
 
-func (c *Client) loadCache() ([]notifications.Notification, bool, error) {
+func (c *Client) loadCache() (notifications.NotificationMap, bool, error) {
 	expired, err := c.cache.Expired()
 	if err != nil {
 		return nil, false, err
 	}
 
-	content, err := c.cache.Read()
+	n, err := c.cache.Read()
 	if err != nil {
 		return nil, expired, err
 	}
 
-	notifications := []notifications.Notification{}
-	if err := json.Unmarshal(content, &notifications); err != nil {
-		return nil, expired, err
-	}
-
-	return notifications, expired, nil
+	return n, expired, nil
 }
 
-func (c *Client) writeCache(n []notifications.Notification) error {
-	marshalled, err := json.Marshal(n)
-	if err != nil {
-		return err
-	}
-
-	return c.cache.Write(marshalled)
-}
-
-func (c *Client) Notifications() ([]notifications.Notification, error) {
-	allNotifications := []notifications.Notification{}
+func (c *Client) Notifications() (notifications.NotificationMap, error) {
+	allNotifications := make(notifications.NotificationMap)
 
 	cachedNotifications, expired, err := c.loadCache()
 	if err != nil {
 		fmt.Printf("Error while reading the cache: %#v\n", err)
-	} else {
-		allNotifications = append(allNotifications, cachedNotifications...)
+	} else if cachedNotifications != nil {
+		allNotifications = cachedNotifications
 	}
 
 	if expired {
@@ -71,13 +56,14 @@ func (c *Client) Notifications() ([]notifications.Notification, error) {
 			return nil, err
 		}
 
-		allNotifications = append(allNotifications, pulledNotifications...)
+		allNotifications.Append(pulledNotifications)
 
-		allNotifications = notifications.Uniq(allNotifications)
+		// This will favor the cached notifications as they are first into the
+		// slice.
+		// allNotifications = allNotifications.Uniq()
 
-		if err := c.writeCache(allNotifications); err != nil {
+		if err := c.cache.Write(allNotifications); err != nil {
 			fmt.Printf("Error while writing the cache: %#v", err)
-			cachedNotifications = []notifications.Notification{}
 		}
 	}
 
