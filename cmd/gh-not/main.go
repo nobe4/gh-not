@@ -27,18 +27,12 @@ func main() {
 
 	fmt.Println(allNotifications.ToString())
 
-	actorsMap := map[string]actors.Actor{
-		"debug": &actors.DebugActor{},
-		"print": &actors.PrintActor{},
-		"hide":  &actors.HideActor{},
-	}
-
 	config, err := config.New("config.json")
 	if err != nil {
 		panic(err)
 	}
 
-	allNotifications, err = config.Apply(allNotifications, actorsMap)
+	allNotifications, err = config.Apply(allNotifications, actors.Map())
 	if err != nil {
 		panic(err)
 	}

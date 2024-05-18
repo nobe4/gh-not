@@ -6,6 +6,16 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+type ActorsMap map[string]Actor
+
+func Map() ActorsMap {
+	return map[string]Actor{
+		"debug": &DebugActor{},
+		"print": &PrintActor{},
+		"hide":  &HideActor{},
+	}
+}
+
 type Actor interface {
 	Run(notifications.Notification) (notifications.Notification, error)
 }
