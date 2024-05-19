@@ -38,11 +38,10 @@ func New(path string) (*Config, error) {
 func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors.Actor) (notifications.NotificationMap, error) {
 	err := error(nil)
 	for _, group := range c.Groups {
-		notificationList := n.ToSlice()
-		selectedNotifications := notifications.Notifications{}
+		selectedNotifications := n.ToSlice()
 
 		for _, filter := range group.Filters {
-			selectedNotifications, err = jq.Filter(filter, notificationList)
+			selectedNotifications, err = jq.Filter(filter, selectedNotifications)
 			if err != nil {
 				return nil, err
 			}
