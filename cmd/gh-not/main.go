@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/nobe4/gh-not/internal/actors"
@@ -10,10 +9,12 @@ import (
 	"github.com/nobe4/gh-not/internal/gh"
 )
 
-const CacheTTL = time.Hour * 4
+const cachePath = "./cache-test.json"
+const configPath = "./config.json"
+const cacheTTL = time.Hour * 24 * 7
 
 func main() {
-	cache := cache.NewFileCache(CacheTTL, "/tmp/cache-test.json")
+	cache := cache.NewFileCache(cacheTTL, cachePath)
 
 	client, err := gh.NewClient(cache)
 	if err != nil {
@@ -25,19 +26,15 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(allNotifications.ToString())
-
-	config, err := config.New("config.json")
+	config, err := config.New(configPath)
 	if err != nil {
 		panic(err)
 	}
 
-	allNotifications, err = config.Apply(allNotifications, actors.Map())
+	allNotifications, err = config.Apply(allNotifications, actors.Map(client))
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(allNotifications.ToString())
 
 	if err := cache.Write(allNotifications); err != nil {
 		panic(err)
