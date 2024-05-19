@@ -1,18 +1,12 @@
 {
   "groups": [
     {
-      "name": "test",
+      "name": "ignore ci failures for the current repo",
       "filters": [
-        ".repository.full_name | startswith(\"github\")"
+        ".repository.fullname == \"nobe4/gh-not\"",
+        ".reason == \"ci_activity\""
       ],
-      "action": "print"
-    },
-    {
-      "name": "test2",
-      "filters": [
-        ".repository.full_name | contains(\"cli\")"
-      ],
-      "action": "debug"
+      "action": "done"
     }
   ]
 }
