@@ -8,5 +8,5 @@ groups:
   - name: ignore ci failures for the current repo
     action: done
     filters:
-      - .repository.fullname == "nobe4/gh-not"
+      - .repository.full_name == "nobe4/gh-not"
       - .reason == "ci_activity"

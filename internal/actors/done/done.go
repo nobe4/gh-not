@@ -1,6 +1,8 @@
 package done
 
 import (
+	"fmt"
+
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -12,6 +14,7 @@ type Actor struct {
 }
 
 func (a *Actor) Run(n notifications.Notification) (notifications.Notification, error) {
+	fmt.Printf("Marking %s as done\n", n.Id)
 	emptyNotification := notifications.Notification{}
 
 	err := a.Client.API.Delete(n.URL, nil)
