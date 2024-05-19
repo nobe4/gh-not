@@ -1,0 +1,12 @@
+---
+
+cache:
+  ttl_in_hours: 1
+  path: ./cache-test.json
+
+groups:
+  - name: ignore ci failures for the current repo
+    action: done
+    filters:
+      - .repository.fullname == "nobe4/gh-not"
+      - .reason == "ci_activity"

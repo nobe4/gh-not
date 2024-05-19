@@ -20,10 +20,10 @@ type FileCache struct {
 	ttl  time.Duration
 }
 
-func NewFileCache(ttl time.Duration, path string) *FileCache {
+func NewFileCache(ttlInHours int, path string) *FileCache {
 	return &FileCache{
 		path: path,
-		ttl:  ttl,
+		ttl:  time.Duration(ttlInHours) * time.Hour,
 	}
 }
 
@@ -46,7 +46,7 @@ func (c *FileCache) Read() (notifications.NotificationMap, error) {
 }
 
 func (c *FileCache) Write(n notifications.NotificationMap) error {
-    // In case we have items without IDs, we can safely delete it.
+	// In case we have items without IDs, we can safely delete it.
 	delete(n, "")
 
 	marshalled, err := json.Marshal(n)

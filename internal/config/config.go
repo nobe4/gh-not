@@ -1,34 +1,46 @@
 package config
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Groups []Group `json:"groups"`
+	Cache  Cache   `yaml:"cache"`
+	Groups []Group `yaml:"groups"`
+}
+
+type Cache struct {
+	TTLInHours int    `yaml:"ttl_in_hours"`
+	Path       string `yaml:"path"`
 }
 
 type Group struct {
-	Name    string   `json:"name"`
-	Filters []string `json:"filters"`
-	Action  string   `json:"action"`
+	Name    string   `yaml:"name"`
+	Filters []string `yaml:"filters"`
+	Action  string   `yaml:"action"`
 }
 
 func New(path string) (*Config, error) {
-	config := &Config{}
+	config := &Config{
+		// default values
+		Cache: Cache{
+			TTLInHours: 24 * 7,
+			Path:       "/tmp/gh-not.cache.json",
+		},
+	}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := json.Unmarshal(content, config); err != nil {
+	if err := yaml.Unmarshal(content, config); err != nil {
 		return nil, err
 	}
 
