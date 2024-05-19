@@ -3,6 +3,7 @@ package notifications
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type NotificationMap map[string]Notification
@@ -14,7 +15,11 @@ type Notification struct {
 	Title      string     `json:"title"`
 	Id         string     `json:"id"`
 	Unread     bool       `json:"unread"`
+	Reason     string     `json:"reason"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	URL        string     `json:"url"`
 	Repository Repository `json:"repository"`
+	Subject    Subject    `json:"subject"`
 
 	// gh-not fields
 	Meta Meta `json:"meta"`
@@ -22,6 +27,12 @@ type Notification struct {
 
 type Meta struct {
 	Hidden bool `json:"hidden"`
+}
+
+type Subject struct {
+	Title string `json:"title"`
+	URL   string `json:"url"`
+	Type  string `json:"type"`
 }
 
 type Repository struct {

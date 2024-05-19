@@ -9,8 +9,8 @@ import (
 )
 
 type Client struct {
-	client *api.RESTClient
-	cache  cache.ExpiringReadWriter
+	API   *api.RESTClient
+	cache cache.ExpiringReadWriter
 }
 
 func NewClient(cache cache.ExpiringReadWriter) (*Client, error) {
@@ -20,8 +20,8 @@ func NewClient(cache cache.ExpiringReadWriter) (*Client, error) {
 	}
 
 	return &Client{
-		client: client,
-		cache:  cache,
+		API:   client,
+		cache: cache,
 	}, err
 }
 
@@ -52,7 +52,7 @@ func (c *Client) Notifications() (notifications.NotificationMap, error) {
 	if expired {
 		fmt.Printf("Cache expired, pulling from the API...\n")
 		var pulledNotifications []notifications.Notification
-		if err := c.client.Get("notifications", &pulledNotifications); err != nil {
+		if err := c.API.Get("notifications", &pulledNotifications); err != nil {
 			return nil, err
 		}
 
