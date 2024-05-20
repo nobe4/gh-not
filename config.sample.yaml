@@ -1,0 +1,22 @@
+---
+
+cache:
+  ttl_in_hours: 1
+  path: ./cache-test.json
+
+groups:
+  - name: showcasing conditionals
+    action: debug
+    # Filters are run one after the other, like they are joined by `and`.
+    # Having `or` can be done via `(cond1) or (cond2) or ...`.
+    filters:
+      - .author.login == "dependabot[bot]"
+      - >
+        (.title | contains("something unimportant")) or
+        (.title | contains("something already done"))
+
+  - name: ignore ci failures for the current repo
+    action: done
+    filters:
+      - .repository.full_name == "nobe4/gh-not"
+      - .reason == "ci_activity"

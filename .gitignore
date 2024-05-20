@@ -23,4 +23,5 @@ go.work
 /gh-not
 /gh-not.exe
 
+/config.yaml
 /cache-test.json
