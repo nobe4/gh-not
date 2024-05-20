@@ -24,6 +24,7 @@ var (
 		Use:               "gh-not",
 		Short:             "Manage your GitHub notifications",
 		PersistentPreRunE: setupGlobals,
+		SilenceErrors:     true,
 	}
 )
 
