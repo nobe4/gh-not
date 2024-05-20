@@ -1,10 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 
+	cachePkg "github.com/nobe4/gh-not/internal/cache"
+	configPkg "github.com/nobe4/gh-not/internal/config"
+	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/spf13/cobra"
 )
 
@@ -14,29 +16,54 @@ var (
 	refresh    bool
 	noRefresh  bool
 
+	config *configPkg.Config
+	cache  *cachePkg.FileCache
+	client *gh.Client
+
 	rootCmd = &cobra.Command{
-		Use:   "gh-not",
-		Short: "Manage your GitHub notifications",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return initLogger()
-		},
+		Use:               "gh-not",
+		Short:             "Manage your GitHub notifications",
+		PersistentPreRunE: setupGlobals,
 	}
 )
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+func Execute() error {
+	return rootCmd.Execute()
 }
 
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
-	rootCmd.AddCommand(manageCmd)
+	rootCmd.AddCommand(syncCmd)
+	rootCmd.AddCommand(listCmd)
 
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./config.yaml", "Path to the YAML config file")
+}
+
+func setupGlobals(cmd *cobra.Command, args []string) error {
+	var err error
+
+	config, err = configPkg.New(configPath)
+	if err != nil {
+		slog.Error("Failed to load the cache", "path", configPath, "err", err)
+		return err
+	}
+
+	cache = cachePkg.NewFileCache(config.Cache.TTLInHours, config.Cache.Path)
+
+	client, err = gh.NewClient(cache)
+	if err != nil {
+		slog.Error("Failed to create a gh client", "err", err)
+		return err
+	}
+
+	if err := initLogger(); err != nil {
+		slog.Error("Failed to init the logger", "err", err)
+		return err
+	}
+
+	return nil
 }
 
 func initLogger() error {
