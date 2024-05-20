@@ -11,7 +11,7 @@ type NotificationMap map[string]Notification
 type Notifications []Notification
 
 type Notification struct {
-	// API fields
+	// Standard API fields
 	Title      string     `json:"title"`
 	Id         string     `json:"id"`
 	Unread     bool       `json:"unread"`
@@ -21,7 +21,10 @@ type Notification struct {
 	Repository Repository `json:"repository"`
 	Subject    Subject    `json:"subject"`
 
-	// gh-not fields
+	// Addidional API fields
+	Author User `json:"author"`
+
+	// gh-not specific fields
 	Meta Meta `json:"meta"`
 }
 
@@ -41,10 +44,10 @@ type Repository struct {
 	Private  bool   `json:"private"`
 	Fork     bool   `json:"fork"`
 
-	Owner Owner `json:"owner"`
+	Owner User `json:"owner"`
 }
 
-type Owner struct {
+type User struct {
 	Login string `json:"login"`
 	Type  string `json:"type"`
 }

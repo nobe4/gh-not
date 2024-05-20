@@ -2,27 +2,32 @@ package gh
 
 import (
 	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
 
-	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+const (
+	path = "notifications"
+)
+
+type APICaller interface {
+	Do(string, string, io.Reader, interface{}) error
+}
+
 type Client struct {
-	API   *api.RESTClient
+	API   APICaller
 	cache cache.ExpiringReadWriter
 }
 
-func NewClient(cache cache.ExpiringReadWriter) (*Client, error) {
-	client, err := api.DefaultRESTClient()
-	if err != nil {
-		return nil, err
-	}
-
+func NewClient(api APICaller, cache cache.ExpiringReadWriter) *Client {
 	return &Client{
-		API:   client,
+		API:   api,
 		cache: cache,
-	}, err
+	}
 }
 
 func (c *Client) loadCache() (notifications.NotificationMap, bool, error) {
@@ -39,6 +44,26 @@ func (c *Client) loadCache() (notifications.NotificationMap, bool, error) {
 	return n, expired, nil
 }
 
+func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error) {
+	var list []notifications.Notification
+
+	slog.Debug("API REST request", "path", path)
+	if err := c.API.Do(http.MethodGet, path, nil, &list); err != nil {
+		return nil, err
+	}
+
+	for i, n := range list {
+		enriched, err := c.enrichNotification(n)
+		if err != nil {
+			return nil, err
+		}
+
+		list[i] = enriched
+	}
+
+	return list, nil
+}
+
 func (c *Client) Notifications() (notifications.NotificationMap, error) {
 	allNotifications := make(notifications.NotificationMap)
 
@@ -51,16 +76,12 @@ func (c *Client) Notifications() (notifications.NotificationMap, error) {
 
 	if expired {
 		fmt.Printf("Cache expired, pulling from the API...\n")
-		var pulledNotifications []notifications.Notification
-		if err := c.API.Get("notifications", &pulledNotifications); err != nil {
+		pulledNotifications, err := c.pullNotificationFromApi()
+		if err != nil {
 			return nil, err
 		}
 
 		allNotifications.Append(pulledNotifications)
-
-		// This will favor the cached notifications as they are first into the
-		// slice.
-		// allNotifications = allNotifications.Uniq()
 
 		if err := c.cache.Write(allNotifications); err != nil {
 			fmt.Printf("Error while writing the cache: %#v", err)
