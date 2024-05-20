@@ -22,3 +22,5 @@ go.work
 
 /gh-not
 /gh-not.exe
+
+/cache-test.json
