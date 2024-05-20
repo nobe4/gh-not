@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/cli/go-gh/v2/pkg/api"
 	cachePkg "github.com/nobe4/gh-not/internal/cache"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
@@ -53,11 +54,13 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 
 	cache = cachePkg.NewFileCache(config.Cache.TTLInHours, config.Cache.Path)
 
-	client, err = gh.NewClient(cache)
+	apiCaller, err := api.DefaultRESTClient()
 	if err != nil {
-		slog.Error("Failed to create a gh client", "err", err)
+		slog.Error("Failed to create an API REST client", "err", err)
 		return err
 	}
+
+	client = gh.NewClient(apiCaller, cache)
 
 	if err := initLogger(); err != nil {
 		slog.Error("Failed to init the logger", "err", err)

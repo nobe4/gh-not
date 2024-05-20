@@ -1,6 +1,8 @@
 package read
 
 import (
+	"net/http"
+
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -12,7 +14,7 @@ type Actor struct {
 }
 
 func (a *Actor) Run(n notifications.Notification) (notifications.Notification, error) {
-	err := a.Client.API.Patch(n.URL, nil, nil)
+	err := a.Client.API.Do(http.MethodPatch, n.URL, nil, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
 	// to catch this case.

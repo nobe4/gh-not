@@ -2,6 +2,7 @@ package done
 
 import (
 	"log/slog"
+	"net/http"
 
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -18,7 +19,7 @@ func (a *Actor) Run(n notifications.Notification) (notifications.Notification, e
 
 	emptyNotification := notifications.Notification{}
 
-	err := a.Client.API.Delete(n.URL, nil)
+	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
 	if err != nil {
 		return emptyNotification, err
 	}
