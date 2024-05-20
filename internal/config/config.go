@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/nobe4/gh-not/internal/actors"
@@ -26,14 +26,15 @@ type Group struct {
 	Action  string   `yaml:"action"`
 }
 
-func New(path string) (*Config, error) {
-	config := &Config{
-		// default values
-		Cache: Cache{
-			TTLInHours: 24 * 7,
-			Path:       "/tmp/gh-not.cache.json",
-		},
+var (
+	defaultCache = Cache{
+		TTLInHours: 24 * 7,
+		Path:       "/tmp/gh-not.cache.json",
 	}
+)
+
+func New(path string) (*Config, error) {
+	config := &Config{Cache: defaultCache}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -47,12 +48,15 @@ func New(path string) (*Config, error) {
 	return config, nil
 }
 
-func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors.Actor) (notifications.NotificationMap, error) {
+func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors.Actor, noop bool) (notifications.NotificationMap, error) {
 	err := error(nil)
+
 	for _, group := range c.Groups {
+		slog.Debug("apply group", "name", group.Name)
 		selectedNotifications := n.ToSlice()
 
 		for _, filter := range group.Filters {
+			slog.Debug("apply filter", "filter", filter)
 			selectedNotifications, err = jq.Filter(filter, selectedNotifications)
 			if err != nil {
 				return nil, err
@@ -61,14 +65,23 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 
 		for _, notification := range selectedNotifications {
 			if actor, ok := actors[group.Action]; ok == true {
-				notification, err = actor.Run(notification)
-				if err != nil {
-					log.Fatalf("action '%s' failed: %v", group.Action, err)
-				}
+				if noop {
+					slog.Info("NOOP'ing", "action", group.Action, "notification", notification.ToString())
+				} else {
+					// Remove the notification temporarily from the list, it
+					// will be added back after the actor runs.
+					delete(n, notification.Id)
 
-				n[notification.Id] = notification
+					notification, err = actor.Run(notification)
+					if err != nil {
+						slog.Error("action failed", "action", group.Action, "err", err)
+					}
+
+					slog.Debug("returned notification", "notification", notification.ToString())
+					n[notification.Id] = notification
+				}
 			} else {
-				log.Fatalf("unknown action '%s'", group.Action)
+				slog.Error("unknown action", "action", group.Action)
 			}
 		}
 	}
