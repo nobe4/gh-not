@@ -46,7 +46,7 @@ func (c *FileCache) Read() (notifications.NotificationMap, error) {
 }
 
 func (c *FileCache) Write(n notifications.NotificationMap) error {
-	// In case we have items without IDs, we can safely delete it.
+	// In case we have an item without IDs, we can safely delete it.
 	delete(n, "")
 
 	marshalled, err := json.Marshal(n)
