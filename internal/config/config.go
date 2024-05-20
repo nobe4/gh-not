@@ -56,7 +56,6 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 		selectedNotifications := n.ToSlice()
 
 		for _, filter := range group.Filters {
-			slog.Debug("apply filter", "filter", filter)
 			selectedNotifications, err = jq.Filter(filter, selectedNotifications)
 			if err != nil {
 				return nil, err
@@ -77,7 +76,6 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 						slog.Error("action failed", "action", group.Action, "err", err)
 					}
 
-					slog.Debug("returned notification", "notification", notification.ToString())
 					n[notification.Id] = notification
 				}
 			} else {
