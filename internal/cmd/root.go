@@ -38,6 +38,7 @@ func init() {
 
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(configCmd)
 
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./config.yaml", "Path to the YAML config file")
