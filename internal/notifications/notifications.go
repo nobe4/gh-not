@@ -8,6 +8,7 @@ import (
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
 	"github.com/cli/go-gh/v2/pkg/term"
+	"github.com/fatih/color"
 )
 
 type NotificationMap map[string]Notification
@@ -84,9 +85,16 @@ func (n Notification) ToString() string {
 }
 
 var prettyTypes = map[string]string{
-	"Issue":       "IS",
-	"PullRequest": "PR",
+	"Issue":       color.New(color.FgBlue).SprintFunc()("IS"),
+	"PullRequest": color.New(color.FgCyan).SprintFunc()("PR"),
 }
+
+var prettyState = map[string]string{
+	"open":   color.New(color.FgGreen).SprintFunc()("OP"),
+	"closed": color.New(color.FgRed).SprintFunc()("CL"),
+	"merged": color.New(color.FgMagenta).SprintFunc()("MG"),
+}
+
 
 func (n Notification) prettyType() string {
 	if p, ok := prettyTypes[n.Subject.Type]; ok {
@@ -94,12 +102,6 @@ func (n Notification) prettyType() string {
 	}
 
 	return "T?"
-}
-
-var prettyState = map[string]string{
-	"open":   "OP",
-	"closed": "CL",
-	"merged": "MG",
 }
 
 func (n Notification) prettyState() string {

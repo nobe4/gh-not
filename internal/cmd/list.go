@@ -24,7 +24,7 @@ var (
 				return err
 			}
 
-			fmt.Println(out)
+			fmt.Printf(out)
 			return nil
 		},
 	}
