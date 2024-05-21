@@ -4,7 +4,7 @@ cache:
   ttl_in_hours: 1
   path: ./cache-test.json
 
-groups:
+rules:
   - name: showcasing conditionals
     action: debug
     # Filters are run one after the other, like they are joined by `and`.

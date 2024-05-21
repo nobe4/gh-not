@@ -12,8 +12,8 @@ import (
 )
 
 type Config struct {
-	Cache  Cache   `yaml:"cache"`
-	Groups []Group `yaml:"groups"`
+	Cache Cache  `yaml:"cache"`
+	Rules []Rule `yaml:"rules"`
 }
 
 type Cache struct {
@@ -21,7 +21,7 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
-type Group struct {
+type Rule struct {
 	Name    string   `yaml:"name"`
 	Filters []string `yaml:"filters"`
 	Action  string   `yaml:"action"`
@@ -52,11 +52,11 @@ func New(path string) (*Config, error) {
 func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors.Actor, noop bool) (notifications.NotificationMap, error) {
 	err := error(nil)
 
-	for _, group := range c.Groups {
-		slog.Debug("apply group", "name", group.Name)
+	for _, rule := range c.Rules {
+		slog.Debug("apply rule", "name", rule.Name)
 		selectedNotifications := n.ToSlice()
 
-		for _, filter := range group.Filters {
+		for _, filter := range rule.Filters {
 			selectedNotifications, err = jq.Filter(filter, selectedNotifications)
 			if err != nil {
 				return nil, err
@@ -64,9 +64,9 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 		}
 
 		for _, notification := range selectedNotifications {
-			if actor, ok := actors[group.Action]; ok == true {
+			if actor, ok := actors[rule.Action]; ok == true {
 				if noop {
-					fmt.Printf("NOOP'ing action %s on notification %s\n", group.Action, notification.ToString())
+					fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
 				} else {
 					// Remove the notification temporarily from the list, it
 					// will be added back after the actor runs.
@@ -74,13 +74,13 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 
 					notification, err = actor.Run(notification)
 					if err != nil {
-						slog.Error("action failed", "action", group.Action, "err", err)
+						slog.Error("action failed", "action", rule.Action, "err", err)
 					}
 
 					n[notification.Id] = notification
 				}
 			} else {
-				slog.Error("unknown action", "action", group.Action)
+				slog.Error("unknown action", "action", rule.Action)
 			}
 		}
 	}
