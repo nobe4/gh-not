@@ -12,8 +12,8 @@ groups:
     filters:
       - .author.login == "dependabot[bot]"
       - >
-        (.title | contains("something unimportant")) or
-        (.title | contains("something already done"))
+        (.subject.title | contains("something unimportant")) or
+        (.subject.title | contains("something already done"))
 
   - name: ignore ci failures for the current repo
     action: done

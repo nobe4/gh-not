@@ -12,7 +12,6 @@ type Notifications []Notification
 
 type Notification struct {
 	// Standard API fields
-	Title      string     `json:"title"`
 	Id         string     `json:"id"`
 	Unread     bool       `json:"unread"`
 	Reason     string     `json:"reason"`
@@ -73,7 +72,7 @@ func (n NotificationMap) Uniq() NotificationMap {
 }
 
 func (n Notification) ToString() string {
-	return fmt.Sprintf("%s %+v", n.Id, n)
+	return fmt.Sprintf("[%s] %s by %s: '%s' ", n.Id, n.Repository.FullName, n.Author.Login, n.Subject.Title)
 }
 
 func (n NotificationMap) ToString() string {
