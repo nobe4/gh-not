@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -65,7 +66,7 @@ func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors
 		for _, notification := range selectedNotifications {
 			if actor, ok := actors[group.Action]; ok == true {
 				if noop {
-					slog.Info("NOOP'ing", "action", group.Action, "notification", notification.ToString())
+					fmt.Printf("NOOP'ing action %s on notification %s\n", group.Action, notification.ToString())
 				} else {
 					// Remove the notification temporarily from the list, it
 					// will be added back after the actor runs.
