@@ -1,9 +1,13 @@
 package notifications
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/cli/go-gh/v2/pkg/tableprinter"
+	"github.com/cli/go-gh/v2/pkg/term"
 )
 
 type NotificationMap map[string]Notification
@@ -76,7 +80,34 @@ func (n NotificationMap) Uniq() NotificationMap {
 }
 
 func (n Notification) ToString() string {
-	return fmt.Sprintf("[%s] %s by %s: '%s' ", n.Id, n.Repository.FullName, n.Author.Login, n.Subject.Title)
+	return fmt.Sprintf("%s %s %s by %s: '%s' ", n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
+}
+
+var prettyTypes = map[string]string{
+	"Issue":       "IS",
+	"PullRequest": "PR",
+}
+
+func (n Notification) prettyType() string {
+	if p, ok := prettyTypes[n.Subject.Type]; ok {
+		return p
+	}
+
+	return "T?"
+}
+
+var prettyState = map[string]string{
+	"open":   "OP",
+	"closed": "CL",
+	"merged": "MG",
+}
+
+func (n Notification) prettyState() string {
+	if p, ok := prettyState[n.Subject.State]; ok {
+		return p
+	}
+
+	return "S?"
 }
 
 func (n NotificationMap) ToString() string {
@@ -85,6 +116,33 @@ func (n NotificationMap) ToString() string {
 		out += n.ToString() + "\n"
 	}
 	return out
+}
+
+func (n NotificationMap) ToTable() (string, error) {
+	out := bytes.Buffer{}
+
+	t := term.FromEnv()
+	w, _, err := t.Size()
+	if err != nil {
+		return "", err
+	}
+
+	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
+
+	for _, n := range n {
+		printer.AddField(n.prettyType())
+		printer.AddField(n.prettyState())
+		printer.AddField(n.Repository.FullName)
+		printer.AddField(n.Author.Login)
+		printer.AddField(n.Subject.Title)
+		printer.EndRow()
+	}
+
+	if err := printer.Render(); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
 
 func (n NotificationMap) ToSlice() Notifications {

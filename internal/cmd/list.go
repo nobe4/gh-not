@@ -18,7 +18,13 @@ var (
 				return err
 			}
 
-			fmt.Println(notifications.ToString())
+			out, err := notifications.ToTable()
+			if err != nil {
+				slog.Error("Failed to list the notifications", "err", err)
+				return err
+			}
+
+			fmt.Println(out)
 			return nil
 		},
 	}
