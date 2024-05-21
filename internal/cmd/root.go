@@ -42,6 +42,10 @@ func init() {
 
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./config.yaml", "Path to the YAML config file")
+
+	rootCmd.PersistentFlags().BoolVarP(&refresh, "refresh", "r", false, "Force a refresh")
+	rootCmd.PersistentFlags().BoolVarP(&noRefresh, "no-refresh", "R", false, "Prevent a refresh")
+	rootCmd.MarkFlagsMutuallyExclusive("refresh", "no-refresh")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -61,7 +65,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client = gh.NewClient(apiCaller, cache)
+	client = gh.NewClient(apiCaller, cache, refresh, noRefresh)
 
 	if err := initLogger(); err != nil {
 		slog.Error("Failed to init the logger", "err", err)

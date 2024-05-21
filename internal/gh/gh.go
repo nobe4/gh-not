@@ -19,14 +19,18 @@ type APICaller interface {
 }
 
 type Client struct {
-	API   APICaller
-	cache cache.ExpiringReadWriter
+	API       APICaller
+	cache     cache.ExpiringReadWriter
+	refresh   bool
+	noRefresh bool
 }
 
-func NewClient(api APICaller, cache cache.ExpiringReadWriter) *Client {
+func NewClient(api APICaller, cache cache.ExpiringReadWriter, refresh, noRefresh bool) *Client {
 	return &Client{
-		API:   api,
-		cache: cache,
+		API:       api,
+		cache:     cache,
+		refresh:   refresh,
+		noRefresh: noRefresh,
 	}
 }
 
@@ -67,15 +71,24 @@ func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error)
 func (c *Client) Notifications() (notifications.NotificationMap, error) {
 	allNotifications := make(notifications.NotificationMap)
 
-	cachedNotifications, expired, err := c.loadCache()
+	cachedNotifications, refresh, err := c.loadCache()
 	if err != nil {
 		fmt.Printf("Error while reading the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
 		allNotifications = cachedNotifications
 	}
 
-	if expired {
-		fmt.Printf("Cache expired, pulling from the API...\n")
+	if !refresh && c.refresh {
+		slog.Debug("forcing a refresh")
+		refresh = true
+	}
+	if refresh && c.noRefresh {
+		slog.Debug("preventing a refresh")
+		refresh = false
+	}
+
+	if refresh {
+		fmt.Printf("Refreshing the cache...")
 		pulledNotifications, err := c.pullNotificationFromApi()
 		if err != nil {
 			return nil, err
