@@ -20,7 +20,7 @@ type Notification struct {
 	Repository Repository `json:"repository"`
 	Subject    Subject    `json:"subject"`
 
-	// Addidional API fields
+	// Enriched API fields
 	Author User `json:"author"`
 
 	// gh-not specific fields
@@ -32,9 +32,13 @@ type Meta struct {
 }
 
 type Subject struct {
+	// Standard API fields
 	Title string `json:"title"`
 	URL   string `json:"url"`
 	Type  string `json:"type"`
+
+	// Enriched API fields
+	State string `json:"state"`
 }
 
 type Repository struct {

@@ -8,25 +8,19 @@ import (
 )
 
 func (c *Client) enrichNotification(n notifications.Notification) (notifications.Notification, error) {
-	var err error
-
-	if n, err = c.addAuthor(n); err != nil {
-		return n, err
-	}
-
-	return n, nil
-}
-
-func (c *Client) addAuthor(n notifications.Notification) (notifications.Notification, error) {
-	slog.Debug("adding author to notification", "notifications", n)
-	author := struct {
-		User notifications.User `json:"user"`
+	extra := struct {
+		User  notifications.User `json:"user"`
+		State string             `json:"state"`
 	}{}
-	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &author); err != nil {
+	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &extra); err != nil {
 		return n, err
 	}
 
-	n.Author = author.User
+	slog.Debug("adding author to notification", "notifications", n)
+	n.Author = extra.User
+
+	slog.Debug("adding state to notification's suject", "notifications", n)
+	n.Subject.State = extra.State
 
 	return n, nil
 }
