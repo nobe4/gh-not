@@ -37,9 +37,13 @@ rule contains three fields:
           - .repository.full_name == "nobe4/gh-not"
     ```
 
+    Filters like:
+
     ```shell
     jq '.[] | select((.author.login == "dependabot[bot]") or (.author.login == "nobe4"))' | jq '.[] | select(.repository.full_name == "nobe4/gh-not")'
     ```
+
+    See more at [`config.sample.yaml`](./config.sample.yaml).
 
 
 [^gojq]: Technically, [`gojq`](https://github.com/itchyny/gojq) is used.
