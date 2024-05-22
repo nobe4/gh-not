@@ -23,8 +23,13 @@ var (
 	client *gh.Client
 
 	rootCmd = &cobra.Command{
-		Use:               "gh-not",
-		Short:             "Manage your GitHub notifications",
+		Use:   "gh-not",
+		Short: "Manage your GitHub notifications",
+		Example: `
+  gh-not --config list
+  gh-not --no-refresh list
+  gh-not sync --refresh --verbosity 4
+`,
 		PersistentPreRunE: setupGlobals,
 		SilenceErrors:     true,
 	}
