@@ -4,7 +4,23 @@
 
 # Installation
 
-> TBD when a release is done
+- Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
+
+- Install via `gh`:
+    ```shell
+    gh extension install nobe4/gh-not
+    ```
+
+- Install via `go`:
+    ```shell
+    go install github.com/nobe4/gh-not/cmd/gh-not@latest
+    ```
+
+- Build from sources
+
+    ```shell
+    go build ./cmd/gh-not
+    ```
 
 # Configuration
 
