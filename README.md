@@ -1,8 +1,8 @@
-# `gh-not`
+# `gh-not` 🔕
 
-> GitHub rule-based notifications managements
+> GitHub rule-based notifications management
 
-# Installation
+# Install
 
 - Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
 
@@ -10,6 +10,9 @@
     ```shell
     gh extension install nobe4/gh-not
     ```
+
+    Is used with `gh not`, while the others `gh-not`. The documentation uses
+    `gh-not` exclusively.
 
 - Install via `go`:
     ```shell
@@ -22,7 +25,20 @@
     go build ./cmd/gh-not
     ```
 
-# Configuration
+# Run
+
+```shell
+gh-not --help
+gh-not sync
+gh-not list --filter '.author.login | contains("4")'
+...
+```
+
+# Configure
+
+> [!NOTE]
+> The tool requires a config file to exist for it to run, that's unfortunate and
+> will be fixed soon.
 
 The configuration file contains the rules to apply to the notifications. Each
 rule contains three fields:
