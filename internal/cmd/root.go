@@ -39,6 +39,7 @@ func init() {
 
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(jqCmd)
 	rootCmd.AddCommand(configCmd)
 
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")

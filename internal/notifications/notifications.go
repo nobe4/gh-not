@@ -72,18 +72,6 @@ func (n NotificationMap) Append(notifications []Notification) {
 	}
 }
 
-func (n NotificationMap) Uniq() NotificationMap {
-	unique := NotificationMap{}
-
-	for _, notification := range n {
-		if _, ok := unique[notification.Id]; !ok {
-			unique[notification.Id] = notification
-		}
-	}
-
-	return unique
-}
-
 func (n Notification) ToString() string {
 	return fmt.Sprintf("%s %s %s by %s: '%s' ", n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
 }
@@ -104,7 +92,7 @@ func (n Notification) prettyType() string {
 		return p
 	}
 
-	return "T?"
+	return colors.Yellow("T?")
 }
 
 func (n Notification) prettyState() string {
@@ -112,7 +100,7 @@ func (n Notification) prettyState() string {
 		return p
 	}
 
-	return "S?"
+	return colors.Yellow("S?")
 }
 
 func (n NotificationMap) ToString() string {
@@ -160,6 +148,27 @@ func (n NotificationMap) ToSlice() Notifications {
 	}
 
 	return s
+}
+
+func (n Notifications) ToMap() NotificationMap {
+	m := NotificationMap{}
+
+	for _, n := range n {
+		m[n.Id] = n
+	}
+
+	return m
+}
+
+func (n Notifications) FilterFromIds(ids []string) Notifications {
+	newList := Notifications{}
+	m := n.ToMap()
+
+	for _, id := range ids {
+		newList = append(newList, m[id])
+	}
+
+	return newList
 }
 
 func (n Notifications) ToInterface() (interface{}, error) {
