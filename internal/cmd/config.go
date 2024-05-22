@@ -19,7 +19,7 @@ var (
 				slog.Error("Failed to marshall config", "err", err)
 			}
 
-			fmt.Println(configPath)
+			fmt.Println(configPathFlag)
 			fmt.Println(string(marshalled))
 
 			return nil
