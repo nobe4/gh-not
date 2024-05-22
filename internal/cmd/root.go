@@ -42,7 +42,7 @@ func Execute() error {
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
-	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 2, "Change logger verbosity")
+	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
 
 	rootCmd.PersistentFlags().BoolVarP(&refreshFlag, "refresh", "r", false, "Force a refresh")
