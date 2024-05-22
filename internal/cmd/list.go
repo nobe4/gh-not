@@ -18,7 +18,7 @@ var (
 		Short:   "List notifications",
 		Example: `
   gh-not list
-  gh-not list --filter ''.author.login | contains("4")'
+  gh-not list --filter '.author.login | contains("4")'
 `,
 		RunE: runList,
 	}
