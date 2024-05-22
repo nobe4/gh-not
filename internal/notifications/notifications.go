@@ -147,6 +147,8 @@ func (n NotificationMap) ToTable() (string, error) {
 		return "", err
 	}
 
+	fmt.Fprintf(&out, "Found %d notifications", len(n))
+
 	return out.String(), nil
 }
 
