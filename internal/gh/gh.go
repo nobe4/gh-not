@@ -1,21 +1,28 @@
+// Interact with GitHub's api, wrapper around cli/go-gh client object.
 package gh
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 
+	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 const (
-	path = "notifications"
+	defaultEndpoint = "https://api.github.com/notifications"
+	retryCount      = 5
 )
 
 type APICaller interface {
 	Do(string, string, io.Reader, interface{}) error
+	Request(string, string, io.Reader) (*http.Response, error)
 }
 
 type Client struct {
@@ -48,11 +55,82 @@ func (c *Client) loadCache() (notifications.NotificationMap, bool, error) {
 	return n, expired, nil
 }
 
-func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error) {
+func isRetryable(err error) bool {
+	var httpError *api.HTTPError
+
+	if errors.As(err, &httpError) {
+		switch httpError.StatusCode {
+		case 502, 504:
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *Client) retryRequest(verb, endpoint string, body io.Reader) (*http.Response, error) {
+	for i := retryCount; i > 0; i-- {
+		response, err := c.API.Request(verb, endpoint, body)
+		if err != nil {
+			if isRetryable(err) {
+				slog.Warn("endpoint failed with retryable status", "endpoint", endpoint, "retry left", i)
+				continue
+			}
+
+			return nil, err
+		}
+
+		return response, nil
+	}
+
+	return nil, fmt.Errorf("retry exceeded for %s", endpoint)
+}
+
+// inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
+func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
 	var list []notifications.Notification
 
-	slog.Debug("API REST request", "path", path)
-	if err := c.API.Do(http.MethodGet, path, nil, &list); err != nil {
+	var linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
+	findNextPage := func(response *http.Response) string {
+		for _, m := range linkRE.FindAllStringSubmatch(response.Header.Get("Link"), -1) {
+			if len(m) > 2 && m[2] == "next" {
+				return m[1]
+			}
+		}
+		return ""
+	}
+
+	endpoint := defaultEndpoint
+	for endpoint != "" {
+		slog.Info("API REST request", "endpoint", endpoint)
+
+		response, err := c.retryRequest(http.MethodGet, endpoint, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		pageList := []notifications.Notification{}
+		decoder := json.NewDecoder(response.Body)
+		err = decoder.Decode(&pageList)
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, pageList...)
+
+		if err := response.Body.Close(); err != nil {
+			return nil, err
+		}
+
+		endpoint = findNextPage(response)
+	}
+
+	return list, nil
+}
+
+func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error) {
+	list, err := c.paginateNotifications()
+	if err != nil {
 		return nil, err
 	}
 
@@ -73,22 +151,22 @@ func (c *Client) Notifications() (notifications.NotificationMap, error) {
 
 	cachedNotifications, refresh, err := c.loadCache()
 	if err != nil {
-		fmt.Printf("Error while reading the cache: %#v\n", err)
+		slog.Warn("Error while reading the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
 		allNotifications = cachedNotifications
 	}
 
 	if !refresh && c.refresh {
-		slog.Debug("forcing a refresh")
+		slog.Info("forcing a refresh")
 		refresh = true
 	}
 	if refresh && c.noRefresh {
-		slog.Debug("preventing a refresh")
+		slog.Info("preventing a refresh")
 		refresh = false
 	}
 
 	if refresh {
-		fmt.Printf("Refreshing the cache...")
+		fmt.Printf("Refreshing the cache...\n")
 		pulledNotifications, err := c.pullNotificationFromApi()
 		if err != nil {
 			return nil, err
@@ -97,7 +175,7 @@ func (c *Client) Notifications() (notifications.NotificationMap, error) {
 		allNotifications.Append(pulledNotifications)
 
 		if err := c.cache.Write(allNotifications); err != nil {
-			fmt.Printf("Error while writing the cache: %#v", err)
+			slog.Error("Error while writing the cache: %#v", err)
 		}
 	}
 
