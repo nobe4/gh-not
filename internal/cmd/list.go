@@ -20,11 +20,12 @@ var (
 
 			out, err := notifications.ToTable()
 			if err != nil {
-				slog.Error("Failed to list the notifications", "err", err)
-				return err
+				slog.Warn("Failed to generate a table, using toString", "err", err)
+				out = notifications.ToString()
 			}
 
-			fmt.Printf(out)
+			fmt.Println(out)
+
 			return nil
 		},
 	}
