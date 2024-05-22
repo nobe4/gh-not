@@ -1,8 +1,10 @@
 package read
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/nobe4/gh-not/internal/colors"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -24,6 +26,8 @@ func (a *Actor) Run(n notifications.Notification) (notifications.Notification, e
 	}
 
 	n.Unread = false
+
+	fmt.Printf(colors.Yellow(fmt.Sprintf("READ %s\n", n.ToString())))
 
 	return n, nil
 }

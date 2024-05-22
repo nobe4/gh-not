@@ -1,9 +1,11 @@
 package done
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/nobe4/gh-not/internal/colors"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -23,6 +25,8 @@ func (a *Actor) Run(n notifications.Notification) (notifications.Notification, e
 	if err != nil {
 		return emptyNotification, err
 	}
+
+	fmt.Printf(colors.Red(fmt.Sprintf("DONE %s\n", n.ToString())))
 
 	return emptyNotification, nil
 }

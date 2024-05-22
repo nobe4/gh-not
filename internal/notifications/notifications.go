@@ -1,3 +1,7 @@
+// Handles storing notification types and provides some helpers.
+//
+// Reference: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28
+
 package notifications
 
 import (
@@ -8,7 +12,7 @@ import (
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
 	"github.com/cli/go-gh/v2/pkg/term"
-	"github.com/fatih/color"
+	"github.com/nobe4/gh-not/internal/colors"
 )
 
 type NotificationMap map[string]Notification
@@ -85,16 +89,15 @@ func (n Notification) ToString() string {
 }
 
 var prettyTypes = map[string]string{
-	"Issue":       color.New(color.FgBlue).SprintFunc()("IS"),
-	"PullRequest": color.New(color.FgCyan).SprintFunc()("PR"),
+	"Issue":       colors.Blue("IS"),
+	"PullRequest": colors.Cyan("PR"),
 }
 
 var prettyState = map[string]string{
-	"open":   color.New(color.FgGreen).SprintFunc()("OP"),
-	"closed": color.New(color.FgRed).SprintFunc()("CL"),
-	"merged": color.New(color.FgMagenta).SprintFunc()("MG"),
+	"open":   colors.Green("OP"),
+	"closed": colors.Red("CL"),
+	"merged": colors.Magenta("MG"),
 }
-
 
 func (n Notification) prettyType() string {
 	if p, ok := prettyTypes[n.Subject.Type]; ok {
