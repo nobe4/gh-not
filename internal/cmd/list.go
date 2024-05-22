@@ -30,3 +30,7 @@ var (
 		},
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(listCmd)
+}

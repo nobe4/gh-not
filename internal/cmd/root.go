@@ -37,11 +37,6 @@ func Execute() error {
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
-	rootCmd.AddCommand(syncCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(jqCmd)
-	rootCmd.AddCommand(configCmd)
-
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
 

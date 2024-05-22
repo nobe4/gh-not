@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+
 // TODO: move this into the list command with the flag --jq
 var (
 	jqCmd = &cobra.Command{
@@ -35,3 +36,7 @@ var (
 		},
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(jqCmd)
+}

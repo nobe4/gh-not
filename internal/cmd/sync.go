@@ -43,5 +43,7 @@ date with your ruleset.
 )
 
 func init() {
+	rootCmd.AddCommand(syncCmd)
+
 	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
 }

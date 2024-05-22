@@ -26,3 +26,7 @@ var (
 		},
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(configCmd)
+}
