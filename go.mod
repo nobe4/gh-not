@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/cli/go-gh/v2 v2.9.0
+	github.com/fatih/color v1.17.0
 	github.com/itchyny/gojq v0.12.15
 	github.com/spf13/cobra v1.8.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -16,7 +17,6 @@ require (
 	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/cli/shurcooL-graphql v0.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/fatih/color v1.17.0 // indirect
 	github.com/henvic/httpretty v0.0.6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
