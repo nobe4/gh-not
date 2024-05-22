@@ -13,18 +13,23 @@ import (
 )
 
 var (
-	verbosity  int
-	configPath string
-	refresh    bool
-	noRefresh  bool
+	verbosityFlag  int
+	configPathFlag string
+	refreshFlag    bool
+	noRefreshFlag  bool
 
 	config *configPkg.Config
 	cache  *cachePkg.FileCache
 	client *gh.Client
 
 	rootCmd = &cobra.Command{
-		Use:               "gh-not",
-		Short:             "Manage your GitHub notifications",
+		Use:   "gh-not",
+		Short: "Manage your GitHub notifications",
+		Example: `
+  gh-not --config list
+  gh-not --no-refresh list
+  gh-not sync --refresh --verbosity 4
+`,
 		PersistentPreRunE: setupGlobals,
 		SilenceErrors:     true,
 	}
@@ -37,25 +42,20 @@ func Execute() error {
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
-	rootCmd.AddCommand(syncCmd)
-	rootCmd.AddCommand(listCmd)
-	rootCmd.AddCommand(jqCmd)
-	rootCmd.AddCommand(configCmd)
+	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
+	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
 
-	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
-
-	rootCmd.PersistentFlags().BoolVarP(&refresh, "refresh", "r", false, "Force a refresh")
-	rootCmd.PersistentFlags().BoolVarP(&noRefresh, "no-refresh", "R", false, "Prevent a refresh")
+	rootCmd.PersistentFlags().BoolVarP(&refreshFlag, "refresh", "r", false, "Force a refresh")
+	rootCmd.PersistentFlags().BoolVarP(&noRefreshFlag, "no-refresh", "R", false, "Prevent a refresh")
 	rootCmd.MarkFlagsMutuallyExclusive("refresh", "no-refresh")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
 	var err error
 
-	config, err = configPkg.New(configPath)
+	config, err = configPkg.New(configPathFlag)
 	if err != nil {
-		slog.Error("Failed to load the cache", "path", configPath, "err", err)
+		slog.Error("Failed to load the cache", "path", configPathFlag, "err", err)
 		return err
 	}
 
@@ -67,7 +67,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client = gh.NewClient(apiCaller, cache, refresh, noRefresh)
+	client = gh.NewClient(apiCaller, cache, refreshFlag, noRefreshFlag)
 
 	if err := initLogger(); err != nil {
 		slog.Error("Failed to init the logger", "err", err)
@@ -80,7 +80,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 func initLogger() error {
 	opts := &slog.HandlerOptions{}
 
-	switch verbosity {
+	switch verbosityFlag {
 	case 1:
 		opts.Level = slog.LevelError
 	case 2:
