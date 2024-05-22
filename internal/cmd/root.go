@@ -3,6 +3,7 @@ package cmd
 import (
 	"log/slog"
 	"os"
+	"path"
 
 	"github.com/cli/go-gh/v2/pkg/api"
 	cachePkg "github.com/nobe4/gh-not/internal/cache"
@@ -41,7 +42,7 @@ func init() {
 	rootCmd.AddCommand(configCmd)
 
 	rootCmd.PersistentFlags().IntVarP(&verbosity, "verbosity", "v", 2, "Change logger verbosity")
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./config.yaml", "Path to the YAML config file")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
 
 	rootCmd.PersistentFlags().BoolVarP(&refresh, "refresh", "r", false, "Force a refresh")
 	rootCmd.PersistentFlags().BoolVarP(&noRefresh, "no-refresh", "R", false, "Prevent a refresh")

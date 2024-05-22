@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/jq"
@@ -30,7 +31,7 @@ type Rule struct {
 var (
 	defaultCache = Cache{
 		TTLInHours: 24 * 7,
-		Path:       "/tmp/gh-not.cache.json",
+		Path:       path.Join(StateDir(), "cache.json"),
 	}
 )
 
