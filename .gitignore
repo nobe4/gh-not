@@ -25,3 +25,5 @@ go.work
 
 /config.yaml
 /cache-test.json
+
+dist/
