@@ -106,7 +106,7 @@ func (n Notification) prettyState() string {
 
 func (n NotificationMap) ToString() string {
 	out := ""
-	for _, n := range n {
+	for _, n := range n.ToSlice() {
 		out += n.ToString() + "\n"
 	}
 	return out
