@@ -5,13 +5,11 @@ import (
 	"errors"
 	"os"
 	"time"
-
-	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 type ExpiringReadWriter interface {
-	Read() (notifications.Notifications, error)
-	Write(notifications.Notifications) error
+	Read(any) error
+	Write(any) error
 	Expired() (bool, error)
 }
 
@@ -27,26 +25,21 @@ func NewFileCache(ttlInHours int, path string) *FileCache {
 	}
 }
 
-func (c *FileCache) Read() (notifications.Notifications, error) {
+func (c *FileCache) Read(out any) error {
 	content, err := os.ReadFile(c.path)
 
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil
+			return nil
 		}
-		return nil, err
+		return err
 	}
 
-	notifications := notifications.Notifications{}
-	if err := json.Unmarshal(content, &notifications); err != nil {
-		return nil, err
-	}
-
-	return notifications, nil
+	return json.Unmarshal(content, out)
 }
 
-func (c *FileCache) Write(n notifications.Notifications) error {
-	marshalled, err := json.Marshal(n)
+func (c *FileCache) Write(in any) error {
+	marshalled, err := json.Marshal(in)
 	if err != nil {
 		return err
 	}
