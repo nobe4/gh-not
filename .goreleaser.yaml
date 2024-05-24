@@ -11,6 +11,11 @@ builds:
   - main: ./cmd/gh-not
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - >
+        -s -w -X github.com/nobe4/gh-not/internal/cmd.version={{.Version}}
+              -X github.com/nobe4/gh-not/internal/cmd.commit={{.Commit}}
+              -X github.com/nobe4/gh-not/internal/cmd.date={{.Date}}
 
 archives:
   - name_template: "{{ .Os }}-{{ .Arch }}"
@@ -23,4 +28,4 @@ changelog:
   use: github-native
 
 release:
-  draft: true
+  draft: false
