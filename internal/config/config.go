@@ -7,7 +7,6 @@ import (
 	"path"
 
 	"github.com/nobe4/gh-not/internal/actors"
-	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"gopkg.in/yaml.v3"
 )
@@ -20,12 +19,6 @@ type Config struct {
 type Cache struct {
 	TTLInHours int    `yaml:"ttl_in_hours"`
 	Path       string `yaml:"path"`
-}
-
-type Rule struct {
-	Name    string   `yaml:"name"`
-	Filters []string `yaml:"filters"`
-	Action  string   `yaml:"action"`
 }
 
 var (
@@ -50,41 +43,40 @@ func New(path string) (*Config, error) {
 	return config, nil
 }
 
-func (c *Config) Apply(n notifications.NotificationMap, actors map[string]actors.Actor, noop bool) (notifications.NotificationMap, error) {
-	err := error(nil)
+func (c *Config) Apply(n notifications.Notifications, actors map[string]actors.Actor, noop bool) (notifications.Notifications, error) {
+	indexIDMap := map[string]int{}
+	for i, n := range n {
+		indexIDMap[n.Id] = i
+	}
 
 	for _, rule := range c.Rules {
 		slog.Debug("apply rule", "name", rule.Name)
-		selectedNotifications := n.ToSlice()
 
-		for _, filter := range rule.Filters {
-			selectedNotifications, err = jq.Filter(filter, selectedNotifications)
-			if err != nil {
-				return nil, err
-			}
+		selectedIds, err := rule.filterIds(n)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, notification := range selectedNotifications {
-			if actor, ok := actors[rule.Action]; ok == true {
+		for _, id := range selectedIds {
+			i := indexIDMap[id]
+			notification := n[i]
+
+			if actor, ok := actors[rule.Action]; ok {
 				if noop {
 					fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
 				} else {
-					// Remove the notification temporarily from the list, it
-					// will be added back after the actor runs.
-					delete(n, notification.Id)
-
 					notification, err = actor.Run(notification)
 					if err != nil {
 						slog.Error("action failed", "action", rule.Action, "err", err)
 					}
-
-					n[notification.Id] = notification
 				}
 			} else {
 				slog.Error("unknown action", "action", rule.Action)
 			}
+
+			n[i] = notification
 		}
 	}
 
-	return n, nil
+	return n.DeleteNil(), nil
 }
