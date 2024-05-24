@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
@@ -122,7 +123,7 @@ func (n NotificationMap) ToTable() (string, error) {
 
 	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
 
-	for _, n := range n {
+	for _, n := range n.ToSlice() {
 		printer.AddField(n.prettyType())
 		printer.AddField(n.prettyState())
 		printer.AddField(n.Repository.FullName)
@@ -146,6 +147,10 @@ func (n NotificationMap) ToSlice() Notifications {
 	for _, n := range n {
 		s = append(s, n)
 	}
+
+	sort.Slice(s, func(i, j int) bool {
+		return s[i].Id > s[j].Id
+	})
 
 	return s
 }
