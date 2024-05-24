@@ -8,15 +8,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
 	"github.com/cli/go-gh/v2/pkg/term"
 	"github.com/nobe4/gh-not/internal/colors"
 )
-
-type NotificationMap map[string]Notification
 
 type Notifications []Notification
 
@@ -65,14 +63,6 @@ type User struct {
 	Type  string `json:"type"`
 }
 
-func (n NotificationMap) Append(notifications []Notification) {
-	for _, notification := range notifications {
-		if _, ok := n[notification.Id]; !ok {
-			n[notification.Id] = notification
-		}
-	}
-}
-
 func (n Notification) ToString() string {
 	return fmt.Sprintf("%s %s %s by %s: '%s' ", n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
 }
@@ -104,15 +94,15 @@ func (n Notification) prettyState() string {
 	return colors.Yellow("S?")
 }
 
-func (n NotificationMap) ToString() string {
+func (n Notifications) ToString() string {
 	out := ""
-	for _, n := range n.ToSlice() {
+	for _, n := range n {
 		out += n.ToString() + "\n"
 	}
 	return out
 }
 
-func (n NotificationMap) ToTable() (string, error) {
+func (n Notifications) ToTable() (string, error) {
 	out := bytes.Buffer{}
 
 	t := term.FromEnv()
@@ -123,7 +113,7 @@ func (n NotificationMap) ToTable() (string, error) {
 
 	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
 
-	for _, n := range n.ToSlice() {
+	for _, n := range n {
 		printer.AddField(n.prettyType())
 		printer.AddField(n.prettyState())
 		printer.AddField(n.Repository.FullName)
@@ -141,36 +131,40 @@ func (n NotificationMap) ToTable() (string, error) {
 	return out.String(), nil
 }
 
-func (n NotificationMap) ToSlice() Notifications {
-	s := Notifications{}
-
+func (n Notifications) IDList() []string {
+	ids := []string{}
 	for _, n := range n {
-		s = append(s, n)
+		ids = append(ids, n.Id)
 	}
-
-	sort.Slice(s, func(i, j int) bool {
-		return s[i].Id > s[j].Id
-	})
-
-	return s
+	return ids
 }
 
-func (n Notifications) ToMap() NotificationMap {
-	m := NotificationMap{}
+func (n Notifications) DeleteNil() Notifications {
+	return slices.DeleteFunc(n, func(n Notification) bool {
+		return n.Id == ""
+	})
+}
 
-	for _, n := range n {
-		m[n.Id] = n
-	}
-
-	return m
+func (n Notifications) Uniq() Notifications {
+	seenIds := map[string]bool{}
+	return slices.DeleteFunc(n, func(n Notification) bool {
+		if _, ok := seenIds[n.Id]; ok {
+			return true
+		}
+		seenIds[n.Id] = true
+		return false
+	})
 }
 
 func (n Notifications) FilterFromIds(ids []string) Notifications {
 	newList := Notifications{}
-	m := n.ToMap()
 
 	for _, id := range ids {
-		newList = append(newList, m[id])
+		for _, n := range n {
+			if n.Id == id {
+				newList = append(newList, n)
+			}
+		}
 	}
 
 	return newList

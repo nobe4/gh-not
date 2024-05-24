@@ -41,7 +41,7 @@ func NewClient(api APICaller, cache cache.ExpiringReadWriter, refresh, noRefresh
 	}
 }
 
-func (c *Client) loadCache() (notifications.NotificationMap, bool, error) {
+func (c *Client) loadCache() (notifications.Notifications, bool, error) {
 	expired, err := c.cache.Expired()
 	if err != nil {
 		return nil, false, err
@@ -146,8 +146,8 @@ func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error)
 	return list, nil
 }
 
-func (c *Client) Notifications() (notifications.NotificationMap, error) {
-	allNotifications := make(notifications.NotificationMap)
+func (c *Client) Notifications() (notifications.Notifications, error) {
+	allNotifications := notifications.Notifications{}
 
 	cachedNotifications, refresh, err := c.loadCache()
 	if err != nil {
@@ -172,12 +172,12 @@ func (c *Client) Notifications() (notifications.NotificationMap, error) {
 			return nil, err
 		}
 
-		allNotifications.Append(pulledNotifications)
+		allNotifications = append(allNotifications, pulledNotifications...)
 
 		if err := c.cache.Write(allNotifications); err != nil {
 			slog.Error("Error while writing the cache: %#v", err)
 		}
 	}
 
-	return allNotifications, nil
+	return allNotifications.Uniq(), nil
 }

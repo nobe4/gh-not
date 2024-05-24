@@ -40,11 +40,11 @@ func runList(cmd *cobra.Command, args []string) error {
 	}
 
 	if filterFlag != "" {
-		notificationsList, err := jq.Filter(filterFlag, notifications.ToSlice())
+		notificationsList, err := jq.Filter(filterFlag, notifications)
 		if err != nil {
 			return err
 		}
-		notifications = notificationsList.ToMap()
+		notifications = notificationsList
 	}
 
 	if jqFlag != "" {

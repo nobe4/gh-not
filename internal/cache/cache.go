@@ -10,8 +10,8 @@ import (
 )
 
 type ExpiringReadWriter interface {
-	Read() (notifications.NotificationMap, error)
-	Write(notifications.NotificationMap) error
+	Read() (notifications.Notifications, error)
+	Write(notifications.Notifications) error
 	Expired() (bool, error)
 }
 
@@ -27,7 +27,7 @@ func NewFileCache(ttlInHours int, path string) *FileCache {
 	}
 }
 
-func (c *FileCache) Read() (notifications.NotificationMap, error) {
+func (c *FileCache) Read() (notifications.Notifications, error) {
 	content, err := os.ReadFile(c.path)
 
 	if err != nil {
@@ -37,7 +37,7 @@ func (c *FileCache) Read() (notifications.NotificationMap, error) {
 		return nil, err
 	}
 
-	notifications := notifications.NotificationMap{}
+	notifications := notifications.Notifications{}
 	if err := json.Unmarshal(content, &notifications); err != nil {
 		return nil, err
 	}
@@ -45,10 +45,7 @@ func (c *FileCache) Read() (notifications.NotificationMap, error) {
 	return notifications, nil
 }
 
-func (c *FileCache) Write(n notifications.NotificationMap) error {
-	// In case we have an item without IDs, we can safely delete it.
-	delete(n, "")
-
+func (c *FileCache) Write(n notifications.Notifications) error {
 	marshalled, err := json.Marshal(n)
 	if err != nil {
 		return err
