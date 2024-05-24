@@ -47,8 +47,8 @@ func (c *Client) loadCache() (notifications.Notifications, bool, error) {
 		return nil, false, err
 	}
 
-	n, err := c.cache.Read()
-	if err != nil {
+	n := notifications.Notifications{}
+	if err := c.cache.Read(&n); err != nil {
 		return nil, expired, err
 	}
 
