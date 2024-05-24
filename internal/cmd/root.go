@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"path"
@@ -13,6 +14,10 @@ import (
 )
 
 var (
+	version = "dev"
+	commit  = "123abc"
+	date    = "now"
+
 	verbosityFlag  int
 	configPathFlag string
 	refreshFlag    bool
@@ -23,8 +28,9 @@ var (
 	client *gh.Client
 
 	rootCmd = &cobra.Command{
-		Use:   "gh-not",
-		Short: "Manage your GitHub notifications",
+		Use:     "gh-not",
+		Version: fmt.Sprintf("%s (%s) built at %s", version, commit, date),
+		Short:   "Manage your GitHub notifications",
 		Example: `
   gh-not --config list
   gh-not --no-refresh list
