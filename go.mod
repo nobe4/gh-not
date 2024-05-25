@@ -3,6 +3,7 @@ module github.com/nobe4/gh-not
 go 1.22.0
 
 require (
+	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.3
 	github.com/cli/go-gh/v2 v2.9.0
 	github.com/fatih/color v1.17.0
@@ -12,6 +13,7 @@ require (
 )
 
 require (
+	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v0.10.1-0.20240413172830-d0be07ea6b9c // indirect
 	github.com/charmbracelet/x/ansi v0.1.1 // indirect
