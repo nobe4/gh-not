@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
@@ -126,9 +127,7 @@ func (n Notifications) ToTable() (string, error) {
 		return "", err
 	}
 
-	fmt.Fprintf(&out, "Found %d notifications", len(n))
-
-	return out.String(), nil
+	return strings.TrimRight(out.String(), "\n"), nil
 }
 
 func (n Notifications) IDList() []string {
