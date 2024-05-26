@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/spf13/cobra"
 )
@@ -42,6 +43,8 @@ type model struct {
 	choices        notifications.Notifications
 	visibleChoices filteredList
 
+	actors actors.ActorsMap
+
 	renderCache []string
 	selected    map[int]bool
 	filter      textinput.Model
@@ -66,6 +69,7 @@ func runRepl(cmd *cobra.Command, args []string) error {
 
 	model := model{
 		cursor:      0,
+		actors:      actors.Map(client),
 		choices:     notifications,
 		selected:    map[int]bool{},
 		renderCache: strings.Split(renderCache, "\n"),
@@ -76,6 +80,13 @@ func runRepl(cmd *cobra.Command, args []string) error {
 
 	model.command = textinput.New()
 	model.command.Prompt = ":"
+
+	suggestions := make([]string, 0, len(model.actors))
+	for k := range model.actors {
+		suggestions = append(suggestions, k)
+	}
+	model.command.SetSuggestions(suggestions)
+	model.command.ShowSuggestions = true
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
@@ -90,6 +101,8 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 
 	case filteredList:
@@ -149,18 +162,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case Command:
 			switch msg.String() {
 			case "esc":
-				m.mode = Normal
-				m.command.Blur()
+				return m, m.runCommand(false)
 			case "enter":
-				m.mode = Normal
-				m.command.Blur()
+				return m, m.runCommand(true)
 			default:
-				m.command, _ = m.command.Update(msg)
+				m.command, cmd = m.command.Update(msg)
 			}
 		}
 	}
 
-	return m, nil
+	return m, cmd
 }
 
 func (m model) View() string {
@@ -190,6 +201,27 @@ func (m model) View() string {
 	}
 
 	return out
+}
+
+func (m model) runCommand(apply bool) tea.Cmd {
+	command := m.command.Value()
+
+	m.mode = Normal
+	m.command.SetValue("")
+	m.command.Blur()
+
+	return func() tea.Msg {
+
+		if _, ok := m.actors[command]; ok {
+			if apply {
+				return tea.Quit()
+			}
+		} else {
+			panic(command)
+		}
+
+		return nil
+	}
 }
 
 func (m model) applyFilter() tea.Cmd {
