@@ -20,6 +20,34 @@ var (
 	}
 )
 
+type Mode int64
+
+const (
+	Normal Mode = iota
+	Search
+	Command
+)
+
+type filteredList []int
+
+type selection struct {
+	id       int
+	selected bool
+}
+
+type model struct {
+	mode Mode
+
+	cursor         int
+	choices        notifications.Notifications
+	visibleChoices filteredList
+
+	renderCache []string
+	selected    map[int]bool
+	filter      textinput.Model
+	command     textinput.Model
+}
+
 func init() {
 	rootCmd.AddCommand(replCmd)
 }
@@ -57,38 +85,25 @@ func runRepl(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-type Mode int64
-
-const (
-	Normal Mode = iota
-	Search
-	Command
-)
-
-type model struct {
-	mode Mode
-
-	cursor      int
-	choices     notifications.Notifications
-	renderCache []string
-	selected    map[int]bool
-	filter      textinput.Model
-	command     textinput.Model
-}
-
 func (m model) Init() tea.Cmd {
-
-	return tea.SetWindowTitle("notification list")
+	return m.applyFilter()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch m.mode {
-	case Normal:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
+	switch msg := msg.(type) {
+
+	case filteredList:
+		m.visibleChoices = msg
+
+	case selection:
+		m.selected[msg.id] = msg.selected
+
+	case tea.KeyMsg:
+		switch m.mode {
+		case Normal:
 			switch msg.String() {
 			case "?":
-				panic("to implement")
+				panic("to implement with the help bubble")
 
 			case "/":
 				m.mode = Search
@@ -100,26 +115,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "esc":
 				return m, tea.Quit
+
 			case "up":
 				if m.cursor > 0 {
 					m.cursor--
 				}
 			case "down":
-				if m.cursor < len(m.choices)-1 {
+				if m.cursor < len(m.visibleChoices)-1 {
 					m.cursor++
 				}
+
 			case "enter", " ":
-				v, ok := m.selected[m.cursor]
-				if ok && v {
-					m.selected[m.cursor] = false
-				} else {
-					m.selected[m.cursor] = true
-				}
+				return m, m.toggleSelect()
+			case "a":
+				return m, m.selectAll()
+
 			}
-		}
-	case Search:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
+
+		case Search:
 			switch msg.String() {
 			case "esc":
 				m.mode = Normal
@@ -131,10 +144,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				m.filter, _ = m.filter.Update(msg)
 			}
-		}
-	case Command:
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
+			return m, m.applyFilter()
+
+		case Command:
 			switch msg.String() {
 			case "esc":
 				m.mode = Normal
@@ -154,18 +166,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	out := ""
 
-	for i := range m.choices {
+	for i, id := range m.visibleChoices {
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
 		}
 
 		checked := " "
-		if v, ok := m.selected[i]; ok && v {
+		if v, ok := m.selected[id]; ok && v {
 			checked = "x"
 		}
 
-		out += fmt.Sprintf("%s%s%s\n", checked, cursor, m.renderCache[i])
+		out += fmt.Sprintf("%s%s%s\n", checked, cursor, m.renderCache[id])
 	}
 
 	switch m.mode {
@@ -178,4 +190,46 @@ func (m model) View() string {
 	}
 
 	return out
+}
+
+func (m model) applyFilter() tea.Cmd {
+	return func() tea.Msg {
+		m.cursor = 0
+		f := m.filter.Value()
+
+		visibleChoices := filteredList{}
+
+		for i, line := range m.renderCache {
+			if f == "" || strings.Contains(line, f) {
+				visibleChoices = append(visibleChoices, i)
+			}
+		}
+
+		return visibleChoices
+	}
+}
+
+func (m model) toggleSelect() tea.Cmd {
+	return func() tea.Msg {
+		visibleLineId := m.visibleChoices[m.cursor]
+		selected, ok := m.selected[visibleLineId]
+
+		return selection{
+			id:       visibleLineId,
+			selected: !(selected && ok),
+		}
+	}
+}
+func (m model) selectAll() tea.Cmd {
+	cmds := tea.BatchMsg{}
+
+	for _, id := range m.visibleChoices {
+		cmds = append(cmds,
+			func() tea.Msg {
+				return selection{id: id, selected: true}
+			},
+		)
+	}
+
+	return tea.Batch(cmds...)
 }
