@@ -25,5 +25,5 @@ func Map(client *gh.Client) ActorsMap {
 }
 
 type Actor interface {
-	Run(notifications.Notification) (notifications.Notification, error)
+	Run(notifications.Notification) (notifications.Notification, string, error)
 }
