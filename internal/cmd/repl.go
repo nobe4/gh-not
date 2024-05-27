@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/colors"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +28,9 @@ const (
 	Normal Mode = iota
 	Search
 	Command
+	Result
+
+	defaultMessage = "press ? for help"
 )
 
 type filteredList []int
@@ -49,6 +53,7 @@ type model struct {
 	selected    map[int]bool
 	filter      textinput.Model
 	command     textinput.Model
+	result      string
 }
 
 func init() {
@@ -108,6 +113,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case filteredList:
 		m.visibleChoices = msg
 
+	case result:
+		m.result = msg.ToString()
+
 	case selection:
 		m.selected[msg.id] = msg.selected
 
@@ -162,11 +170,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case Command:
 			switch msg.String() {
 			case "esc":
-				return m, m.runCommand(false)
+				m.mode = Normal
+				m.command.SetValue("")
+				m.command.Blur()
 			case "enter":
-				return m, m.runCommand(true)
+				command := m.command.Value()
+				m.mode = Result
+				m.command.SetValue("")
+				m.command.Blur()
+				return m, m.runCommand(command)
 			default:
-				m.command, cmd = m.command.Update(msg)
+				m.command, _ = m.command.Update(msg)
+			}
+
+		case Result:
+			switch msg.String() {
+			case "esc", "enter":
+				m.mode = Normal
 			}
 		}
 	}
@@ -175,6 +195,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	if m.mode == Result {
+		return m.result
+	}
+
 	out := ""
 
 	for i, id := range m.visibleChoices {
@@ -193,7 +217,7 @@ func (m model) View() string {
 
 	switch m.mode {
 	case Normal:
-		out += "press ? for help\n"
+		out += defaultMessage
 	case Search:
 		out += m.filter.View()
 	case Command:
@@ -203,24 +227,39 @@ func (m model) View() string {
 	return out
 }
 
-func (m model) runCommand(apply bool) tea.Cmd {
-	command := m.command.Value()
+type result struct {
+	out string
+	err error
+}
 
-	m.mode = Normal
-	m.command.SetValue("")
-	m.command.Blur()
+func (r result) ToString() string {
+	if r.err != nil {
+		return colors.Red(r.err.Error())
+	}
 
+	return r.out
+}
+
+func (m model) runCommand(command string) tea.Cmd {
 	return func() tea.Msg {
-
-		if _, ok := m.actors[command]; ok {
-			if apply {
-				return tea.Quit()
+		actor, ok := m.actors[command]
+		if !ok {
+			return result{
+				out: "",
+				err: fmt.Errorf("unknown command: %s", command),
 			}
-		} else {
-			panic(command)
 		}
 
-		return nil
+		n, err := actor.Run(m.choices[m.visibleChoices[m.cursor]])
+		if err != nil {
+			return result{out: "", err: err}
+		}
+
+		m.choices[m.visibleChoices[m.cursor]] = n
+		return result{
+			out: fmt.Sprintf("applied %s on %v", command, n),
+			err: nil,
+		}
 	}
 }
 
