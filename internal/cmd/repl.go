@@ -256,13 +256,13 @@ func (m model) runCommand(command string) tea.Cmd {
 		for i, selected := range m.selected {
 			if selected {
 				hasSelected = true
-				n, err := actor.Run(m.choices[i])
+				n, outn, err := actor.Run(m.choices[i])
 				if err != nil {
 					return result{err: err}
 				}
 
 				m.choices[i] = n
-				out += fmt.Sprintf("applied %s on %v\n", command, m.choices[i].ToString())
+				out += outn + "\n"
 			}
 		}
 
