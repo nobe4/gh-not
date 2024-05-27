@@ -184,10 +184,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case Result:
-			switch msg.String() {
-			case "esc", "enter":
-				m.mode = Normal
-			}
+			m.mode = Normal
 		}
 	}
 
@@ -233,11 +230,15 @@ type result struct {
 }
 
 func (r result) ToString() string {
+	out := ""
+
 	if r.err != nil {
-		return colors.Red(r.err.Error())
+		out = colors.Red(r.err.Error())
+	} else {
+		out = r.out
 	}
 
-	return r.out
+	return out + "\npress any key to continue"
 }
 
 func (m model) runCommand(command string) tea.Cmd {
@@ -250,16 +251,26 @@ func (m model) runCommand(command string) tea.Cmd {
 			}
 		}
 
-		n, err := actor.Run(m.choices[m.visibleChoices[m.cursor]])
-		if err != nil {
-			return result{out: "", err: err}
+		hasSelected := false
+		out := ""
+		for i, selected := range m.selected {
+			if selected {
+				hasSelected = true
+				n, err := actor.Run(m.choices[i])
+				if err != nil {
+					return result{err: err}
+				}
+
+				m.choices[i] = n
+				out += fmt.Sprintf("applied %s on %v\n", command, m.choices[i].ToString())
+			}
 		}
 
-		m.choices[m.visibleChoices[m.cursor]] = n
-		return result{
-			out: fmt.Sprintf("applied %s on %v", command, n),
-			err: nil,
+		if !hasSelected {
+			return result{err: fmt.Errorf("no notification selected")}
 		}
+
+		return result{out: out}
 	}
 }
 
