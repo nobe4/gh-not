@@ -29,8 +29,31 @@ const (
 	Search
 	Command
 	Result
+	Help
 
 	defaultMessage = "press ? for help"
+	helpMessage    = `
+<UP>
+<DOWN>  Move cursor
+
+<SPACE>
+<ENTER> Toggle notification
+
+<ESC>   Exit
+
+?       Show this help
+
+a       Select all notifications
+
+/       Search mode
+        press <ENTER> to validate <ESC> to cancel
+
+:       Command mode
+        Type a command, press <ENTER> to run against
+        all selected notifications.
+
+Press any key to exit help
+`
 )
 
 type filteredList []int
@@ -124,7 +147,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case Normal:
 			switch msg.String() {
 			case "?":
-				panic("to implement with the help bubble")
+				m.mode = Help
 
 			case "/":
 				m.mode = Search
@@ -185,6 +208,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case Result:
 			m.mode = Normal
+
+		case Help:
+			m.mode = Normal
 		}
 	}
 
@@ -194,6 +220,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	if m.mode == Result {
 		return m.result
+	}
+
+	if m.mode == Help {
+		return helpMessage
 	}
 
 	out := ""
