@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
@@ -22,6 +24,28 @@ var (
 	}
 )
 
+type keyMap struct {
+	Up      key.Binding
+	Down    key.Binding
+	Toggle  key.Binding
+	All     key.Binding
+	Search  key.Binding
+	Command key.Binding
+	Help    key.Binding
+	Quit    key.Binding
+}
+
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Help}
+}
+
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Toggle, k.All},
+		{k.Search, k.Command, k.Help, k.Quit},
+	}
+}
+
 type Mode int64
 
 const (
@@ -30,30 +54,6 @@ const (
 	Command
 	Result
 	Help
-
-	defaultMessage = "press ? for help"
-	helpMessage    = `
-<UP>
-<DOWN>  Move cursor
-
-<SPACE>
-<ENTER> Toggle notification
-
-<ESC>   Exit
-
-?       Show this help
-
-a       Select all notifications
-
-/       Search mode
-        press <ENTER> to validate <ESC> to cancel
-
-:       Command mode
-        Type a command, press <ENTER> to run against
-        all selected notifications.
-
-Press any key to exit help
-`
 )
 
 type filteredList []int
@@ -65,6 +65,8 @@ type selection struct {
 
 type model struct {
 	mode Mode
+	keys keyMap
+	help help.Model
 
 	cursor         int
 	choices        notifications.Notifications
@@ -96,6 +98,42 @@ func runRepl(cmd *cobra.Command, args []string) error {
 	}
 
 	model := model{
+		mode: Normal,
+		keys: keyMap{
+			Up: key.NewBinding(
+				key.WithKeys("up", "k"),
+				key.WithHelp("↑/k", "move up"),
+			),
+			Down: key.NewBinding(
+				key.WithKeys("down", "j"),
+				key.WithHelp("↓/j", "move down"),
+			),
+			Toggle: key.NewBinding(
+				key.WithKeys("space", "enter"),
+				key.WithHelp("space/enter", "toggle selected"),
+			),
+			All: key.NewBinding(
+				key.WithKeys("a"),
+				key.WithHelp("a", "select all"),
+			),
+			Search: key.NewBinding(
+				key.WithKeys("/"),
+				key.WithHelp("/", "search mode"),
+			),
+			Command: key.NewBinding(
+				key.WithKeys(":"),
+				key.WithHelp(":", "command mode"),
+			),
+			Help: key.NewBinding(
+				key.WithKeys("?"),
+				key.WithHelp("?", "toggle help"),
+			),
+			Quit: key.NewBinding(
+				key.WithKeys("q", "esc", "ctrl+c"),
+				key.WithHelp("q/ESC/C-c", "quit"),
+			),
+		},
+		help:        help.New(),
 		cursor:      0,
 		actors:      actors.Map(client),
 		choices:     notifications,
@@ -145,33 +183,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch m.mode {
 		case Normal:
-			switch msg.String() {
-			case "?":
+			switch {
+			case key.Matches(msg, m.keys.Help):
 				m.mode = Help
+				m.help.ShowAll = !m.help.ShowAll
 
-			case "/":
+			case key.Matches(msg, m.keys.Search):
 				m.mode = Search
 				m.filter.Focus()
 
-			case ":":
+			case key.Matches(msg, m.keys.Command):
 				m.mode = Command
 				m.command.Focus()
 
-			case "esc":
+			case key.Matches(msg, m.keys.Quit):
 				return m, tea.Quit
 
-			case "up":
+			case key.Matches(msg, m.keys.Up):
 				if m.cursor > 0 {
 					m.cursor--
 				}
-			case "down":
+
+			case key.Matches(msg, m.keys.Down):
 				if m.cursor < len(m.visibleChoices)-1 {
 					m.cursor++
 				}
 
-			case "enter", " ":
+			case key.Matches(msg, m.keys.Toggle):
 				return m, m.toggleSelect()
-			case "a":
+
+			case key.Matches(msg, m.keys.All):
 				return m, m.selectAll()
 
 			}
@@ -223,7 +264,10 @@ func (m model) View() string {
 	}
 
 	if m.mode == Help {
-		return helpMessage
+		m.help.ShowAll = true
+		return m.help.View(m.keys)
+	} else {
+		m.help.ShowAll = false
 	}
 
 	out := ""
@@ -244,7 +288,7 @@ func (m model) View() string {
 
 	switch m.mode {
 	case Normal:
-		out += defaultMessage
+		out += m.help.View(m.keys)
 	case Search:
 		out += m.filter.View()
 	case Command:
