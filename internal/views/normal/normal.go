@@ -6,13 +6,13 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/views"
 	"github.com/nobe4/gh-not/internal/views/command"
+	"github.com/nobe4/gh-not/internal/views/filter"
 )
 
 type keymap struct {
@@ -20,6 +20,7 @@ type keymap struct {
 	down    key.Binding
 	toggle  key.Binding
 	all     key.Binding
+	unall   key.Binding
 	search  key.Binding
 	command key.Binding
 	help    key.Binding
@@ -32,12 +33,10 @@ func (k keymap) ShortHelp() []key.Binding {
 
 func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.up, k.down, k.toggle, k.all},
+		{k.up, k.down, k.toggle, k.all, k.unall},
 		{k.search, k.command, k.help, k.quit},
 	}
 }
-
-type filteredList []int
 
 type SelectMsg struct {
 	id       int
@@ -51,15 +50,17 @@ type Model struct {
 
 	cursor         int
 	choices        notifications.Notifications
-	visibleChoices filteredList
+	visibleChoices []int
 
 	actors actors.ActorsMap
 
 	renderCache []string
 	selected    map[int]bool
-	filter      textinput.Model
-	command     tea.Model
-	result      string
+
+	filter  tea.Model
+	command tea.Model
+
+	result string
 }
 
 func New(client *gh.Client, notifications notifications.Notifications, renderCache string) Model {
@@ -82,6 +83,10 @@ func New(client *gh.Client, notifications notifications.Notifications, renderCac
 				key.WithKeys("a"),
 				key.WithHelp("a", "select all"),
 			),
+			unall: key.NewBinding(
+				key.WithKeys("A"),
+				key.WithHelp("A", "unselect all"),
+			),
 			search: key.NewBinding(
 				key.WithKeys("/"),
 				key.WithHelp("/", "search mode"),
@@ -96,7 +101,7 @@ func New(client *gh.Client, notifications notifications.Notifications, renderCac
 			),
 			quit: key.NewBinding(
 				key.WithKeys("q", "esc", "ctrl+c"),
-				key.WithHelp("q/ESC/C-c", "quit"),
+				key.WithHelp("q/esc/ctrl+c", "quit"),
 			),
 		},
 		help:        help.New(),
@@ -106,24 +111,14 @@ func New(client *gh.Client, notifications notifications.Notifications, renderCac
 		renderCache: strings.Split(renderCache, "\n"),
 	}
 
-	model.filter = textinput.New()
-	model.filter.Prompt = "/"
-
-	model.command = command.New(actors.Map(client), model.SelectedNotifications)
+	model.command = command.New(actors.Map(client), model.SelectedNotificationsFunc)
+	model.filter = filter.New(model.VisibleLinesFunc)
 
 	return model
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.applyFilter()
-}
-
-func (m Model) SelectedNotifications(cb func(notifications.Notification)) {
-	for i, selected := range m.selected {
-		if selected {
-			cb(m.choices[i])
-		}
-	}
+	return m.filter.Init()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -132,8 +127,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
-	case filteredList:
-		m.visibleChoices = msg
+	case filter.FilterMsg:
+		m.visibleChoices = msg.IntSlice()
 
 	case views.ResultMsg:
 		m.result = msg.ToString()
@@ -153,7 +148,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, views.ChangeMode(views.HelpMode)
 
 			case key.Matches(msg, m.Keys.search):
-				m.filter.Focus()
 				return m, views.ChangeMode(views.SearchMode)
 
 			case key.Matches(msg, m.Keys.command):
@@ -176,23 +170,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.toggleSelect()
 
 			case key.Matches(msg, m.Keys.all):
-				return m, m.selectAll()
+				return m, m.selectAll(true)
+
+			case key.Matches(msg, m.Keys.unall):
+				return m, m.selectAll(false)
 
 			}
 
 		case views.SearchMode:
-			switch msg.String() {
-			case "esc":
-				m.filter.SetValue("")
-				m.filter.Blur()
-				return m, tea.Sequence(m.applyFilter(), views.ChangeMode(views.NormalMode))
-			case "enter":
-				m.filter.Blur()
-				return m, tea.Sequence(m.applyFilter(), views.ChangeMode(views.NormalMode))
-			default:
-				m.filter, _ = m.filter.Update(msg)
-			}
-			return m, m.applyFilter()
+			m.filter, cmd = m.filter.Update(msg)
+			cmds = append(cmds, cmd)
 
 		case views.CommandMode:
 			m.command, cmd = m.command.Update(msg)
@@ -249,20 +236,17 @@ func (m Model) View() string {
 	return out
 }
 
-func (m Model) applyFilter() tea.Cmd {
-	return func() tea.Msg {
-		m.cursor = 0
-		f := m.filter.Value()
-
-		visibleChoices := filteredList{}
-
-		for i, line := range m.renderCache {
-			if f == "" || strings.Contains(line, f) {
-				visibleChoices = append(visibleChoices, i)
-			}
+func (m Model) SelectedNotificationsFunc(cb func(notifications.Notification)) {
+	for i, selected := range m.selected {
+		if selected {
+			cb(m.choices[i])
 		}
+	}
+}
 
-		return visibleChoices
+func (m Model) VisibleLinesFunc(cb func(string, int)) {
+	for i, line := range m.renderCache {
+		cb(line, i)
 	}
 }
 
@@ -277,13 +261,14 @@ func (m Model) toggleSelect() tea.Cmd {
 		}
 	}
 }
-func (m Model) selectAll() tea.Cmd {
+func (m Model) selectAll(selected bool) tea.Cmd {
 	cmds := tea.BatchMsg{}
 
 	for _, id := range m.visibleChoices {
-		cmds = append(cmds,
+		cmds = append(
+			cmds,
 			func() tea.Msg {
-				return SelectMsg{id: id, selected: true}
+				return SelectMsg{id: id, selected: selected}
 			},
 		)
 	}
