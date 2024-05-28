@@ -11,13 +11,13 @@ import (
 	"github.com/nobe4/gh-not/internal/views"
 )
 
-type Keymap struct {
+type keymap struct {
 	quit    key.Binding
 	confirm key.Binding
 }
 
 type Model struct {
-	keys                  Keymap
+	keys                  keymap
 	input                 textinput.Model
 	actors                actors.ActorsMap
 	selectedNotifications func(func(notifications.Notification))
@@ -25,7 +25,7 @@ type Model struct {
 
 func New(actors actors.ActorsMap, selectedNotifications func(func(notifications.Notification))) Model {
 	model := Model{
-		keys: Keymap{
+		keys: keymap{
 			quit: key.NewBinding(
 				key.WithKeys("esc"),
 				key.WithHelp("ESC", "quit"),

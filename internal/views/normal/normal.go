@@ -15,25 +15,25 @@ import (
 	"github.com/nobe4/gh-not/internal/views/command"
 )
 
-type Keymap struct {
-	Up      key.Binding
-	Down    key.Binding
-	Toggle  key.Binding
-	All     key.Binding
-	Search  key.Binding
-	Command key.Binding
-	Help    key.Binding
-	Quit    key.Binding
+type keymap struct {
+	up      key.Binding
+	down    key.Binding
+	toggle  key.Binding
+	all     key.Binding
+	search  key.Binding
+	command key.Binding
+	help    key.Binding
+	quit    key.Binding
 }
 
-func (k Keymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Help}
+func (k keymap) ShortHelp() []key.Binding {
+	return []key.Binding{k.help}
 }
 
-func (k Keymap) FullHelp() [][]key.Binding {
+func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Toggle, k.All},
-		{k.Search, k.Command, k.Help, k.Quit},
+		{k.up, k.down, k.toggle, k.all},
+		{k.search, k.command, k.help, k.quit},
 	}
 }
 
@@ -46,7 +46,7 @@ type SelectMsg struct {
 
 type Model struct {
 	Mode views.Mode
-	Keys Keymap
+	Keys keymap
 	help help.Model
 
 	cursor         int
@@ -65,36 +65,36 @@ type Model struct {
 func New(client *gh.Client, notifications notifications.Notifications, renderCache string) Model {
 	model := Model{
 		Mode: views.NormalMode,
-		Keys: Keymap{
-			Up: key.NewBinding(
+		Keys: keymap{
+			up: key.NewBinding(
 				key.WithKeys("up", "k"),
 				key.WithHelp("↑/k", "move up"),
 			),
-			Down: key.NewBinding(
+			down: key.NewBinding(
 				key.WithKeys("down", "j"),
 				key.WithHelp("↓/j", "move down"),
 			),
-			Toggle: key.NewBinding(
+			toggle: key.NewBinding(
 				key.WithKeys(" ", "enter"),
 				key.WithHelp("space/enter", "toggle selected"),
 			),
-			All: key.NewBinding(
+			all: key.NewBinding(
 				key.WithKeys("a"),
 				key.WithHelp("a", "select all"),
 			),
-			Search: key.NewBinding(
+			search: key.NewBinding(
 				key.WithKeys("/"),
 				key.WithHelp("/", "search mode"),
 			),
-			Command: key.NewBinding(
+			command: key.NewBinding(
 				key.WithKeys(":"),
 				key.WithHelp(":", "command mode"),
 			),
-			Help: key.NewBinding(
+			help: key.NewBinding(
 				key.WithKeys("?"),
 				key.WithHelp("?", "toggle help"),
 			),
-			Quit: key.NewBinding(
+			quit: key.NewBinding(
 				key.WithKeys("q", "esc", "ctrl+c"),
 				key.WithHelp("q/ESC/C-c", "quit"),
 			),
@@ -149,33 +149,33 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.Mode {
 		case views.NormalMode:
 			switch {
-			case key.Matches(msg, m.Keys.Help):
+			case key.Matches(msg, m.Keys.help):
 				return m, views.ChangeMode(views.HelpMode)
 
-			case key.Matches(msg, m.Keys.Search):
+			case key.Matches(msg, m.Keys.search):
 				m.filter.Focus()
 				return m, views.ChangeMode(views.SearchMode)
 
-			case key.Matches(msg, m.Keys.Command):
+			case key.Matches(msg, m.Keys.command):
 				return m, views.ChangeMode(views.CommandMode)
 
-			case key.Matches(msg, m.Keys.Quit):
+			case key.Matches(msg, m.Keys.quit):
 				return m, tea.Quit
 
-			case key.Matches(msg, m.Keys.Up):
+			case key.Matches(msg, m.Keys.up):
 				if m.cursor > 0 {
 					m.cursor--
 				}
 
-			case key.Matches(msg, m.Keys.Down):
+			case key.Matches(msg, m.Keys.down):
 				if m.cursor < len(m.visibleChoices)-1 {
 					m.cursor++
 				}
 
-			case key.Matches(msg, m.Keys.Toggle):
+			case key.Matches(msg, m.Keys.toggle):
 				return m, m.toggleSelect()
 
-			case key.Matches(msg, m.Keys.All):
+			case key.Matches(msg, m.Keys.all):
 				return m, m.selectAll()
 
 			}
