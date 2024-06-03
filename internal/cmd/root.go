@@ -6,7 +6,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/cli/go-gh/v2/pkg/api"
+	"github.com/nobe4/gh-not/internal/api"
+	"github.com/nobe4/gh-not/internal/api/file"
 	cachePkg "github.com/nobe4/gh-not/internal/cache"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
@@ -18,10 +19,11 @@ var (
 	commit  = "123abc"
 	date    = "now"
 
-	verbosityFlag  int
-	configPathFlag string
-	refreshFlag    bool
-	noRefreshFlag  bool
+	verbosityFlag        int
+	configPathFlag       string
+	notificationDumpPath string
+	refreshFlag          bool
+	noRefreshFlag        bool
 
 	config *configPkg.Config
 	cache  *cachePkg.FileCache
@@ -34,6 +36,7 @@ var (
 		Example: `
   gh-not --config list
   gh-not --no-refresh list
+  gh-not --from-file notifications.json list
   gh-not sync --refresh --verbosity 4
 `,
 		PersistentPreRunE: setupGlobals,
@@ -51,6 +54,8 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
 
+	rootCmd.PersistentFlags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
+
 	rootCmd.PersistentFlags().BoolVarP(&refreshFlag, "refresh", "r", false, "Force a refresh")
 	rootCmd.PersistentFlags().BoolVarP(&noRefreshFlag, "no-refresh", "R", false, "Prevent a refresh")
 	rootCmd.MarkFlagsMutuallyExclusive("refresh", "no-refresh")
@@ -67,10 +72,16 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 
 	cache = cachePkg.NewFileCache(config.Cache.TTLInHours, config.Cache.Path)
 
-	apiCaller, err := api.DefaultRESTClient()
-	if err != nil {
-		slog.Error("Failed to create an API REST client", "err", err)
-		return err
+	var apiCaller api.Caller
+
+	if notificationDumpPath != "" {
+        apiCaller = file.New(notificationDumpPath)
+	} else {
+		apiCaller, err = api.NewGH()
+		if err != nil {
+			slog.Error("Failed to create an API REST client", "err", err)
+			return err
+		}
 	}
 
 	client = gh.NewClient(apiCaller, cache, refreshFlag, noRefreshFlag)
