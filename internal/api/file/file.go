@@ -1,7 +1,7 @@
 package file
 
 import (
-	"bytes"
+	"bufio"
 	"errors"
 	"io"
 	"net/http"
@@ -31,12 +31,12 @@ func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, err
 }
 
 func (a *API) readFile() (*http.Response, error) {
-	content, err := os.ReadFile(a.path)
+	f, err := os.Open(a.path)
 	if err != nil {
 		return nil, err
 	}
 
 	return &http.Response{
-		Body: io.NopCloser(bytes.NewBuffer(content)),
+		Body: io.NopCloser(bufio.NewReader(f)),
 	}, nil
 }
