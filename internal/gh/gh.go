@@ -10,29 +10,25 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/cli/go-gh/v2/pkg/api"
+	ghapi "github.com/cli/go-gh/v2/pkg/api"
+	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 const (
-	defaultEndpoint = "https://api.github.com/notifications"
+	DefaultEndpoint = "https://api.github.com/notifications"
 	retryCount      = 5
 )
 
-type APICaller interface {
-	Do(string, string, io.Reader, interface{}) error
-	Request(string, string, io.Reader) (*http.Response, error)
-}
-
 type Client struct {
-	API       APICaller
+	API       api.Caller
 	cache     cache.ExpiringReadWriter
 	refresh   bool
 	noRefresh bool
 }
 
-func NewClient(api APICaller, cache cache.ExpiringReadWriter, refresh, noRefresh bool) *Client {
+func NewClient(api api.Caller, cache cache.ExpiringReadWriter, refresh, noRefresh bool) *Client {
 	return &Client{
 		API:       api,
 		cache:     cache,
@@ -56,7 +52,7 @@ func (c *Client) loadCache() (notifications.Notifications, bool, error) {
 }
 
 func isRetryable(err error) bool {
-	var httpError *api.HTTPError
+	var httpError *ghapi.HTTPError
 
 	if errors.As(err, &httpError) {
 		switch httpError.StatusCode {
@@ -100,7 +96,7 @@ func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
 		return ""
 	}
 
-	endpoint := defaultEndpoint
+	endpoint := DefaultEndpoint
 	for endpoint != "" {
 		slog.Info("API REST request", "endpoint", endpoint)
 
