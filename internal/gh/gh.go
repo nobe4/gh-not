@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultEndpoint = "https://api.github.com/notifications"
+	DefaultEndpoint = "https://api.github.com/notifications"
 	retryCount      = 5
 )
 
@@ -96,7 +96,7 @@ func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
 		return ""
 	}
 
-	endpoint := defaultEndpoint
+	endpoint := DefaultEndpoint
 	for endpoint != "" {
 		slog.Info("API REST request", "endpoint", endpoint)
 

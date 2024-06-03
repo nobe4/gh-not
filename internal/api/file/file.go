@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/nobe4/gh-not/internal/gh"
 )
 
 type API struct {
@@ -17,11 +19,11 @@ func New(path string) *API {
 }
 
 func (a *API) Do(verb string, url string, _ io.Reader, _ interface{}) error {
-    return nil
+	return nil
 }
 
 func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, error) {
-	if verb == "GET" && url == "https://api.github.com/notifications" {
+	if verb == "GET" && url == gh.DefaultEndpoint {
 		return a.readFile()
 	}
 
@@ -30,11 +32,11 @@ func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, err
 
 func (a *API) readFile() (*http.Response, error) {
 	content, err := os.ReadFile(a.path)
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
-    return &http.Response{
-        Body: io.NopCloser(bytes.NewBuffer(content)),
-    }, nil
+	return &http.Response{
+		Body: io.NopCloser(bytes.NewBuffer(content)),
+	}, nil
 }
