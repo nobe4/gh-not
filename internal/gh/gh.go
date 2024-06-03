@@ -21,6 +21,10 @@ const (
 	retryCount      = 5
 )
 
+type NotificationCaller interface {
+	List() (notifications.Notifications, error)
+}
+
 type Client struct {
 	API       api.Caller
 	cache     cache.ExpiringReadWriter

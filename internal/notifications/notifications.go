@@ -182,17 +182,3 @@ func (n Notifications) ToInterface() (interface{}, error) {
 
 	return i, nil
 }
-
-func FromInterface(i interface{}) (Notifications, error) {
-	marshalled, err := json.Marshal(i)
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshall interface: %w", err)
-	}
-
-	notifications := Notifications{}
-	if err := json.Unmarshal(marshalled, &notifications); err != nil {
-		return nil, fmt.Errorf("cannot unmarshall into notification: %w", err)
-	}
-
-	return notifications, nil
-}
