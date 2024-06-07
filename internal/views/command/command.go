@@ -20,10 +20,10 @@ type Model struct {
 	keys                  keymap
 	input                 textinput.Model
 	actors                actors.ActorsMap
-	selectedNotifications func(func(notifications.Notification))
+	selectedNotifications func(func(*notifications.Notification))
 }
 
-func New(actors actors.ActorsMap, selectedNotifications func(func(notifications.Notification))) Model {
+func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications.Notification))) Model {
 	model := Model{
 		keys: keymap{
 			quit: key.NewBinding(
@@ -102,9 +102,9 @@ func (m Model) runCommand(command string) tea.Cmd {
 
 		hasSelected := false
 
-		m.selectedNotifications(func(n notifications.Notification) {
+		m.selectedNotifications(func(n *notifications.Notification) {
 			hasSelected = true
-			n, outn, err := actor.Run(n)
+			outn, err := actor.Run(n)
 			if err != nil {
 				result.Err = err
 			} else {

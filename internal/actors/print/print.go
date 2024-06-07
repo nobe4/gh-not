@@ -6,10 +6,10 @@ import (
 
 type Actor struct{}
 
-func (_ *Actor) Run(n notifications.Notification) (notifications.Notification, string, error) {
+func (_ *Actor) Run(n *notifications.Notification) (string, error) {
 	if n.Meta.Hidden {
-		return n, "", nil
+		return "", nil
 	}
 
-	return n, n.ToString(), nil
+	return n.ToString(), nil
 }

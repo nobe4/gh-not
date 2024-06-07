@@ -15,15 +15,16 @@ type Actor struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n notifications.Notification) (notifications.Notification, string, error) {
+func (a *Actor) Run(n *notifications.Notification) (string, error) {
 	slog.Debug("marking notification as done", "notification", n.ToString())
-
-	emptyNotification := notifications.Notification{}
 
 	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
 	if err != nil {
-		return emptyNotification, "", err
+		return "", err
 	}
 
-	return emptyNotification, colors.Red("DONE ") + n.ToString(), nil
+	out := colors.Red("DONE ") + n.ToString()
+	n = nil
+
+	return out, nil
 }

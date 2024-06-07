@@ -17,7 +17,7 @@ import (
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
-type Notifications []Notification
+type Notifications []*Notification
 
 type Notification struct {
 	// Standard API fields
@@ -138,15 +138,16 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
+// TODO: rename to `Compact`
 func (n Notifications) DeleteNil() Notifications {
-	return slices.DeleteFunc(n, func(n Notification) bool {
+	return slices.DeleteFunc(n, func(n *Notification) bool {
 		return n.Id == ""
 	})
 }
 
 func (n Notifications) Uniq() Notifications {
 	seenIds := map[string]bool{}
-	return slices.DeleteFunc(n, func(n Notification) bool {
+	return slices.DeleteFunc(n, func(n *Notification) bool {
 		if _, ok := seenIds[n.Id]; ok {
 			return true
 		}

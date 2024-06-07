@@ -6,6 +6,6 @@ import (
 
 type Actor struct{}
 
-func (_ *Actor) Run(n notifications.Notification) (notifications.Notification, string, error) {
-	return n, "DEBUG" + n.ToString(), nil
+func (_ *Actor) Run(n *notifications.Notification) (string, error) {
+	return "DEBUG" + n.ToString(), nil
 }

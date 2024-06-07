@@ -83,8 +83,8 @@ func (c *Client) retryRequest(verb, endpoint string, body io.Reader) (*http.Resp
 }
 
 // inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
-func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
-	var list []notifications.Notification
+func (c *Client) paginateNotifications() (notifications.Notifications, error) {
+	var list notifications.Notifications
 
 	var linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 	findNextPage := func(response *http.Response) string {
@@ -105,7 +105,7 @@ func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
 			return nil, err
 		}
 
-		pageList := []notifications.Notification{}
+		pageList := notifications.Notifications{}
 		decoder := json.NewDecoder(response.Body)
 		err = decoder.Decode(&pageList)
 		if err != nil {
@@ -124,19 +124,18 @@ func (c *Client) paginateNotifications() ([]notifications.Notification, error) {
 	return list, nil
 }
 
-func (c *Client) pullNotificationFromApi() ([]notifications.Notification, error) {
+func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) {
 	list, err := c.paginateNotifications()
 	if err != nil {
 		return nil, err
 	}
 
 	for i, n := range list {
-		enriched, err := c.enrichNotification(n)
-		if err != nil {
+		if err := c.enrichNotification(n); err != nil {
 			return nil, err
 		}
 
-		list[i] = enriched
+		list[i] = n
 	}
 
 	return list, nil

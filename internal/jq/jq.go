@@ -7,6 +7,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+// TODO: refactor this as a callback to be called on n.Filter(flt) and have
+// n.Filter call .Compact
 // Filter applies a `.[] | select(filter)` on the notifications.
 func Filter(filter string, n notifications.Notifications) (notifications.Notifications, error) {
 	if filter == "" {

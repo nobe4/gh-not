@@ -66,7 +66,7 @@ func (c *Config) Apply(n notifications.Notifications, actors map[string]actors.A
 				if noop {
 					fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
 				} else {
-					notification, out, err = actor.Run(notification)
+					out, err = actor.Run(notification)
 					if err != nil {
 						slog.Error("action failed", "action", rule.Action, "err", err)
 					}
