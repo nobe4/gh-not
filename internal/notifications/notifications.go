@@ -141,7 +141,7 @@ func (n Notifications) IDList() []string {
 // TODO: rename to `Compact`
 func (n Notifications) DeleteNil() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
-		return n.Id == ""
+		return n == nil
 	})
 }
 
