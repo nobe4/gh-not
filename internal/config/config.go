@@ -78,7 +78,7 @@ func (c *Config) Apply(n notifications.Notifications, actors map[string]actors.A
 				slog.Error("unknown action", "action", rule.Action)
 			}
 
-            // FIXME: is this still needed?
+			// FIXME: is this still needed?
 			n[i] = notification
 		}
 	}
