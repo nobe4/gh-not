@@ -14,17 +14,17 @@ type Actor struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n notifications.Notification) (notifications.Notification, string, error) {
+func (a *Actor) Run(n *notifications.Notification) (string, error) {
 	err := a.Client.API.Do(http.MethodPatch, n.URL, nil, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
 	// to catch this case.
 	// ref: https://github.com/cli/go-gh/issues/161
 	if err != nil && err.Error() != "unexpected end of JSON input" {
-		return n, "", err
+		return "", err
 	}
 
 	n.Unread = false
 
-	return n, colors.Yellow("READ") + n.ToString(), nil
+	return colors.Yellow("READ") + n.ToString(), nil
 }

@@ -75,7 +75,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 	var apiCaller api.Caller
 
 	if notificationDumpPath != "" {
-        apiCaller = file.New(notificationDumpPath)
+		apiCaller = file.New(notificationDumpPath)
 	} else {
 		apiCaller, err = api.NewGH()
 		if err != nil {
