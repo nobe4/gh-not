@@ -2,9 +2,9 @@ package api
 
 import (
 	"io"
-    "net/http"
+	"net/http"
 
-    ghapi "github.com/cli/go-gh/v2/pkg/api"
+	ghapi "github.com/cli/go-gh/v2/pkg/api"
 )
 
 type Caller interface {

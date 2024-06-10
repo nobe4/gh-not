@@ -236,7 +236,7 @@ func (m Model) View() string {
 	return out
 }
 
-func (m Model) SelectedNotificationsFunc(cb func(notifications.Notification)) {
+func (m Model) SelectedNotificationsFunc(cb func(*notifications.Notification)) {
 	for i, selected := range m.selected {
 		if selected {
 			cb(m.choices[i])
