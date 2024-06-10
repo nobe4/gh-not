@@ -62,3 +62,24 @@ func TestUniq(t *testing.T) {
 		t.Fatalf("expected %+v but got %+v", n2, got[2])
 	}
 }
+
+func TestFilterFromIds(t *testing.T) {
+	n0 := &Notification{Id: "0"}
+	n1 := &Notification{Id: "1"}
+	n2 := &Notification{Id: "2"}
+	n := Notifications{n0, n1, n2}
+
+	got := n.FilterFromIds([]string{"0", "2"})
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 elements but got %d\n%+v", len(got), got)
+	}
+
+	if got[0] != n0 {
+		t.Fatalf("expected %+v but got %+v", n0, got[0])
+	}
+
+	if got[1] != n2 {
+		t.Fatalf("expected %+v but got %+v", n2, got[1])
+	}
+}
