@@ -138,8 +138,7 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
-// TODO: rename to `Compact`
-func (n Notifications) DeleteNil() Notifications {
+func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
 		return n == nil
 	})
@@ -170,7 +169,7 @@ func (n Notifications) FilterFromIds(ids []string) Notifications {
 	return newList
 }
 
-func (n Notifications) ToInterface() (interface{}, error) {
+func (n Notifications) Marshall() (interface{}, error) {
 	marshalled, err := json.Marshal(n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal notifications: %w", err)
@@ -182,18 +181,4 @@ func (n Notifications) ToInterface() (interface{}, error) {
 	}
 
 	return i, nil
-}
-
-func FromInterface(i interface{}) (Notifications, error) {
-	marshalled, err := json.Marshal(i)
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshall interface: %w", err)
-	}
-
-	notifications := Notifications{}
-	if err := json.Unmarshal(marshalled, &notifications); err != nil {
-		return nil, fmt.Errorf("cannot unmarshall into notification: %w", err)
-	}
-
-	return notifications, nil
 }
