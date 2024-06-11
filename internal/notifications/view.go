@@ -11,7 +11,12 @@ import (
 )
 
 func (n Notification) ToString() string {
-	return fmt.Sprintf("%s %s %s by %s: '%s' ", n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
+	return fmt.Sprintf("%s %s %s %s by %s: '%s' ", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
+}
+
+var prettyRead = map[bool]string{
+	false: colors.Red("RD"),
+	true:  colors.Green("UR"),
 }
 
 var prettyTypes = map[string]string{
@@ -23,6 +28,14 @@ var prettyState = map[string]string{
 	"open":   colors.Green("OP"),
 	"closed": colors.Red("CL"),
 	"merged": colors.Magenta("MG"),
+}
+
+func (n Notification) prettyRead() string {
+	if p, ok := prettyRead[n.Unread]; ok {
+		return p
+	}
+
+	return colors.Yellow("R?")
 }
 
 func (n Notification) prettyType() string {
@@ -61,6 +74,7 @@ func (n Notifications) ToTable() (string, error) {
 	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
 
 	for _, n := range n {
+		printer.AddField(n.prettyRead())
 		printer.AddField(n.prettyType())
 		printer.AddField(n.prettyState())
 		printer.AddField(n.Repository.FullName)
