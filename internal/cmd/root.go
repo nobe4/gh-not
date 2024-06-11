@@ -74,6 +74,8 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	slog.Debug("config", "config", config)
+
 	var caller api.Caller
 	if notificationDumpPath != "" {
 		caller = file.New(notificationDumpPath)

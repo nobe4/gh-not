@@ -46,10 +46,6 @@ api`-equivalent to modify the notifications on GitHub's side.
 
 # Configure
 
-> [!NOTE]
-> The tool requires a config file to exist for it to run, that's unfortunate and
-> will be fixed soon.
-
 The configuration file contains the rules to apply to the notifications. Each
 rule contains three fields:
 
