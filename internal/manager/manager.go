@@ -12,8 +12,10 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+type RefreshStrategy int
+
 const (
-	DefaultRefresh = iota
+	DefaultRefresh RefreshStrategy = iota
 	ForceRefresh
 	ForceNoRefresh
 )
@@ -37,7 +39,7 @@ func New(config *config.Config, caller api.Caller) *Manager {
 	return m
 }
 
-func (m *Manager) Load(refresh int) error {
+func (m *Manager) Load(refresh RefreshStrategy) error {
 	allNotifications := notifications.Notifications{}
 
 	cachedNotifications, expired, err := m.loadCache()
@@ -67,7 +69,7 @@ func (m *Manager) Load(refresh int) error {
 	return nil
 }
 
-func shouldRefresh(expired bool, refresh int) bool {
+func shouldRefresh(expired bool, refresh RefreshStrategy) bool {
 	if !expired && refresh == ForceRefresh {
 		slog.Info("forcing a refresh")
 		return true
