@@ -53,7 +53,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		out = notifications.ToString()
 	}
 
-	out += fmt.Sprintf("Found %d notifications", len(notifications))
+	out += fmt.Sprintf("\nFound %d notifications", len(notifications))
 
 	fmt.Println(out)
 

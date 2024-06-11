@@ -1,6 +1,8 @@
 package done
 
 import (
+	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -15,17 +17,17 @@ type Actor struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n *notifications.Notification) (string, error) {
+func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 	slog.Debug("marking notification as done", "notification", n.ToString())
 
 	n.Meta.ToDelete = true
 
 	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	out := colors.Red("DONE ") + n.ToString()
+	fmt.Fprint(w, colors.Red("DONE")+n.ToString())
 
-	return out, nil
+	return nil
 }

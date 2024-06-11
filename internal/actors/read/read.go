@@ -1,6 +1,8 @@
 package read
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/nobe4/gh-not/internal/colors"
@@ -14,17 +16,19 @@ type Actor struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n *notifications.Notification) (string, error) {
+func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 	err := a.Client.API.Do(http.MethodPatch, n.URL, nil, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
 	// to catch this case.
 	// ref: https://github.com/cli/go-gh/issues/161
 	if err != nil && err.Error() != "unexpected end of JSON input" {
-		return "", err
+		return err
 	}
 
 	n.Unread = false
 
-	return colors.Yellow("READ") + n.ToString(), nil
+	fmt.Fprint(w, colors.Yellow("READ")+n.ToString())
+
+	return nil
 }
