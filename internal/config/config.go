@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 	"path"
 
@@ -29,6 +30,11 @@ func New(path string) (*Config, error) {
 
 	content, err := os.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			slog.Warn("config file not found, using default configuration")
+			return config, nil
+		}
+
 		return nil, err
 	}
 
