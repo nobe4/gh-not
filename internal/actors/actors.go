@@ -1,6 +1,8 @@
 package actors
 
 import (
+	"io"
+
 	"github.com/nobe4/gh-not/internal/actors/debug"
 	"github.com/nobe4/gh-not/internal/actors/done"
 	"github.com/nobe4/gh-not/internal/actors/hide"
@@ -25,5 +27,5 @@ func Map(client *gh.Client) ActorsMap {
 }
 
 type Actor interface {
-	Run(*notifications.Notification) (string, error)
+	Run(*notifications.Notification, io.Writer) (error)
 }

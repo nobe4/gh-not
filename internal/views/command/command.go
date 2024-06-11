@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -104,12 +105,13 @@ func (m Model) runCommand(command string) tea.Cmd {
 
 		m.selectedNotifications(func(n *notifications.Notification) {
 			hasSelected = true
-			outn, err := actor.Run(n)
+			buff := &strings.Builder{}
+
+			err := actor.Run(n, buff)
 			if err != nil {
 				result.Err = err
-			} else {
-				result.Out += outn + "\n"
 			}
+			result.Out = buff.String()
 		})
 
 		if !hasSelected {

@@ -3,6 +3,7 @@ package manager
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/api"
@@ -104,20 +105,14 @@ func (m *Manager) Apply(noop bool) error {
 
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
-		var out string
-
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
 			if noop {
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
 				continue
 			}
 
-			out, err = actor.Run(notification)
-			if err != nil {
+			if err := actor.Run(notification, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
-			}
-			if out != "" {
-				fmt.Println(out)
 			}
 		}
 	}
