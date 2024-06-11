@@ -8,13 +8,14 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/views"
 	"github.com/nobe4/gh-not/internal/views/command"
 	"github.com/nobe4/gh-not/internal/views/filter"
 )
 
-type keymap struct {
+type Keymap struct {
 	up      key.Binding
 	down    key.Binding
 	toggle  key.Binding
@@ -26,11 +27,11 @@ type keymap struct {
 	quit    key.Binding
 }
 
-func (k keymap) ShortHelp() []key.Binding {
+func (k Keymap) ShortHelp() []key.Binding {
 	return []key.Binding{k.help}
 }
 
-func (k keymap) FullHelp() [][]key.Binding {
+func (k Keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.up, k.down, k.toggle, k.all, k.unall},
 		{k.search, k.command, k.help, k.quit},
@@ -44,7 +45,7 @@ type SelectMsg struct {
 
 type Model struct {
 	Mode views.Mode
-	Keys keymap
+	Keys Keymap
 	help help.Model
 
 	cursor         int
@@ -60,18 +61,12 @@ type Model struct {
 	result string
 }
 
-func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string) Model {
+func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap) Model {
 	model := Model{
 		Mode: views.NormalMode,
-		Keys: keymap{
-			up: key.NewBinding(
-				key.WithKeys("up", "k"),
-				key.WithHelp("↑/k", "move up"),
-			),
-			down: key.NewBinding(
-				key.WithKeys("down", "j"),
-				key.WithHelp("↓/j", "move down"),
-			),
+		Keys: Keymap{
+			up:   keymap.Binding("normal", "up"),
+			down: keymap.Binding("normal", "down"),
 			toggle: key.NewBinding(
 				key.WithKeys(" ", "enter"),
 				key.WithHelp("space/enter", "toggle selected"),
