@@ -61,6 +61,11 @@ func init() {
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
+	if err := initLogger(); err != nil {
+		slog.Error("Failed to init the logger", "err", err)
+		return err
+	}
+
 	var err error
 
 	config, err = configPkg.New(configPathFlag)
@@ -83,11 +88,6 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 	manager = managerPkg.New(config, caller)
 	if err := manager.Load(refreshFlag, noRefreshFlag); err != nil {
 		slog.Error("Failed to init the manager", "err", err)
-		return err
-	}
-
-	if err := initLogger(); err != nil {
-		slog.Error("Failed to init the logger", "err", err)
 		return err
 	}
 
