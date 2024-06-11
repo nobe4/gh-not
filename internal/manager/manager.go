@@ -17,7 +17,7 @@ type Manager struct {
 	cache         cache.ExpiringReadWriter
 	config        *config.Config
 	client        *gh.Client
-	actors        actors.ActorsMap
+	Actors        actors.ActorsMap
 }
 
 func New(config *config.Config, caller api.Caller) *Manager {
@@ -26,7 +26,7 @@ func New(config *config.Config, caller api.Caller) *Manager {
 	m.config = config
 	m.cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
 	m.client = gh.NewClient(caller, m.cache)
-	m.actors = actors.Map(m.client)
+	m.Actors = actors.Map(m.client)
 
 	return m
 }
@@ -72,7 +72,7 @@ func (m *Manager) Load(refresh, noRefresh bool) error {
 }
 
 func (m *Manager) Save() error {
-	return m.cache.Write(m.Notifications)
+	return m.cache.Write(m.Notifications.Compact())
 }
 
 func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
@@ -91,7 +91,7 @@ func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
 
 func (m *Manager) Apply(noop bool) error {
 	for _, rule := range m.config.Rules {
-		actor, ok := m.actors[rule.Action]
+		actor, ok := m.Actors[rule.Action]
 		if !ok {
 			slog.Error("unknown action", "action", rule.Action)
 			continue
