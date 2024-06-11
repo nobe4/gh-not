@@ -25,12 +25,17 @@
     go build ./cmd/gh-not
     ```
 
-# Run
+# Getting started
+
+Run the following commands to get started and see the available commands and
+options:
 
 ```shell
 gh-not --help
+gh-not config --init
 gh-not sync
 gh-not list --filter '.author.login | contains("4")'
+gh-not repl
 ...
 ```
 
@@ -82,7 +87,7 @@ rule contains three fields:
     jq '.[] | select((.author.login == "dependabot[bot]") or (.author.login == "nobe4"))' | jq '.[] | select(.repository.full_name == "nobe4/gh-not")'
     ```
 
-    See more at [`config.sample.yaml`](./config.sample.yaml).
+    See more at [`config.go`](./internal/config/config.go).
 
 # Automatic fetching
 

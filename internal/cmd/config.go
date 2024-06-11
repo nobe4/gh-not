@@ -66,6 +66,8 @@ func initConfig() error {
 		return err
 	}
 
+	fmt.Printf("Created config file: %s\n", configPathFlag)
+
 	return nil
 }
 
