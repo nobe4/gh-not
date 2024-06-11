@@ -111,7 +111,9 @@ func (m Model) runCommand(command string) tea.Cmd {
 			if err != nil {
 				result.Err = err
 			}
-			result.Out = buff.String()
+			fmt.Fprintln(buff, "")
+
+			result.Out += buff.String()
 		})
 
 		if !hasSelected {

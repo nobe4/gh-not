@@ -1,6 +1,7 @@
 package done
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -26,7 +27,7 @@ func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 		return err
 	}
 
-	w.Write([]byte(colors.Red("DONE ") + n.ToString()))
+	fmt.Fprint(w, colors.Red("DONE")+n.ToString())
 
 	return nil
 }

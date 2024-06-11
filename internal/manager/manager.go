@@ -114,6 +114,7 @@ func (m *Manager) Apply(noop bool) error {
 			if err := actor.Run(notification, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
 			}
+			fmt.Fprintln(os.Stdout, "")
 		}
 	}
 

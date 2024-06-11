@@ -1,6 +1,7 @@
 package read
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 
@@ -27,7 +28,7 @@ func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 
 	n.Unread = false
 
-	w.Write([]byte(colors.Yellow("READ") + n.ToString()))
+	fmt.Fprint(w, colors.Yellow("READ")+n.ToString())
 
 	return nil
 }
