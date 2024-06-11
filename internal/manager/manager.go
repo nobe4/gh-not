@@ -12,6 +12,14 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+type RefreshStrategy int
+
+const (
+	DefaultRefresh RefreshStrategy = iota
+	ForceRefresh
+	ForceNoRefresh
+)
+
 type Manager struct {
 	Notifications notifications.Notifications
 	cache         cache.ExpiringReadWriter
@@ -31,27 +39,17 @@ func New(config *config.Config, caller api.Caller) *Manager {
 	return m
 }
 
-func (m *Manager) Load(refresh, noRefresh bool) error {
+func (m *Manager) Load(refresh RefreshStrategy) error {
 	allNotifications := notifications.Notifications{}
 
-	cachedNotifications, refreshCache, err := m.loadCache()
+	cachedNotifications, expired, err := m.loadCache()
 	if err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
 		allNotifications = cachedNotifications
 	}
 
-	if !refreshCache && refresh {
-		slog.Info("forcing a refresh")
-		refresh = true
-	}
-
-	if refreshCache && noRefresh {
-		slog.Info("preventing a refresh")
-		refresh = false
-	}
-
-	if refresh {
+	if shouldRefresh(expired, refresh) {
 		fmt.Printf("Refreshing the cache...\n")
 
 		pulledNotifications, err := m.client.Notifications()
@@ -69,6 +67,20 @@ func (m *Manager) Load(refresh, noRefresh bool) error {
 	m.Notifications = allNotifications.Uniq()
 
 	return nil
+}
+
+func shouldRefresh(expired bool, refresh RefreshStrategy) bool {
+	if !expired && refresh == ForceRefresh {
+		slog.Info("forcing a refresh")
+		return true
+	}
+
+	if expired && refresh == ForceNoRefresh {
+		slog.Info("preventing a refresh")
+		return false
+	}
+
+	return expired
 }
 
 func (m *Manager) Save() error {

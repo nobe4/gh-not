@@ -87,8 +87,15 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	refresh := managerPkg.DefaultRefresh
+	if refreshFlag {
+		refresh = managerPkg.ForceRefresh
+	} else if noRefreshFlag {
+		refresh = managerPkg.ForceNoRefresh
+	}
+
 	manager = managerPkg.New(config, caller)
-	if err := manager.Load(refreshFlag, noRefreshFlag); err != nil {
+	if err := manager.Load(refresh); err != nil {
 		slog.Error("Failed to init the manager", "err", err)
 		return err
 	}
