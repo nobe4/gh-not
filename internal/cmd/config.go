@@ -21,7 +21,6 @@ func init() {
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
-
 	marshalled, err := yaml.Marshal(config)
 	if err != nil {
 		slog.Error("Failed to marshall config", "err", err)

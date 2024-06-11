@@ -8,9 +8,7 @@ import (
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
-	cachePkg "github.com/nobe4/gh-not/internal/cache"
 	configPkg "github.com/nobe4/gh-not/internal/config"
-	"github.com/nobe4/gh-not/internal/gh"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
 )
@@ -27,8 +25,6 @@ var (
 	noRefreshFlag        bool
 
 	config  *configPkg.Config
-	cache   *cachePkg.FileCache
-	client  *gh.Client
 	manager *managerPkg.Manager
 
 	rootCmd = &cobra.Command{

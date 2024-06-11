@@ -31,7 +31,8 @@ type Notification struct {
 }
 
 type Meta struct {
-	Hidden bool `json:"hidden"`
+	Hidden   bool `json:"hidden"`
+	ToDelete bool `json:"to_delete"`
 }
 
 type Subject struct {
@@ -68,7 +69,7 @@ func (n Notifications) IDList() []string {
 
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
-		return n == nil
+		return n == nil || n.Meta.ToDelete
 	})
 }
 
