@@ -6,6 +6,7 @@ import (
 	"github.com/nobe4/gh-not/internal/actors/debug"
 	"github.com/nobe4/gh-not/internal/actors/done"
 	"github.com/nobe4/gh-not/internal/actors/hide"
+	"github.com/nobe4/gh-not/internal/actors/open"
 	"github.com/nobe4/gh-not/internal/actors/pass"
 	"github.com/nobe4/gh-not/internal/actors/print"
 	"github.com/nobe4/gh-not/internal/actors/read"
@@ -23,9 +24,10 @@ func Map(client *gh.Client) ActorsMap {
 		"hide":  &hide.Actor{},
 		"read":  &read.Actor{Client: client},
 		"done":  &done.Actor{Client: client},
+		"open":  &open.Actor{Client: client},
 	}
 }
 
 type Actor interface {
-	Run(*notifications.Notification, io.Writer) (error)
+	Run(*notifications.Notification, io.Writer) error
 }
