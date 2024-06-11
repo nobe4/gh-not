@@ -54,7 +54,7 @@ func (m *Manager) Load(refresh, noRefresh bool) error {
 	if refresh {
 		fmt.Printf("Refreshing the cache...\n")
 
-		pulledNotifications, err := m.client.Notifications(refresh, noRefresh)
+		pulledNotifications, err := m.client.Notifications()
 		if err != nil {
 			return err
 		}

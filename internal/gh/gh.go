@@ -137,28 +137,9 @@ func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) 
 	return list, nil
 }
 
-// TODO: remove refresh flags from here
-func (c *Client) Notifications(refresh, noRefresh bool) (notifications.Notifications, error) {
+func (c *Client) Notifications() (notifications.Notifications, error) {
 	allNotifications := notifications.Notifications{}
 
-	// cachedNotifications, refreshCache, err := c.loadCache()
-	// if err != nil {
-	// 	slog.Warn("Error while reading the cache: %#v\n", err)
-	// } else if cachedNotifications != nil {
-	// 	allNotifications = cachedNotifications
-	// }
-	//
-	// if !refreshCache && refresh {
-	// 	slog.Info("forcing a refresh")
-	// 	refresh = true
-	// }
-	// if refreshCache && noRefresh {
-	// 	slog.Info("preventing a refresh")
-	// 	refresh = false
-	// }
-	//
-	// if refresh {
-	// 	fmt.Printf("Refreshing the cache...\n")
 	pulledNotifications, err := c.pullNotificationFromApi()
 	if err != nil {
 		return nil, err
@@ -169,7 +150,6 @@ func (c *Client) Notifications(refresh, noRefresh bool) (notifications.Notificat
 	if err := c.cache.Write(allNotifications); err != nil {
 		slog.Error("Error while writing the cache: %#v", err)
 	}
-	// }
 
 	return allNotifications.Uniq(), nil
 }
