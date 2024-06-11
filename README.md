@@ -39,7 +39,8 @@ gh-not list --filter '.author.login | contains("4")'
 `gh-not` fetches the notifications from GitHub and saves them in a local cache.
 
 The `sync` command applies the rules to the notifications and performs the
-specified actions. It's recommended to run this regularly, e.g. with a cron job.
+specified actions. It's recommended to run this regularly, see [this
+section](#automatic-fetching)
 
 The other commands are used to interact with the local cache. It uses `gh
 api`-equivalent to modify the notifications on GitHub's side.
@@ -83,5 +84,53 @@ rule contains three fields:
 
     See more at [`config.sample.yaml`](./config.sample.yaml).
 
+# Automatic fetching
+
+To automatically fetch new notifications and apply the rules, it is recommended
+to setup an automated process to run `gh-not sync` regularly.
+
+E.g.
+
+- `cron`
+
+    ```shell
+    0 * * * *  gh-not sync --config=/path/to/config.yaml --refresh --verbosity=4 >> /tmp/gh-not-sync.out 2>> /tmp/gh-not-sync.err
+    ```
+
+- `launchd`
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+      <dict>
+        <key>EnvironmentVariables</key>
+        <dict>
+          <key>PATH</key>
+          <string>/opt/homebrew/bin/:$PATH</string>
+        </dict>
+
+        <key>Label</key>
+        <string>launched.gh-not-sync.hourly</string>
+
+        <key>ProgramArguments</key>
+        <array>
+          <string>sh</string>
+          <string>-c</string>
+          <string>gh-not sync --config=/path/to/config.yaml --refresh --verbosity=4</string>
+        </array>
+
+        <key>StandardErrorPath</key>
+        <string>/tmp/gh-not-sync.err</string>
+        <key>StandardOutPath</key>
+        <string>/tmp/gh-not-sync.out</string>
+
+        <key>StartInterval</key>
+        <integer>3600</integer>
+      </dict>
+    </plist>
+    ```
+
+    It is recommended to use https://launched.zerowidth.com/ for generating such Plist.
 
 [^gojq]: Technically, [`gojq`](https://github.com/itchyny/gojq) is used.
