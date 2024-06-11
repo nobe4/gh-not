@@ -6,12 +6,14 @@ import (
 	"os"
 	"os/exec"
 
+	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
 var (
 	editConfigFlag = false
+	initConfigFlag = false
 
 	configCmd = &cobra.Command{
 		Use:   "config",
@@ -24,11 +26,16 @@ func init() {
 	rootCmd.AddCommand(configCmd)
 
 	configCmd.Flags().BoolVarP(&editConfigFlag, "edit", "e", false, "Edit the config in $EDITOR")
+	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Create an initial config file")
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
+	if initConfigFlag {
+		return initConfig()
+	}
+
 	if editConfigFlag {
-		return edit()
+		return editConfig()
 	}
 
 	marshalled, err := yaml.Marshal(config)
@@ -42,7 +49,31 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func edit() error {
+func initConfig() error {
+	slog.Debug("creating initial config file", "path", configPathFlag)
+
+	if _, err := os.Stat(configPathFlag); err == nil {
+		return fmt.Errorf("config file %s already exists", configPathFlag)
+	}
+
+	f, err := os.Create(configPathFlag)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err := f.Write([]byte(configPkg.Example)); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created config file: %s\n", configPathFlag)
+
+	return nil
+}
+
+func editConfig() error {
+	slog.Debug("editing config file", "path", configPathFlag)
+
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		return fmt.Errorf("EDITOR environment variable not set")

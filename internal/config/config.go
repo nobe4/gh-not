@@ -18,9 +18,34 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
+const Example = `
+---
+
+cache:
+  ttl_in_hours: 1
+  path: ./cache.json
+
+rules:
+  - name: showcasing conditionals
+    action: debug
+    # Filters are run one after the other, like they are joined by 'and'.
+    # Having 'or' can be done via '(cond1) or (cond2) or ...'.
+    filters:
+      - .author.login == "dependabot[bot]"
+      - >
+        (.subject.title | contains("something unimportant")) or
+        (.subject.title | contains("something already done"))
+
+  - name: ignore ci failures for the current repo
+    action: done
+    filters:
+      - .repository.full_name == "nobe4/gh-not"
+      - .reason == "ci_activity"
+`
+
 var (
 	defaultCache = Cache{
-		TTLInHours: 24 * 7,
+		TTLInHours: 1,
 		Path:       path.Join(StateDir(), "cache.json"),
 	}
 )
