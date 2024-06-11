@@ -31,7 +31,7 @@ func New(path string) (*Config, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			slog.Warn("config file not found, using default configuration")
+			slog.Warn("config file not found, using default configuration", "path", path)
 			return config, nil
 		}
 
