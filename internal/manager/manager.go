@@ -69,6 +69,7 @@ func shouldRefresh(expired, refreshRequested, noRefreshRequested bool) bool {
 
 	if expired && noRefreshRequested {
 		slog.Info("preventing a refresh")
+        return false
 	}
 
 	return expired
