@@ -61,12 +61,19 @@ type Model struct {
 	result string
 }
 
+func keybinding(k config.KeyBinding, help string) key.Binding {
+	return key.NewBinding(
+		key.WithKeys(k...),
+		key.WithHelp(k.Help(), help),
+	)
+}
+
 func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
-			up:   keymap.Binding("normal", "up"),
-			down: keymap.Binding("normal", "down"),
+			up:   keybinding(keymap["normal"]["up"], "move up"),
+			down: keybinding(keymap["normal"]["down"], "move down"),
 			toggle: key.NewBinding(
 				key.WithKeys(" ", "enter"),
 				key.WithHelp("space/enter", "toggle selected"),
