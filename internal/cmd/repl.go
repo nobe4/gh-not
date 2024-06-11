@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log/slog"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/views/normal"
 	"github.com/spf13/cobra"
@@ -22,11 +20,7 @@ func init() {
 }
 
 func runRepl(cmd *cobra.Command, args []string) error {
-	notifications, err := client.Notifications()
-	if err != nil {
-		slog.Error("Failed to list notifications", "err", err)
-		return err
-	}
+	notifications := manager.Notifications
 
 	renderCache, err := notifications.ToTable()
 	if err != nil {

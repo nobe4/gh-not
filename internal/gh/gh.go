@@ -22,18 +22,14 @@ const (
 )
 
 type Client struct {
-	API       api.Caller
-	cache     cache.ExpiringReadWriter
-	refresh   bool
-	noRefresh bool
+	API   api.Caller
+	cache cache.ExpiringReadWriter
 }
 
-func NewClient(api api.Caller, cache cache.ExpiringReadWriter, refresh, noRefresh bool) *Client {
+func NewClient(api api.Caller, cache cache.ExpiringReadWriter) *Client {
 	return &Client{
-		API:       api,
-		cache:     cache,
-		refresh:   refresh,
-		noRefresh: noRefresh,
+		API:   api,
+		cache: cache,
 	}
 }
 
@@ -141,38 +137,39 @@ func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) 
 	return list, nil
 }
 
-func (c *Client) Notifications() (notifications.Notifications, error) {
+// TODO: remove refresh flags from here
+func (c *Client) Notifications(refresh, noRefresh bool) (notifications.Notifications, error) {
 	allNotifications := notifications.Notifications{}
 
-	cachedNotifications, refresh, err := c.loadCache()
+	// cachedNotifications, refreshCache, err := c.loadCache()
+	// if err != nil {
+	// 	slog.Warn("Error while reading the cache: %#v\n", err)
+	// } else if cachedNotifications != nil {
+	// 	allNotifications = cachedNotifications
+	// }
+	//
+	// if !refreshCache && refresh {
+	// 	slog.Info("forcing a refresh")
+	// 	refresh = true
+	// }
+	// if refreshCache && noRefresh {
+	// 	slog.Info("preventing a refresh")
+	// 	refresh = false
+	// }
+	//
+	// if refresh {
+	// 	fmt.Printf("Refreshing the cache...\n")
+	pulledNotifications, err := c.pullNotificationFromApi()
 	if err != nil {
-		slog.Warn("Error while reading the cache: %#v\n", err)
-	} else if cachedNotifications != nil {
-		allNotifications = cachedNotifications
+		return nil, err
 	}
 
-	if !refresh && c.refresh {
-		slog.Info("forcing a refresh")
-		refresh = true
-	}
-	if refresh && c.noRefresh {
-		slog.Info("preventing a refresh")
-		refresh = false
-	}
+	allNotifications = append(allNotifications, pulledNotifications...)
 
-	if refresh {
-		fmt.Printf("Refreshing the cache...\n")
-		pulledNotifications, err := c.pullNotificationFromApi()
-		if err != nil {
-			return nil, err
-		}
-
-		allNotifications = append(allNotifications, pulledNotifications...)
-
-		if err := c.cache.Write(allNotifications); err != nil {
-			slog.Error("Error while writing the cache: %#v", err)
-		}
+	if err := c.cache.Write(allNotifications); err != nil {
+		slog.Error("Error while writing the cache: %#v", err)
 	}
+	// }
 
 	return allNotifications.Uniq(), nil
 }
