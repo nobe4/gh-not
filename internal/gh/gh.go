@@ -13,23 +13,34 @@ import (
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 const (
 	DefaultEndpoint = "https://api.github.com/notifications"
-	retryCount      = 5
 )
 
 type Client struct {
-	API   api.Caller
-	cache cache.ExpiringReadWriter
+	API      api.Caller
+	cache    cache.ExpiringReadWriter
+	maxRetry int
+	maxPage  int
+	endpoint string
 }
 
-func NewClient(api api.Caller, cache cache.ExpiringReadWriter) *Client {
+func NewClient(api api.Caller, cache cache.ExpiringReadWriter, config config.Endpoint) *Client {
+	endpoint := DefaultEndpoint
+	if config.All {
+		endpoint += "?all=true"
+	}
+
 	return &Client{
-		API:   api,
-		cache: cache,
+		API:      api,
+		cache:    cache,
+		maxRetry: config.MaxRetry,
+		maxPage:  config.MaxPage,
+		endpoint: endpoint,
 	}
 }
 
@@ -61,7 +72,7 @@ func isRetryable(err error) bool {
 }
 
 func (c *Client) retryRequest(verb, endpoint string, body io.Reader) (*http.Response, error) {
-	for i := retryCount; i > 0; i-- {
+	for i := c.maxRetry; i > 0; i-- {
 		response, err := c.API.Request(verb, endpoint, body)
 		if err != nil {
 			if isRetryable(err) {
@@ -92,9 +103,11 @@ func (c *Client) paginateNotifications() (notifications.Notifications, error) {
 		return ""
 	}
 
-	endpoint := DefaultEndpoint
-	for endpoint != "" {
-		slog.Info("API REST request", "endpoint", endpoint)
+	pageLeft := c.maxPage
+	endpoint := c.endpoint
+
+	for endpoint != "" && pageLeft > 0 {
+		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)
 
 		response, err := c.retryRequest(http.MethodGet, endpoint, nil)
 		if err != nil {
@@ -115,6 +128,7 @@ func (c *Client) paginateNotifications() (notifications.Notifications, error) {
 		}
 
 		endpoint = findNextPage(response)
+		pageLeft--
 	}
 
 	return list, nil

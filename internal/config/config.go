@@ -9,8 +9,15 @@ import (
 )
 
 type Config struct {
-	Cache Cache  `yaml:"cache"`
-	Rules []Rule `yaml:"rules"`
+	Cache    Cache    `yaml:"cache"`
+	Endpoint Endpoint `yaml:"endpoint"`
+	Rules    []Rule   `yaml:"rules"`
+}
+
+type Endpoint struct {
+	All      bool `yaml:"all"`
+	MaxRetry int  `yaml:"max_retry"`
+	MaxPage  int  `yaml:"max_page"`
 }
 
 type Cache struct {
@@ -18,12 +25,19 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
+// TODO: deduplicate with the defaultCache and defaultEndpoint
+// maybe keep in the documentation only?
 const Example = `
 ---
 
 cache:
   ttl_in_hours: 1
   path: ./cache.json
+
+endpoint:
+    all: true
+    max_retry: 10
+    max_page: 5
 
 rules:
   - name: showcasing conditionals
@@ -48,10 +62,19 @@ var (
 		TTLInHours: 1,
 		Path:       path.Join(StateDir(), "cache.json"),
 	}
+
+	defaultEndpoint = Endpoint{
+		All:      true,
+		MaxRetry: 10,
+		MaxPage:  5,
+	}
 )
 
 func New(path string) (*Config, error) {
-	config := &Config{Cache: defaultCache}
+	config := &Config{
+		Cache:    defaultCache,
+		Endpoint: defaultEndpoint,
+	}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
