@@ -31,27 +31,17 @@ func New(config *config.Config, caller api.Caller) *Manager {
 	return m
 }
 
-func (m *Manager) Load(refresh, noRefresh bool) error {
+func (m *Manager) Load(refreshRequested, noRefreshRequested bool) error {
 	allNotifications := notifications.Notifications{}
 
-	cachedNotifications, refreshCache, err := m.loadCache()
+	cachedNotifications, cacheExpired, err := m.loadCache()
 	if err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
 		allNotifications = cachedNotifications
 	}
 
-	if !refreshCache && refresh {
-		slog.Info("forcing a refresh")
-		refresh = true
-	}
-
-	if refreshCache && noRefresh {
-		slog.Info("preventing a refresh")
-		refresh = false
-	}
-
-	if refresh {
+	if shouldRefresh(cacheExpired, refreshRequested, noRefreshRequested) {
 		fmt.Printf("Refreshing the cache...\n")
 
 		pulledNotifications, err := m.client.Notifications()
@@ -69,6 +59,19 @@ func (m *Manager) Load(refresh, noRefresh bool) error {
 	m.Notifications = allNotifications.Uniq()
 
 	return nil
+}
+
+func shouldRefresh(expired, refreshRequested, noRefreshRequested bool) bool {
+	if !expired && refreshRequested {
+		slog.Info("forcing a refresh")
+		return true
+	}
+
+	if expired && noRefreshRequested {
+		slog.Info("preventing a refresh")
+	}
+
+	return false
 }
 
 func (m *Manager) Save() error {
