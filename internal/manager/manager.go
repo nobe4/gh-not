@@ -12,6 +12,12 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+const (
+	DefaultRefresh = iota
+	ForceRefresh
+	ForceNoRefresh
+)
+
 type Manager struct {
 	Notifications notifications.Notifications
 	cache         cache.ExpiringReadWriter
@@ -31,17 +37,17 @@ func New(config *config.Config, caller api.Caller) *Manager {
 	return m
 }
 
-func (m *Manager) Load(refreshRequested, noRefreshRequested bool) error {
+func (m *Manager) Load(refresh int) error {
 	allNotifications := notifications.Notifications{}
 
-	cachedNotifications, cacheExpired, err := m.loadCache()
+	cachedNotifications, expired, err := m.loadCache()
 	if err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
 		allNotifications = cachedNotifications
 	}
 
-	if shouldRefresh(cacheExpired, refreshRequested, noRefreshRequested) {
+	if shouldRefresh(expired, refresh) {
 		fmt.Printf("Refreshing the cache...\n")
 
 		pulledNotifications, err := m.client.Notifications()
@@ -61,15 +67,15 @@ func (m *Manager) Load(refreshRequested, noRefreshRequested bool) error {
 	return nil
 }
 
-func shouldRefresh(expired, refreshRequested, noRefreshRequested bool) bool {
-	if !expired && refreshRequested {
+func shouldRefresh(expired bool, refresh int) bool {
+	if !expired && refresh == ForceRefresh {
 		slog.Info("forcing a refresh")
 		return true
 	}
 
-	if expired && noRefreshRequested {
+	if expired && refresh == ForceNoRefresh {
 		slog.Info("preventing a refresh")
-        return false
+		return false
 	}
 
 	return expired
