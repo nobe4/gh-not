@@ -34,7 +34,7 @@ func New(config *config.Config, caller api.Caller) *Manager {
 
 	m.config = config
 	m.cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
-	m.client = gh.NewClient(caller, m.cache)
+	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
 
 	return m
