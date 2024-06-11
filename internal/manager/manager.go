@@ -71,7 +71,7 @@ func shouldRefresh(expired, refreshRequested, noRefreshRequested bool) bool {
 		slog.Info("preventing a refresh")
 	}
 
-	return false
+	return expired
 }
 
 func (m *Manager) Save() error {
