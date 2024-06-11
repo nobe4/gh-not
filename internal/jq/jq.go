@@ -25,7 +25,7 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 
 	// gojq works only on `any` data, so we need to convert Notifications to
 	// interface{}. This also gives us back the JSON fields from the API.
-	notificationsRaw, err := n.ToInterface()
+	notificationsRaw, err := n.Marshall()
 	if err != nil {
 		return nil, err
 	}

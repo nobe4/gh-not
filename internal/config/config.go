@@ -83,5 +83,5 @@ func (c *Config) Apply(n notifications.Notifications, actors map[string]actors.A
 		}
 	}
 
-	return n.DeleteNil(), nil
+	return n.Compact(), nil
 }

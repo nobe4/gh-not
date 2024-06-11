@@ -18,12 +18,12 @@ func TestIDList(t *testing.T) {
 	}
 }
 
-func TestDeleteNil(t *testing.T) {
+func TestCompact(t *testing.T) {
 	n0 := &Notification{Id: "0"}
 	n1 := &Notification{Id: "1"}
 	n := Notifications{nil, nil, n0, nil, n1, nil}
 
-	got := n.DeleteNil()
+	got := n.Compact()
 
 	if len(got) != 2 {
 		t.Fatalf("expected 2 elements but got %d\n%+v", len(got), got)
