@@ -37,8 +37,9 @@ var (
   gh-not --from-file notifications.json list
   gh-not sync --refresh --verbosity 4
 `,
-		PersistentPreRunE: setupGlobals,
-		SilenceErrors:     true,
+		PersistentPreRunE:  setupGlobals,
+		PersistentPostRunE: postRunE,
+		SilenceErrors:      true,
 	}
 )
 
@@ -87,6 +88,15 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 
 	if err := initLogger(); err != nil {
 		slog.Error("Failed to init the logger", "err", err)
+		return err
+	}
+
+	return nil
+}
+
+func postRunE(_ *cobra.Command, _ []string) error {
+	if err := manager.Save(); err != nil {
+		slog.Error("Failed to save the notifications", "err", err)
 		return err
 	}
 

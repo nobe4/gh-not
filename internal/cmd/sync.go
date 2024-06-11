@@ -34,10 +34,5 @@ func runSync(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := manager.Save(); err != nil {
-		slog.Error("Failed to save the notifications", "err", err)
-		return err
-	}
-
 	return nil
 }
