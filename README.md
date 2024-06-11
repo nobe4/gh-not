@@ -40,7 +40,7 @@ gh-not list --filter '.author.login | contains("4")'
 
 The `sync` command applies the rules to the notifications and performs the
 specified actions. It's recommended to run this regularly, see [this
-section](#automatic-fetching)
+section](#automatic-fetching).
 
 The other commands are used to interact with the local cache. It uses `gh
 api`-equivalent to modify the notifications on GitHub's side.
@@ -97,7 +97,7 @@ E.g.
     0 * * * *  gh-not sync --config=/path/to/config.yaml --refresh --verbosity=4 >> /tmp/gh-not-sync.out 2>> /tmp/gh-not-sync.err
     ```
 
-- `launchd`
+- [`launchd`](https://launchd.info/) (macOS)
 
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
