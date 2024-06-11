@@ -8,9 +8,8 @@ import (
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
-	cachePkg "github.com/nobe4/gh-not/internal/cache"
 	configPkg "github.com/nobe4/gh-not/internal/config"
-	"github.com/nobe4/gh-not/internal/gh"
+	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
 )
 
@@ -25,9 +24,8 @@ var (
 	refreshFlag          bool
 	noRefreshFlag        bool
 
-	config *configPkg.Config
-	cache  *cachePkg.FileCache
-	client *gh.Client
+	config  *configPkg.Config
+	manager *managerPkg.Manager
 
 	rootCmd = &cobra.Command{
 		Use:     "gh-not",
@@ -39,8 +37,9 @@ var (
   gh-not --from-file notifications.json list
   gh-not sync --refresh --verbosity 4
 `,
-		PersistentPreRunE: setupGlobals,
-		SilenceErrors:     true,
+		PersistentPreRunE:  setupGlobals,
+		PersistentPostRunE: postRunE,
+		SilenceErrors:      true,
 	}
 )
 
@@ -62,6 +61,11 @@ func init() {
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
+	if err := initLogger(); err != nil {
+		slog.Error("Failed to init the logger", "err", err)
+		return err
+	}
+
 	var err error
 
 	config, err = configPkg.New(configPathFlag)
@@ -70,24 +74,29 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	cache = cachePkg.NewFileCache(config.Cache.TTLInHours, config.Cache.Path)
-
-	var apiCaller api.Caller
-
+	var caller api.Caller
 	if notificationDumpPath != "" {
-		apiCaller = file.New(notificationDumpPath)
+		caller = file.New(notificationDumpPath)
 	} else {
-		apiCaller, err = api.NewGH()
+		caller, err = api.NewGH()
 		if err != nil {
 			slog.Error("Failed to create an API REST client", "err", err)
 			return err
 		}
 	}
 
-	client = gh.NewClient(apiCaller, cache, refreshFlag, noRefreshFlag)
+	manager = managerPkg.New(config, caller)
+	if err := manager.Load(refreshFlag, noRefreshFlag); err != nil {
+		slog.Error("Failed to init the manager", "err", err)
+		return err
+	}
 
-	if err := initLogger(); err != nil {
-		slog.Error("Failed to init the logger", "err", err)
+	return nil
+}
+
+func postRunE(_ *cobra.Command, _ []string) error {
+	if err := manager.Save(); err != nil {
+		slog.Error("Failed to save the notifications", "err", err)
 		return err
 	}
 

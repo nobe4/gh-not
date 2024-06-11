@@ -3,7 +3,6 @@ package cmd
 import (
 	"log/slog"
 
-	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/spf13/cobra"
 )
 
@@ -30,20 +29,8 @@ func init() {
 }
 
 func runSync(cmd *cobra.Command, args []string) error {
-	notifications, err := client.Notifications()
-	if err != nil {
-		slog.Error("Failed to list notifications", "err", err)
-		return err
-	}
-
-	notifications, err = config.Apply(notifications, actors.Map(client), noop)
-	if err != nil {
+	if err := manager.Apply(noop); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
-		return err
-	}
-
-	if err := cache.Write(notifications); err != nil {
-		slog.Error("Failed to write the cache", "err", err)
 		return err
 	}
 

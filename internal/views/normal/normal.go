@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
-	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/views"
 	"github.com/nobe4/gh-not/internal/views/command"
@@ -52,8 +51,6 @@ type Model struct {
 	choices        notifications.Notifications
 	visibleChoices []int
 
-	actors actors.ActorsMap
-
 	renderCache []string
 	selected    map[int]bool
 
@@ -63,7 +60,7 @@ type Model struct {
 	result string
 }
 
-func New(client *gh.Client, notifications notifications.Notifications, renderCache string) Model {
+func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: keymap{
@@ -111,7 +108,7 @@ func New(client *gh.Client, notifications notifications.Notifications, renderCac
 		renderCache: strings.Split(renderCache, "\n"),
 	}
 
-	model.command = command.New(actors.Map(client), model.SelectedNotificationsFunc)
+	model.command = command.New(actors, model.SelectedNotificationsFunc)
 	model.filter = filter.New(model.VisibleLinesFunc)
 
 	return model

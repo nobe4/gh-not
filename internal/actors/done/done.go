@@ -18,13 +18,14 @@ type Actor struct {
 func (a *Actor) Run(n *notifications.Notification) (string, error) {
 	slog.Debug("marking notification as done", "notification", n.ToString())
 
+	n.Meta.ToDelete = true
+
 	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
 	if err != nil {
 		return "", err
 	}
 
 	out := colors.Red("DONE ") + n.ToString()
-	n = nil
 
 	return out, nil
 }

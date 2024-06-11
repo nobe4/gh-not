@@ -11,7 +11,7 @@ type Rule struct {
 	Action  string   `yaml:"action"`
 }
 
-func (r Rule) filterIds(n notifications.Notifications) ([]string, error) {
+func (r Rule) FilterIds(n notifications.Notifications) ([]string, error) {
 	var err error
 
 	for _, filter := range r.Filters {

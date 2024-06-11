@@ -31,12 +31,10 @@ type ResultMsg struct {
 }
 
 func (r ResultMsg) ToString() string {
-	out := ""
+	out := r.Out
 
 	if r.Err != nil {
-		out = colors.Red(r.Err.Error())
-	} else {
-		out = r.Out
+		out += "\n" + colors.Red(r.Err.Error())
 	}
 
 	return out + "\npress any key to continue"

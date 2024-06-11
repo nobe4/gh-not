@@ -1,13 +1,9 @@
 package config
 
 import (
-	"fmt"
-	"log/slog"
 	"os"
 	"path"
 
-	"github.com/nobe4/gh-not/internal/actors"
-	"github.com/nobe4/gh-not/internal/notifications"
 	"gopkg.in/yaml.v3"
 )
 
@@ -41,47 +37,4 @@ func New(path string) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func (c *Config) Apply(n notifications.Notifications, actors map[string]actors.Actor, noop bool) (notifications.Notifications, error) {
-	indexIDMap := map[string]int{}
-	for i, n := range n {
-		indexIDMap[n.Id] = i
-	}
-
-	for _, rule := range c.Rules {
-		slog.Debug("apply rule", "name", rule.Name)
-
-		selectedIds, err := rule.filterIds(n)
-		if err != nil {
-			return nil, err
-		}
-
-		var out string
-		for _, id := range selectedIds {
-			i := indexIDMap[id]
-			notification := n[i]
-
-			if actor, ok := actors[rule.Action]; ok {
-				if noop {
-					fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
-				} else {
-					out, err = actor.Run(notification)
-					if err != nil {
-						slog.Error("action failed", "action", rule.Action, "err", err)
-					}
-					if out != "" {
-						fmt.Println(out)
-					}
-				}
-			} else {
-				slog.Error("unknown action", "action", rule.Action)
-			}
-
-			// FIXME: is this still needed?
-			n[i] = notification
-		}
-	}
-
-	return n.Compact(), nil
 }
