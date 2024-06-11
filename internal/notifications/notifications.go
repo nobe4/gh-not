@@ -42,7 +42,8 @@ type Subject struct {
 	Type  string `json:"type"`
 
 	// Enriched API fields
-	State string `json:"state"`
+	State   string `json:"state"`
+	HtmlUrl string `json:"html_url"`
 }
 
 type Repository struct {
