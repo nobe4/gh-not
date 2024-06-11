@@ -34,6 +34,16 @@ gh-not list --filter '.author.login | contains("4")'
 ...
 ```
 
+# How it works
+
+`gh-not` fetches the notifications from GitHub and saves them in a local cache.
+
+The `sync` command applies the rules to the notifications and performs the
+specified actions. It's recommended to run this regularly, e.g. with a cron job.
+
+The other commands are used to interact with the local cache. It uses `gh
+api`-equivalent to modify the notifications on GitHub's side.
+
 # Configure
 
 > [!NOTE]
