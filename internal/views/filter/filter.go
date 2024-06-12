@@ -36,14 +36,14 @@ type Model struct {
 func New(visibleLines func(func(string, int)), keymap config.Keymap) Model {
 	model := Model{
 		Keys: Keymap{
-			cancel:  keymap["filter"]["cancel"].Binding("cancel"),
-			confirm: keymap["filter"]["confirm"].Binding("confirm"),
+			cancel:  keymap.Keybinding("filter", "cancel"),
+			confirm: keymap.Keybinding("filter", "confirm"),
 		},
 		input:        textinput.New(),
 		visibleLines: visibleLines,
 	}
 
-	model.input.Prompt = keymap["normal"]["filter"][0]
+	model.input.Prompt = keymap["normal"]["filter mode"][0]
 	model.input.Placeholder = "filter"
 
 	return model
