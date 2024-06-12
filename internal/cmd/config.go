@@ -31,7 +31,9 @@ func init() {
 
 func runConfig(cmd *cobra.Command, args []string) error {
 	if initConfigFlag {
-		return initConfig()
+		if err := initConfig(); err != nil {
+			return err
+		}
 	}
 
 	if editConfigFlag {
