@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -41,6 +42,10 @@ func (c *FileCache) Read(out any) error {
 func (c *FileCache) Write(in any) error {
 	marshalled, err := json.Marshal(in)
 	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(c.path), 0755); err != nil {
 		return err
 	}
 
