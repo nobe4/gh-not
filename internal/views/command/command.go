@@ -8,33 +8,28 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/views"
 )
 
-type keymap struct {
-	quit    key.Binding
+type Keymap struct {
+	cancel  key.Binding
 	confirm key.Binding
 }
 
 type Model struct {
-	keys                  keymap
+	keys                  Keymap
 	input                 textinput.Model
 	actors                actors.ActorsMap
 	selectedNotifications func(func(*notifications.Notification))
 }
 
-func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications.Notification))) Model {
+func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications.Notification)), keymap config.Keymap) Model {
 	model := Model{
-		keys: keymap{
-			quit: key.NewBinding(
-				key.WithKeys("esc"),
-				key.WithHelp("ESC", "quit"),
-			),
-			confirm: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "confirm command"),
-			),
+		keys: Keymap{
+			cancel:  keymap["filter"]["cancel"].Binding("cancel"),
+			confirm: keymap["filter"]["confirm"].Binding("confirm"),
 		},
 		input:                 textinput.New(),
 		actors:                actors,
@@ -46,7 +41,7 @@ func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications
 		suggestions = append(suggestions, k)
 	}
 
-	model.input.Prompt = ":"
+	model.input.Prompt = keymap["normal"]["command"][0]
 	model.input.SetSuggestions(suggestions)
 	model.input.ShowSuggestions = true
 
@@ -67,7 +62,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 
-		case key.Matches(msg, m.keys.quit):
+		case key.Matches(msg, m.keys.cancel):
 			m.input.SetValue("")
 			m.input.Blur()
 			return m, views.ChangeMode(views.NormalMode)

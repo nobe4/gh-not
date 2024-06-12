@@ -6,39 +6,45 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/views"
 )
 
-type keymap struct {
-	quit    key.Binding
+type Keymap struct {
+	cancel  key.Binding
 	confirm key.Binding
+}
+
+func (k Keymap) ShortHelp() []key.Binding {
+	return []key.Binding{k.cancel}
+}
+
+func (k Keymap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.cancel, k.confirm},
+	}
 }
 
 type FilterMsg []int
 
 type Model struct {
-	keys         keymap
+	Keys         Keymap
 	input        textinput.Model
 	visibleLines func(func(string, int))
 }
 
-func New(visibleLines func(func(string, int))) Model {
+func New(visibleLines func(func(string, int)), keymap config.Keymap) Model {
 	model := Model{
-		keys: keymap{
-			quit: key.NewBinding(
-				key.WithKeys("esc", "ctrl-c"),
-				key.WithHelp("esc/ctrl-c", "cancel"),
-			),
-			confirm: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "confirm"),
-			),
+		Keys: Keymap{
+			cancel:  keymap["filter"]["cancel"].Binding("cancel"),
+			confirm: keymap["filter"]["confirm"].Binding("confirm"),
 		},
 		input:        textinput.New(),
 		visibleLines: visibleLines,
 	}
 
-	model.input.Prompt = "/"
+	model.input.Prompt = keymap["normal"]["filter"][0]
+	model.input.Placeholder = "filter"
 
 	return model
 }
@@ -57,12 +63,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 
-		case key.Matches(msg, m.keys.quit):
+		case key.Matches(msg, m.Keys.cancel):
 			m.input.SetValue("")
 			m.input.Blur()
 			cmds = append(cmds, views.ChangeMode(views.NormalMode))
 
-		case key.Matches(msg, m.keys.confirm):
+		case key.Matches(msg, m.Keys.confirm):
 			m.input.Blur()
 			cmds = append(cmds, views.ChangeMode(views.NormalMode))
 

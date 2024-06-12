@@ -20,9 +20,10 @@ type Keymap struct {
 	down    key.Binding
 	toggle  key.Binding
 	all     key.Binding
-	unall   key.Binding
-	search  key.Binding
+	none    key.Binding
+	filter  key.Binding
 	command key.Binding
+	open    key.Binding
 	help    key.Binding
 	quit    key.Binding
 }
@@ -33,14 +34,18 @@ func (k Keymap) ShortHelp() []key.Binding {
 
 func (k Keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.up, k.down, k.toggle, k.all, k.unall},
-		{k.search, k.command, k.help, k.quit},
+		{k.up, k.down, k.toggle, k.all, k.none, k.open},
+		{k.filter, k.command, k.help, k.quit},
 	}
 }
 
 type SelectMsg struct {
 	id       int
 	selected bool
+}
+
+type OpenMessage struct {
+	notification *notifications.Notification
 }
 
 type Model struct {
@@ -58,60 +63,36 @@ type Model struct {
 	filter  tea.Model
 	command tea.Model
 
-	result string
-}
+	actors actors.ActorsMap
 
-func keybinding(k config.KeyBinding, help string) key.Binding {
-	return key.NewBinding(
-		key.WithKeys(k...),
-		key.WithHelp(k.Help(), help),
-	)
+	result string
 }
 
 func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
-			up:   keybinding(keymap["normal"]["up"], "move up"),
-			down: keybinding(keymap["normal"]["down"], "move down"),
-			toggle: key.NewBinding(
-				key.WithKeys(" ", "enter"),
-				key.WithHelp("space/enter", "toggle selected"),
-			),
-			all: key.NewBinding(
-				key.WithKeys("a"),
-				key.WithHelp("a", "select all"),
-			),
-			unall: key.NewBinding(
-				key.WithKeys("A"),
-				key.WithHelp("A", "unselect all"),
-			),
-			search: key.NewBinding(
-				key.WithKeys("/"),
-				key.WithHelp("/", "search mode"),
-			),
-			command: key.NewBinding(
-				key.WithKeys(":"),
-				key.WithHelp(":", "command mode"),
-			),
-			help: key.NewBinding(
-				key.WithKeys("?"),
-				key.WithHelp("?", "toggle help"),
-			),
-			quit: key.NewBinding(
-				key.WithKeys("q", "esc", "ctrl+c"),
-				key.WithHelp("q/esc/ctrl+c", "quit"),
-			),
+			up:      keymap["normal"]["up"].Binding("move up"),
+			down:    keymap["normal"]["down"].Binding("move down"),
+			toggle:  keymap["normal"]["toggle"].Binding("toggle selected"),
+			all:     keymap["normal"]["all"].Binding("select all"),
+			none:    keymap["normal"]["none"].Binding("select none"),
+			open:    keymap["normal"]["open"].Binding("open current"),
+			filter:  keymap["normal"]["filter"].Binding("filter mode"),
+			command: keymap["normal"]["command"].Binding("command mode"),
+			help:    keymap["normal"]["help"].Binding("toggle help"),
+			quit:    keymap["normal"]["quit"].Binding("quit"),
 		},
 		help:        help.New(),
 		cursor:      0,
 		choices:     notifications,
 		selected:    map[int]bool{},
 		renderCache: strings.Split(renderCache, "\n"),
+		actors:      actors,
 	}
 
-	model.command = command.New(actors, model.SelectedNotificationsFunc)
-	model.filter = filter.New(model.VisibleLinesFunc)
+	model.command = command.New(actors, model.SelectedNotificationsFunc, keymap)
+	model.filter = filter.New(model.VisibleLinesFunc, keymap)
 
 	return model
 }
@@ -136,6 +117,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SelectMsg:
 		m.selected[msg.id] = msg.selected
 
+	case OpenMessage:
+		m.actors["open"].Run(msg.notification, nil)
+
 	case views.ChangeModeMsg:
 		m.Mode = msg.Mode
 
@@ -143,18 +127,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.Mode {
 		case views.NormalMode:
 			switch {
-			case key.Matches(msg, m.Keys.help):
-				return m, views.ChangeMode(views.HelpMode)
-
-			case key.Matches(msg, m.Keys.search):
-				return m, views.ChangeMode(views.SearchMode)
-
-			case key.Matches(msg, m.Keys.command):
-				return m, views.ChangeMode(views.CommandMode)
-
-			case key.Matches(msg, m.Keys.quit):
-				return m, tea.Quit
-
 			case key.Matches(msg, m.Keys.up):
 				if m.cursor > 0 {
 					m.cursor--
@@ -171,9 +143,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, m.Keys.all):
 				return m, m.selectAll(true)
 
-			case key.Matches(msg, m.Keys.unall):
+			case key.Matches(msg, m.Keys.none):
 				return m, m.selectAll(false)
 
+			case key.Matches(msg, m.Keys.open):
+				return m, m.openCurrent()
+
+			case key.Matches(msg, m.Keys.filter):
+				return m, views.ChangeMode(views.SearchMode)
+
+			case key.Matches(msg, m.Keys.command):
+				return m, views.ChangeMode(views.CommandMode)
+
+			case key.Matches(msg, m.Keys.help):
+				return m, views.ChangeMode(views.HelpMode)
+
+			case key.Matches(msg, m.Keys.quit):
+				return m, tea.Quit
 			}
 
 		case views.SearchMode:
@@ -273,4 +259,11 @@ func (m Model) selectAll(selected bool) tea.Cmd {
 	}
 
 	return tea.Batch(cmds...)
+}
+
+func (m Model) openCurrent() tea.Cmd {
+	return func() tea.Msg {
+		visibleLineId := m.visibleChoices[m.cursor]
+		return OpenMessage{notification: m.choices[visibleLineId]}
+	}
 }
