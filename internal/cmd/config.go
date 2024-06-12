@@ -26,7 +26,7 @@ func init() {
 	rootCmd.AddCommand(configCmd)
 
 	configCmd.Flags().BoolVarP(&editConfigFlag, "edit", "e", false, "Edit the config in $EDITOR")
-	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Print the default config to stdout")
+	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Create the default config file")
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
@@ -52,15 +52,13 @@ func runConfig(cmd *cobra.Command, args []string) error {
 }
 
 func initConfig() error {
-	slog.Debug("printing config file", "path", configPathFlag)
+	slog.Debug("creating initial config file", "path", configPathFlag)
 
-	marshalled, err := yaml.Marshal(configPkg.Default())
-	if err != nil {
-		slog.Error("Failed to marshall config", "err", err)
+	if err := configPkg.Default().Save(configPathFlag); err != nil {
+		slog.Error("Failed to save initial config", "err", err)
 		return err
 	}
-
-	fmt.Printf("%s\n", marshalled)
+	fmt.Printf("Initial config saved to %s\n", configPathFlag)
 
 	return nil
 }
