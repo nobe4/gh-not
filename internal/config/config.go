@@ -1,3 +1,30 @@
+/*
+Package config provides a way to load the configuration from a file.
+It also comes with a default configuration that can be used if no file is found.
+
+See individual types for more information on the configuration.
+
+Output the default configuration (free of rules) with `gh-not config --init`.
+
+Example rules:
+
+	rules:
+	  - name: showcasing conditionals
+	    action: debug
+	    # Filters are run one after the other, like they are joined by 'and'.
+	    # Having 'or' can be done via '(cond1) or (cond2) or ...'.
+	    filters:
+	      - .author.login == "dependabot[bot]"
+	      - >
+	        (.subject.title | contains("something unimportant")) or
+	        (.subject.title | contains("something already done"))
+
+	  - name: ignore ci failures for the current repo
+	    action: done
+	    filters:
+	      - .repository.full_name == "nobe4/gh-not"
+	      - .reason == "ci_activity"
+*/
 package config
 
 import (
@@ -26,38 +53,6 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
-// TODO: deduplicate with the defaultCache and defaultEndpoint
-// maybe keep in the documentation only?
-const Example = `
----
-
-cache:
-  ttl_in_hours: 1
-  path: ./cache.json
-
-endpoint:
-    all: true
-    max_retry: 10
-    max_page: 5
-
-rules:
-  - name: showcasing conditionals
-    action: debug
-    # Filters are run one after the other, like they are joined by 'and'.
-    # Having 'or' can be done via '(cond1) or (cond2) or ...'.
-    filters:
-      - .author.login == "dependabot[bot]"
-      - >
-        (.subject.title | contains("something unimportant")) or
-        (.subject.title | contains("something already done"))
-
-  - name: ignore ci failures for the current repo
-    action: done
-    filters:
-      - .repository.full_name == "nobe4/gh-not"
-      - .reason == "ci_activity"
-`
-
 var (
 	defaultCache = Cache{
 		TTLInHours: 1,
@@ -71,12 +66,16 @@ var (
 	}
 )
 
-func New(path string) (*Config, error) {
-	config := &Config{
+func Default() *Config {
+	return &Config{
 		Cache:    defaultCache,
 		Endpoint: defaultEndpoint,
 		Keymap:   defaultKeymap,
 	}
+}
+
+func New(path string) (*Config, error) {
+	config := Default()
 
 	content, err := os.ReadFile(path)
 	if err != nil {
