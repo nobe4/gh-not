@@ -18,7 +18,7 @@ var defaultKeymap = Keymap{
 		"toggle":  []string{" "},
 		"all":     []string{"a"},
 		"none":    []string{"A"},
-        "open":    []string{"o"},
+		"open":    []string{"o"},
 		"filter":  []string{"/"},
 		"command": []string{":"},
 		"help":    []string{"?"},
