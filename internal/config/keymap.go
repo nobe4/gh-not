@@ -48,7 +48,7 @@ var unicodeReplacement = []string{
 	"ctrl", "C",
 }
 
-func (k Keymap) Keybinding(mode, action string) key.Binding {
+func (k Keymap) Binding(mode, action string) key.Binding {
 	keys := k[mode][action]
 	return key.NewBinding(
 		key.WithKeys(keys...),
