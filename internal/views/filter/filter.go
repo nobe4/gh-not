@@ -36,8 +36,8 @@ type Model struct {
 func New(visibleLines func(func(string, int)), keymap config.Keymap) Model {
 	model := Model{
 		Keys: Keymap{
-			cancel:  keymap.Keybinding("filter", "cancel"),
-			confirm: keymap.Keybinding("filter", "confirm"),
+			cancel:  keymap.Binding("filter", "cancel"),
+			confirm: keymap.Binding("filter", "confirm"),
 		},
 		input:        textinput.New(),
 		visibleLines: visibleLines,
