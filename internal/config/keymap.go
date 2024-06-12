@@ -13,16 +13,18 @@ type KeyBinding []string
 
 var defaultKeymap = Keymap{
 	"normal": KeyBindings{
-		"up":      []string{"up", "k"},
-		"down":    []string{"down", "j"},
-		"toggle":  []string{" "},
-		"all":     []string{"a"},
-		"none":    []string{"A"},
-		"open":    []string{"o"},
-		"filter":  []string{"/"},
-		"command": []string{":"},
-		"help":    []string{"?"},
-		"quit":    []string{"q", "esc", "ctrl+c"},
+		"up":       []string{"up", "k"},
+		"down":     []string{"down", "j"},
+		"next":     []string{"right", "l"},
+		"previous": []string{"left", "h"},
+		"toggle":   []string{" "},
+		"all":      []string{"a"},
+		"none":     []string{"A"},
+		"open":     []string{"o"},
+		"filter":   []string{"/"},
+		"command":  []string{":"},
+		"help":     []string{"?"},
+		"quit":     []string{"q", "esc", "ctrl+c"},
 	},
 	"filter": KeyBindings{
 		"confirm": []string{"enter"},

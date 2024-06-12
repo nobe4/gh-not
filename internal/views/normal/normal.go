@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/paginator"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/config"
@@ -16,16 +17,18 @@ import (
 )
 
 type Keymap struct {
-	up      key.Binding
-	down    key.Binding
-	toggle  key.Binding
-	all     key.Binding
-	none    key.Binding
-	filter  key.Binding
-	command key.Binding
-	open    key.Binding
-	help    key.Binding
-	quit    key.Binding
+	up       key.Binding
+	down     key.Binding
+	next     key.Binding
+	previous key.Binding
+	toggle   key.Binding
+	all      key.Binding
+	none     key.Binding
+	filter   key.Binding
+	command  key.Binding
+	open     key.Binding
+	help     key.Binding
+	quit     key.Binding
 }
 
 func (k Keymap) ShortHelp() []key.Binding {
@@ -34,7 +37,7 @@ func (k Keymap) ShortHelp() []key.Binding {
 
 func (k Keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.up, k.down, k.toggle, k.all, k.none, k.open},
+		{k.up, k.down, k.next, k.previous, k.toggle, k.all, k.none, k.open},
 		{k.filter, k.command, k.help, k.quit},
 	}
 }
@@ -56,6 +59,7 @@ type Model struct {
 	cursor         int
 	choices        notifications.Notifications
 	visibleChoices []int
+	paginator      paginator.Model
 
 	renderCache []string
 	selected    map[int]bool
@@ -72,16 +76,18 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
-			up:      keymap["normal"]["up"].Binding("move up"),
-			down:    keymap["normal"]["down"].Binding("move down"),
-			toggle:  keymap["normal"]["toggle"].Binding("toggle selected"),
-			all:     keymap["normal"]["all"].Binding("select all"),
-			none:    keymap["normal"]["none"].Binding("select none"),
-			open:    keymap["normal"]["open"].Binding("open current"),
-			filter:  keymap["normal"]["filter"].Binding("filter mode"),
-			command: keymap["normal"]["command"].Binding("command mode"),
-			help:    keymap["normal"]["help"].Binding("toggle help"),
-			quit:    keymap["normal"]["quit"].Binding("quit"),
+			up:       keymap["normal"]["up"].Binding("move up"),
+			down:     keymap["normal"]["down"].Binding("move down"),
+			next:     keymap["normal"]["next"].Binding("next page"),
+			previous: keymap["normal"]["previous"].Binding("previous page"),
+			toggle:   keymap["normal"]["toggle"].Binding("toggle selected"),
+			all:      keymap["normal"]["all"].Binding("select all"),
+			none:     keymap["normal"]["none"].Binding("select none"),
+			open:     keymap["normal"]["open"].Binding("open current"),
+			filter:   keymap["normal"]["filter"].Binding("filter mode"),
+			command:  keymap["normal"]["command"].Binding("command mode"),
+			help:     keymap["normal"]["help"].Binding("toggle help"),
+			quit:     keymap["normal"]["quit"].Binding("quit"),
 		},
 		help:        help.New(),
 		cursor:      0,
@@ -89,10 +95,15 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 		selected:    map[int]bool{},
 		renderCache: strings.Split(renderCache, "\n"),
 		actors:      actors,
+		paginator:   paginator.New(),
 	}
 
 	model.command = command.New(actors, model.SelectedNotificationsFunc, keymap)
 	model.filter = filter.New(model.VisibleLinesFunc, keymap)
+
+	// handling it in normal mode to display the help
+	model.paginator.KeyMap = paginator.KeyMap{}
+	model.paginator.PerPage = 40
 
 	return model
 }
@@ -109,6 +120,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case filter.FilterMsg:
 		m.visibleChoices = msg.IntSlice()
+		m.paginator.Page = 0
+		m.paginator.SetTotalPages(len(m.visibleChoices))
 
 	case views.ResultMsg:
 		m.result = msg.ToString()
@@ -137,6 +150,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor++
 				}
 
+			case key.Matches(msg, m.Keys.next):
+				m.paginator.NextPage()
+
+			case key.Matches(msg, m.Keys.previous):
+				m.paginator.PrevPage()
+
 			case key.Matches(msg, m.Keys.toggle):
 				return m, m.toggleSelect()
 
@@ -160,6 +179,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case key.Matches(msg, m.Keys.quit):
 				return m, tea.Quit
+
 			}
 
 		case views.SearchMode:
@@ -193,9 +213,11 @@ func (m Model) View() string {
 		m.help.ShowAll = false
 	}
 
+	start, end := m.paginator.GetSliceBounds(len(m.visibleChoices))
+
 	out := ""
 
-	for i, id := range m.visibleChoices {
+	for i, id := range m.visibleChoices[start:end] {
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
@@ -207,6 +229,10 @@ func (m Model) View() string {
 		}
 
 		out += fmt.Sprintf("%s%s%s\n", checked, cursor, m.renderCache[id])
+	}
+
+	if m.paginator.TotalPages > 1 {
+		out += m.paginator.View() + " "
 	}
 
 	switch m.Mode {
