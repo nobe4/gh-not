@@ -17,7 +17,7 @@ var (
 
 	configCmd = &cobra.Command{
 		Use:   "config",
-		Short: "Show configuration information",
+		Short: "Print the config to stdout",
 		RunE:  runConfig,
 	}
 )
@@ -26,7 +26,7 @@ func init() {
 	rootCmd.AddCommand(configCmd)
 
 	configCmd.Flags().BoolVarP(&editConfigFlag, "edit", "e", false, "Edit the config in $EDITOR")
-	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Create an initial config file")
+	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Print the default config to stdout")
 }
 
 func runConfig(cmd *cobra.Command, args []string) error {
@@ -41,32 +41,24 @@ func runConfig(cmd *cobra.Command, args []string) error {
 	marshalled, err := yaml.Marshal(config)
 	if err != nil {
 		slog.Error("Failed to marshall config", "err", err)
+		return err
 	}
 
-	fmt.Println(configPathFlag)
-	fmt.Println(string(marshalled))
+	fmt.Printf("Config sourced from: %s\n\n%s\n", configPathFlag, marshalled)
 
 	return nil
 }
 
 func initConfig() error {
-	slog.Debug("creating initial config file", "path", configPathFlag)
+	slog.Debug("printing config file", "path", configPathFlag)
 
-	if _, err := os.Stat(configPathFlag); err == nil {
-		return fmt.Errorf("config file %s already exists", configPathFlag)
-	}
-
-	f, err := os.Create(configPathFlag)
+	marshalled, err := yaml.Marshal(configPkg.Default())
 	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err := f.Write([]byte(configPkg.Example)); err != nil {
+		slog.Error("Failed to marshall config", "err", err)
 		return err
 	}
 
-	fmt.Printf("Created config file: %s\n", configPathFlag)
+	fmt.Printf("%s\n", marshalled)
 
 	return nil
 }
