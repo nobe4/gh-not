@@ -27,7 +27,7 @@ func runRepl(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	model := normal.New(manager.Actors, notifications, renderCache)
+	model := normal.New(manager.Actors, notifications, renderCache, config.Keymap)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {

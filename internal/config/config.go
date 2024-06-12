@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Cache    Cache    `yaml:"cache"`
 	Endpoint Endpoint `yaml:"endpoint"`
+	Keymap   Keymap   `yaml:"keymap"`
 	Rules    []Rule   `yaml:"rules"`
 }
 
@@ -74,6 +75,7 @@ func New(path string) (*Config, error) {
 	config := &Config{
 		Cache:    defaultCache,
 		Endpoint: defaultEndpoint,
+		Keymap:   defaultKeymap,
 	}
 
 	content, err := os.ReadFile(path)
