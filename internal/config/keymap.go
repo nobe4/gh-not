@@ -13,18 +13,18 @@ type KeyBinding []string
 
 var defaultKeymap = Keymap{
 	"normal": KeyBindings{
-		"up":       []string{"up", "k"},
-		"down":     []string{"down", "j"},
-		"next":     []string{"right", "l"},
-		"previous": []string{"left", "h"},
-		"toggle":   []string{" "},
-		"all":      []string{"a"},
-		"none":     []string{"A"},
-		"open":     []string{"o"},
-		"filter":   []string{"/"},
-		"command":  []string{":"},
-		"help":     []string{"?"},
-		"quit":     []string{"q", "esc", "ctrl+c"},
+		"cursor up":       []string{"up", "k"},
+		"cursor down":     []string{"down", "j"},
+		"next page":       []string{"right", "l"},
+		"previous page":   []string{"left", "h"},
+		"toggle selected": []string{" "},
+		"select all":      []string{"a"},
+		"select none":     []string{"A"},
+		"open in browser": []string{"o"},
+		"filter mode":     []string{"/"},
+		"command mode":    []string{":"},
+		"toggle help":     []string{"?"},
+		"quit":            []string{"q", "esc", "ctrl+c"},
 	},
 	"filter": KeyBindings{
 		"confirm": []string{"enter"},
@@ -45,15 +45,17 @@ var unicodeReplacement = []string{
 	"tab", "⇥",
 	"enter", "↵",
 	"esc", "⎋",
+	"ctrl", "C",
+}
+
+func (k Keymap) Binding(mode, action string) key.Binding {
+	keys := k[mode][action]
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(keys.Help(), action),
+	)
 }
 
 func (k KeyBinding) Help() string {
 	return strings.NewReplacer(unicodeReplacement...).Replace(strings.Join(k, "|"))
-}
-
-func (k KeyBinding) Binding(help string) key.Binding {
-	return key.NewBinding(
-		key.WithKeys(k...),
-		key.WithHelp(k.Help(), help),
-	)
 }
