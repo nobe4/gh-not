@@ -31,6 +31,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -87,9 +88,24 @@ func New(path string) (*Config, error) {
 		return nil, err
 	}
 
+	slog.Warn("config file found", "path", path)
+
 	if err := yaml.Unmarshal(content, config); err != nil {
 		return nil, err
 	}
 
 	return config, nil
+}
+
+func (c *Config) Save(path string) error {
+	marshalled, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, marshalled, 0644)
 }
