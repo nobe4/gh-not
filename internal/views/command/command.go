@@ -28,8 +28,8 @@ type Model struct {
 func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications.Notification)), keymap config.Keymap) Model {
 	model := Model{
 		keys: Keymap{
-			cancel:  keymap["filter"]["cancel"].Binding("cancel"),
-			confirm: keymap["filter"]["confirm"].Binding("confirm"),
+			cancel:  keymap.Binding("filter", "cancel"),
+			confirm: keymap.Binding("filter", "confirm"),
 		},
 		input:                 textinput.New(),
 		actors:                actors,
@@ -41,7 +41,7 @@ func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications
 		suggestions = append(suggestions, k)
 	}
 
-	model.input.Prompt = keymap["normal"]["command"][0]
+	model.input.Prompt = keymap["normal"]["command mode"][0]
 	model.input.SetSuggestions(suggestions)
 	model.input.ShowSuggestions = true
 
