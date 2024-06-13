@@ -13,7 +13,7 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - >
-        -s -w -X github.com/nobe4/gh-not/internal/cmd.version=v{{.Version}}
+        -s -w -X github.com/nobe4/gh-not/internal/cmd.version={{.Version}}
               -X github.com/nobe4/gh-not/internal/cmd.commit={{.Commit}}
               -X github.com/nobe4/gh-not/internal/cmd.date={{.Date}}
 
