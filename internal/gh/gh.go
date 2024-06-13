@@ -44,20 +44,6 @@ func NewClient(api api.Caller, cache cache.ExpiringReadWriter, config config.End
 	}
 }
 
-func (c *Client) loadCache() (notifications.Notifications, bool, error) {
-	expired, err := c.cache.Expired()
-	if err != nil {
-		return nil, false, err
-	}
-
-	n := notifications.Notifications{}
-	if err := c.cache.Read(&n); err != nil {
-		return nil, expired, err
-	}
-
-	return n, expired, nil
-}
-
 func isRetryable(err error) bool {
 	var httpError *ghapi.HTTPError
 

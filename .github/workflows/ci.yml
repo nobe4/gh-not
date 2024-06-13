@@ -15,6 +15,7 @@ on:
       - go.sum
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
 
@@ -29,8 +30,30 @@ jobs:
       - name: Build
         run: go build -v ./cmd/gh-not
 
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
       - name: Test
         run: go test -v ./...
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
 
       # Taken from https://github.com/cli/cli/blob/trunk/.github/workflows/lint.yml
       - name: Lint
@@ -50,3 +73,26 @@ jobs:
             assert-nothing-changed go mod tidy
 
             exit $STATUS
+
+  deadcode:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Deadcode
+        run: |
+          go install golang.org/x/tools/cmd/deadcode@latest
+
+          deadcode ./... > "deadcode.txt"
+          if [ -s "deadcode.txt" ]; then
+            echo "Dead code found:"
+            cat deadcode.txt
+            exit 1
+          fi
+
