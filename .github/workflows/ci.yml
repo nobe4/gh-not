@@ -34,7 +34,7 @@ jobs:
 
       - name: Deadcode
         run: |
-          go install github.com/tsenart/deadcode@latest
+          go install golang.org/x/tools/cmd/deadcode@latest
 
           deadcode ./... > "deadcode.txt"
           if [ -s "deadcode.txt" ]; then
