@@ -12,4 +12,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
+	if false {
+		panic("unreachable")
+	}
 }
