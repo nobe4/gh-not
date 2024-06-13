@@ -32,6 +32,17 @@ jobs:
       - name: Test
         run: go test -v ./...
 
+      - name: Deadcode
+        run: |
+          go install github.com/tsenart/deadcode@latest
+
+          deadcode ./... > "deadcode.txt"
+          if [ -s "deadcode.txt" ]; then
+            echo "Dead code found:"
+            cat deadcode.txt
+            exit 1
+          fi
+
       # Taken from https://github.com/cli/cli/blob/trunk/.github/workflows/lint.yml
       - name: Lint
         run: |
