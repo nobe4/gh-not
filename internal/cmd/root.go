@@ -29,7 +29,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:     "gh-not",
-		Version: fmt.Sprintf("%s (%s) built at %s", version, commit, date),
+		Version: fmt.Sprintf("v%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/v%s", version, commit, date, version),
 		Short:   "Manage your GitHub notifications",
 		Example: `
   gh-not --config list
