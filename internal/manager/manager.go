@@ -53,12 +53,12 @@ func (m *Manager) Load(refresh RefreshStrategy) error {
 	if shouldRefresh(expired, refresh) {
 		fmt.Printf("Refreshing the cache...\n")
 
-		pulledNotifications, err := m.client.Notifications()
+		remoteNotifications, err := m.client.Notifications()
 		if err != nil {
 			return err
 		}
 
-		allNotifications = append(allNotifications, pulledNotifications...)
+		allNotifications = notifications.Sync(allNotifications, remoteNotifications)
 
 		if err := m.cache.Write(allNotifications); err != nil {
 			slog.Error("Error while writing the cache: %#v", err)
