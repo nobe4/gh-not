@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 )
 
 type Notifications []*Notification
+type NotificationMap map[string]*Notification
 
 type Notification struct {
 	// Standard API fields
@@ -31,7 +33,9 @@ type Notification struct {
 }
 
 type Meta struct {
-	Hidden   bool `json:"hidden"`
+	Hidden bool `json:"hidden"`
+
+	// TODO: Rename to `Done`
 	ToDelete bool `json:"to_delete"`
 }
 
@@ -74,6 +78,55 @@ func (m NotificationMap) List() Notifications {
 		l = append(l, n)
 	}
 	return l
+}
+
+// Sync merges the local and remote notifications.
+//
+// It applies the following rules:
+// | remote \ local | Missing   | Open      | Done      | Hidden    |
+// | ---            | ---       | ---       | ---       | ---       |
+// | Exist          | (1)Insert | (2)Update | (2)Update | (2)Update |
+// | Missing        | (3)Noop   | (3)Noop   | (4)Drop   | (2)Update |
+//
+// 1. Insert: Add the notification to the new.
+// 2. Update: Update the local notification with the remote data.
+// 3. Noop: Do nothing.
+// 4. Drop: Remove the notification from the local list.
+func Sync(local, remote Notifications) Notifications {
+	remoteMap := remote.Map()
+	localMap := local.Map()
+
+	n := Notifications{}
+
+	// Add any new notifications to the list
+	for remoteId, remote := range remoteMap {
+		if _, ok := localMap[remoteId]; !ok {
+			// (1)Insert
+			n = append(n, remote)
+		}
+	}
+
+	for localId, local := range localMap {
+		remote, remoteExist := remoteMap[localId]
+
+		if remoteExist {
+			// (2)Update
+			remote.Meta = local.Meta
+			n = append(n, remote)
+		} else {
+			if local.Meta.ToDelete {
+				// (4)Drop
+				continue
+			}
+
+			// (3)Noop
+			n = append(n, local)
+		}
+	}
+
+	n.Sort()
+
+	return n
 }
 
 func (n Notifications) IDList() []string {
