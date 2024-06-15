@@ -20,7 +20,7 @@ func init() {
 }
 
 func runRepl(cmd *cobra.Command, args []string) error {
-	notifications := manager.Notifications
+	notifications := manager.Notifications.Visible()
 
 	renderCache, err := notifications.Table()
 	if err != nil {
