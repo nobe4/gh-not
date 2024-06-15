@@ -29,14 +29,18 @@ type Notification struct {
 	Author User `json:"author"`
 
 	// gh-not specific fields
+	// Those fields are not part of the GitHub API and will persist between
+	// syncs.
 	Meta Meta `json:"meta"`
 }
 
 type Meta struct {
+	// Hide the notification from the user
 	Hidden bool `json:"hidden"`
 
-	// TODO: Rename to `Done`
-	ToDelete bool `json:"to_delete"`
+	// Mark the notification as done, will be deleted as soon as it's missing
+	// from the remote notification list.
+	Done bool `json:"done"`
 }
 
 type Subject struct {
@@ -91,7 +95,7 @@ func (n Notifications) IDList() []string {
 // TODO: in-place update
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
-		return n == nil || n.Meta.ToDelete
+		return n == nil
 	})
 }
 

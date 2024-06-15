@@ -33,7 +33,7 @@ func init() {
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	notifications := manager.Notifications
+	notifications := manager.Notifications.Visible()
 
 	if filterFlag != "" {
 		notificationsList, err := jq.Filter(filterFlag, notifications)

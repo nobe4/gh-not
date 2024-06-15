@@ -1,9 +1,11 @@
 package notifications
 
+import "log/slog"
+
 // Sync merges the local and remote notifications.
 //
 // It applies the following rules:
-// | remote \ local | Missing   | Exist     | ToDelete  |
+// | remote \ local | Missing   | Exist     | Done      |
 // | ---            | ---       | ---       | ---       |
 // | Exist          | (1)Insert | (2)Update | (2)Update |
 // | Missing        | (3)Keep   | (3)Keep   | (4)Drop   |
@@ -25,6 +27,7 @@ func Sync(local, remote Notifications) Notifications {
 	for remoteId, remote := range remoteMap {
 		if _, ok := localMap[remoteId]; !ok {
 			// (1)Insert
+			slog.Debug("sync", "action", "insert", "notification", remote.Debug())
 			n = append(n, remote)
 		}
 	}
@@ -34,15 +37,18 @@ func Sync(local, remote Notifications) Notifications {
 
 		if remoteExist {
 			// (2)Update
+			slog.Debug("sync", "action", "update", "notification", remote.Debug())
 			remote.Meta = local.Meta
 			n = append(n, remote)
 		} else {
-			if local.Meta.ToDelete {
+			if local.Meta.Done {
 				// (4)Drop
+				slog.Debug("sync", "action", "drop", "notification", local.Debug())
 				continue
 			}
 
 			// (3)Keep
+			slog.Debug("sync", "action", "keep", "notification", local.Debug())
 			n = append(n, local)
 		}
 	}
