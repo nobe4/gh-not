@@ -22,7 +22,7 @@ func init() {
 func runRepl(cmd *cobra.Command, args []string) error {
 	notifications := manager.Notifications
 
-	renderCache, err := notifications.ToTable()
+	renderCache, err := notifications.Table()
 	if err != nil {
 		return err
 	}

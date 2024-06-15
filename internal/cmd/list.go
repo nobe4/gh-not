@@ -47,10 +47,10 @@ func runList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("`gh-not list --jq` implementation needed")
 	}
 
-	out, err := notifications.ToTable()
+	out, err := notifications.Table()
 	if err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
-		out = notifications.ToString()
+		out = notifications.String()
 	}
 
 	out += fmt.Sprintf("\nFound %d notifications", len(notifications))

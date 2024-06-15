@@ -10,8 +10,12 @@ import (
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
-func (n Notification) ToString() string {
+func (n Notification) String() string {
 	return fmt.Sprintf("%s %s %s %s by %s: '%s' ", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
+}
+
+func (n Notification) Debug() string {
+	return fmt.Sprintf("%s:%s:%s:%s", n.Id, n.Repository.FullName, n.Author.Login, n.Subject.Title)
 }
 
 var prettyRead = map[bool]string{
@@ -54,15 +58,15 @@ func (n Notification) prettyState() string {
 	return colors.Yellow("S?")
 }
 
-func (n Notifications) ToString() string {
+func (n Notifications) String() string {
 	out := ""
 	for _, n := range n {
-		out += n.ToString() + "\n"
+		out += n.String() + "\n"
 	}
 	return out
 }
 
-func (n Notifications) ToTable() (string, error) {
+func (n Notifications) Table() (string, error) {
 	out := bytes.Buffer{}
 
 	t := term.FromEnv()

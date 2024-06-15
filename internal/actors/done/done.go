@@ -18,7 +18,7 @@ type Actor struct {
 }
 
 func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
-	slog.Debug("marking notification as done", "notification", n.ToString())
+	slog.Debug("marking notification as done", "notification", n.Debug())
 
 	n.Meta.ToDelete = true
 
@@ -27,7 +27,7 @@ func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprint(w, colors.Red("DONE")+n.ToString())
+	fmt.Fprint(w, colors.Red("DONE")+n.String())
 
 	return nil
 }

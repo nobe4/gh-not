@@ -11,7 +11,7 @@ import (
 type Actor struct{}
 
 func (_ *Actor) Run(n *notifications.Notification, w io.Writer) error {
-	fmt.Fprint(w, colors.Yellow("DEBUG"+n.ToString()))
+	fmt.Fprint(w, colors.Yellow("DEBUG"+n.String()))
 
 	return nil
 }
