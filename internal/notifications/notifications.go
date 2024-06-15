@@ -88,6 +88,7 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
+// TODO: in-place update
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
 		return n == nil || n.Meta.ToDelete
@@ -100,6 +101,7 @@ func (n Notifications) Sort() {
 	})
 }
 
+// TODO: in-place update
 func (n Notifications) Uniq() Notifications {
 	seenIds := map[string]bool{}
 	return slices.DeleteFunc(n, func(n *Notification) bool {
