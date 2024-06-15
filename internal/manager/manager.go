@@ -81,6 +81,7 @@ func shouldRefresh(expired bool, refresh RefreshStrategy) bool {
 		return false
 	}
 
+	slog.Debug("refresh", "refresh", expired)
 	return expired
 }
 
@@ -119,7 +120,7 @@ func (m *Manager) Apply(noop bool) error {
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
 			if noop {
-				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.ToString())
+				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
 				continue
 			}
 

@@ -11,7 +11,7 @@ type Actor struct{}
 
 func (_ *Actor) Run(n *notifications.Notification, w io.Writer) error {
 	if !n.Meta.Hidden {
-		fmt.Fprint(w, n.ToString())
+		fmt.Fprint(w, n.String())
 	}
 
 	return nil

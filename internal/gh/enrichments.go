@@ -17,13 +17,10 @@ func (c *Client) enrichNotification(n *notifications.Notification) error {
 		return err
 	}
 
-	slog.Debug("adding author to notification", "notifications", n)
+	slog.Debug("enriching", "notifications", n.Debug())
+
 	n.Author = extra.User
-
-	slog.Debug("adding state to notification's suject", "notifications", n)
 	n.Subject.State = extra.State
-
-	slog.Debug("adding HTML URL to notification's suject", "notifications", n)
 	n.Subject.HtmlUrl = extra.HtmlUrl
 
 	return nil

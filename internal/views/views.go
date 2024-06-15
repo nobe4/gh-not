@@ -30,7 +30,7 @@ type ResultMsg struct {
 	Err error
 }
 
-func (r ResultMsg) ToString() string {
+func (r ResultMsg) String() string {
 	out := r.Out
 
 	if r.Err != nil {

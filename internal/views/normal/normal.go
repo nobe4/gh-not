@@ -124,7 +124,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.paginator.SetTotalPages(len(m.visibleChoices))
 
 	case views.ResultMsg:
-		m.result = msg.ToString()
+		m.result = msg.String()
 		return m, views.ChangeMode(views.ResultMode)
 
 	case SelectMsg:
