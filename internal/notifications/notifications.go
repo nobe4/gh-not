@@ -90,6 +90,12 @@ func (n Notifications) Compact() Notifications {
 	})
 }
 
+func (n Notifications) Sort() {
+	slices.SortFunc(n, func(a, b *Notification) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+}
+
 func (n Notifications) Uniq() Notifications {
 	seenIds := map[string]bool{}
 	return slices.DeleteFunc(n, func(n *Notification) bool {

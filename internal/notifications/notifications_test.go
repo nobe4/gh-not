@@ -38,6 +38,27 @@ func TestCompact(t *testing.T) {
 	}
 }
 
+func TestSort(t *testing.T) {
+	n0 := &Notification{Id: "0"}
+	n1 := &Notification{Id: "1"}
+	n2 := &Notification{Id: "2"}
+	n := Notifications{n2, n0, n1}
+
+	n.Sort()
+
+	if n[0] != n0 {
+		t.Fatalf("expected %+v but got %+v", n0, n[0])
+	}
+
+	if n[1] != n1 {
+		t.Fatalf("expected %+v but got %+v", n1, n[1])
+	}
+
+	if n[2] != n2 {
+		t.Fatalf("expected %+v but got %+v", n2, n[2])
+	}
+}
+
 func TestMap(t *testing.T) {
 	n0 := &Notification{Id: "0"}
 	n1 := &Notification{Id: "1"}
