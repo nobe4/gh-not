@@ -38,6 +38,74 @@ func TestCompact(t *testing.T) {
 	}
 }
 
+func TestSort(t *testing.T) {
+	n0 := &Notification{Id: "0"}
+	n1 := &Notification{Id: "1"}
+	n2 := &Notification{Id: "2"}
+	n := Notifications{n2, n0, n1}
+
+	n.Sort()
+
+	if n[0] != n0 {
+		t.Fatalf("expected %+v but got %+v", n0, n[0])
+	}
+
+	if n[1] != n1 {
+		t.Fatalf("expected %+v but got %+v", n1, n[1])
+	}
+
+	if n[2] != n2 {
+		t.Fatalf("expected %+v but got %+v", n2, n[2])
+	}
+}
+
+func TestMap(t *testing.T) {
+	n0 := &Notification{Id: "0"}
+	n1 := &Notification{Id: "1"}
+	n2 := &Notification{Id: "2"}
+	n := Notifications{n0, n1, n2}
+
+	got := n.Map()
+
+	if len(got) != 3 {
+		t.Fatalf("expected 3 elements but got %d\n%+v", len(got), got)
+	}
+
+	// Testing map is challenging because the order is not guaranteed.
+	// Instead, we will compare the sorted list.
+	l := got.List()
+	l.Sort()
+
+	for i, l := range l {
+		if n[i] != l {
+			t.Fatalf("expected %+v but got %+v", n[i], got)
+		}
+	}
+}
+
+func TestList(t *testing.T) {
+	n0 := &Notification{Id: "0"}
+	n1 := &Notification{Id: "1"}
+	n2 := &Notification{Id: "2"}
+	n := NotificationMap{
+		"0": n0,
+		"1": n1,
+		"2": n2,
+	}
+
+	got := n.List()
+
+	if len(got) != 3 {
+		t.Fatalf("expected 3 elements but got %d\n%+v", len(got), got)
+	}
+
+	for _, got := range got {
+		if got != n0 && got != n1 && got != n2 {
+			t.Fatalf("expected %+v to be in the list", got)
+		}
+	}
+}
+
 func TestUniq(t *testing.T) {
 	n0 := &Notification{Id: "0"}
 	n1 := &Notification{Id: "1"}

@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 )
 
 type Notifications []*Notification
+type NotificationMap map[string]*Notification
 
 type Notification struct {
 	// Standard API fields
@@ -31,7 +33,9 @@ type Notification struct {
 }
 
 type Meta struct {
-	Hidden   bool `json:"hidden"`
+	Hidden bool `json:"hidden"`
+
+	// TODO: Rename to `Done`
 	ToDelete bool `json:"to_delete"`
 }
 
@@ -60,6 +64,22 @@ type User struct {
 	Type  string `json:"type"`
 }
 
+func (n Notifications) Map() NotificationMap {
+	m := NotificationMap{}
+	for _, n := range n {
+		m[n.Id] = n
+	}
+	return m
+}
+
+func (m NotificationMap) List() Notifications {
+	l := Notifications{}
+	for _, n := range m {
+		l = append(l, n)
+	}
+	return l
+}
+
 func (n Notifications) IDList() []string {
 	ids := []string{}
 	for _, n := range n {
@@ -68,12 +88,20 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
+// TODO: in-place update
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
 		return n == nil || n.Meta.ToDelete
 	})
 }
 
+func (n Notifications) Sort() {
+	slices.SortFunc(n, func(a, b *Notification) int {
+		return strings.Compare(a.Id, b.Id)
+	})
+}
+
+// TODO: in-place update
 func (n Notifications) Uniq() Notifications {
 	seenIds := map[string]bool{}
 	return slices.DeleteFunc(n, func(n *Notification) bool {

@@ -43,6 +43,9 @@ gh-not repl
 
 `gh-not` fetches the notifications from GitHub and saves them in a local cache.
 
+The synchronization between local and remote notifications is described in
+[`sync.go`](./internal/notifications/sync.go).
+
 The `sync` command applies the rules to the notifications and performs the
 specified actions. It's recommended to run this regularly, see [this
 section](#automatic-fetching).
