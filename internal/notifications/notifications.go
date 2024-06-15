@@ -60,6 +60,22 @@ type User struct {
 	Type  string `json:"type"`
 }
 
+func (n Notifications) Map() NotificationMap {
+	m := NotificationMap{}
+	for _, n := range n {
+		m[n.Id] = n
+	}
+	return m
+}
+
+func (m NotificationMap) List() Notifications {
+	l := Notifications{}
+	for _, n := range m {
+		l = append(l, n)
+	}
+	return l
+}
+
 func (n Notifications) IDList() []string {
 	ids := []string{}
 	for _, n := range n {
