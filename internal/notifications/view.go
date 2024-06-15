@@ -66,6 +66,20 @@ func (n Notifications) String() string {
 	return out
 }
 
+func (n Notifications) Visible() Notifications {
+	visible := Notifications{}
+	for _, n := range n {
+		if n.Visible() {
+			visible = append(visible, n)
+		}
+	}
+	return visible
+}
+
+func (n Notification) Visible() bool {
+	return !n.Meta.Done && !n.Meta.Hidden
+}
+
 func (n Notifications) Table() (string, error) {
 	out := bytes.Buffer{}
 
