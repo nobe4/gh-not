@@ -7,7 +7,7 @@ func TestSync(t *testing.T) {
 	n0Hidden := &Notification{Id: "0", Meta: Meta{Hidden: true}}
 	n0Updated := &Notification{Id: "0"}
 	n1 := &Notification{Id: "1"}
-	n1ToDelete := &Notification{Id: "1", Meta: Meta{ToDelete: true}}
+	n1Done := &Notification{Id: "1", Meta: Meta{Done: true}}
 
 	tests := []struct {
 		name     string
@@ -46,7 +46,7 @@ func TestSync(t *testing.T) {
 		// (4)Drop
 		{
 			name:     "cleanup notifications",
-			local:    Notifications{n0Hidden, n1ToDelete},
+			local:    Notifications{n0Hidden, n1Done},
 			expected: Notifications{n0Hidden},
 		},
 
@@ -55,9 +55,9 @@ func TestSync(t *testing.T) {
 		// (2)Update
 		{
 			name:     "hidden notification present in remote",
-			local:    Notifications{n0Hidden, n1ToDelete},
+			local:    Notifications{n0Hidden, n1Done},
 			remote:   Notifications{n0, n1},
-			expected: Notifications{n0Hidden, n1ToDelete},
+			expected: Notifications{n0Hidden, n1Done},
 		},
 		{
 			name:     "updated notification present in remote",

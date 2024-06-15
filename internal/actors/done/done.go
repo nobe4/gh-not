@@ -20,7 +20,7 @@ type Actor struct {
 func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 	slog.Debug("marking notification as done", "notification", n.Debug())
 
-	n.Meta.ToDelete = true
+	n.Meta.Done = true
 
 	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
 	if err != nil {
