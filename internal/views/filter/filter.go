@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"log/slog"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -43,7 +44,13 @@ func New(visibleLines func(func(string, int)), keymap config.Keymap) Model {
 		visibleLines: visibleLines,
 	}
 
-	model.input.Prompt = keymap["normal"]["filter mode"][0]
+	if keymap["normal"] != nil && keymap["normal"]["filter mode"] != nil {
+		model.input.Prompt = keymap["normal"]["filter mode"][0]
+	} else {
+		slog.Warn("No prompt for filter mode, using default '/'. Make sure the config sets keymap.normal.'filter mode'.")
+		model.input.Prompt = "/"
+	}
+
 	model.input.Placeholder = "filter"
 
 	return model
