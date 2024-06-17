@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -41,7 +42,13 @@ func New(actors actors.ActorsMap, selectedNotifications func(func(*notifications
 		suggestions = append(suggestions, k)
 	}
 
-	model.input.Prompt = keymap["normal"]["command mode"][0]
+	if keymap["normal"] != nil && keymap["normal"]["command mode"] != nil {
+		model.input.Prompt = keymap["normal"]["command mode"][0]
+	} else {
+		slog.Warn("No prompt for command mode, using default ':'. Make sure the config sets keymap.normal.'command mode'.")
+		model.input.Prompt = ":"
+	}
+
 	model.input.SetSuggestions(suggestions)
 	model.input.ShowSuggestions = true
 
