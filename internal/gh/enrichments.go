@@ -8,6 +8,10 @@ import (
 )
 
 func (c *Client) enrichNotification(n *notifications.Notification) error {
+	if n.Meta.Done {
+		return nil
+	}
+
 	extra := struct {
 		User    notifications.User `json:"user"`
 		State   string             `json:"state"`
