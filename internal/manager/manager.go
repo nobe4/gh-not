@@ -119,6 +119,10 @@ func (m *Manager) Apply(noop bool) error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
+			if notification.Meta.Done {
+				continue
+			}
+
 			if noop {
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
 				continue
