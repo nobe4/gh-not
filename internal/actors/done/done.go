@@ -27,7 +27,7 @@ func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprint(w, colors.Red("DONE")+n.String())
+	fmt.Fprint(w, colors.Red("DONE ")+n.String())
 
 	return nil
 }

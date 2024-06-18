@@ -28,7 +28,7 @@ func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
 
 	n.Unread = false
 
-	fmt.Fprint(w, colors.Yellow("READ")+n.String())
+	fmt.Fprint(w, colors.Yellow("READ ")+n.String())
 
 	return nil
 }
