@@ -28,11 +28,14 @@ Example rules:
 package config
 
 import (
+	"errors"
+	"io/fs"
 	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
 
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -54,43 +57,69 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
-var (
-	defaultCache = Cache{
-		TTLInHours: 1,
-		Path:       path.Join(StateDir(), "cache.json"),
+var Defaults = map[string]any{
+	"cache.ttl_in_hours": 1,
+	"cache.path":         path.Join(StateDir(), "cache.json"),
+
+	"endpoint.all":       true,
+	"endpoint.max_retry": 10,
+	"endpoint.max_page":  5,
+
+	"rules": []Rule{},
+
+	"keymap.normal.cursor up":       []string{"up", "k"},
+	"keymap.normal.cursor down":     []string{"down", "j"},
+	"keymap.normal.next page":       []string{"right", "l"},
+	"keymap.normal.previous page":   []string{"left", "h"},
+	"keymap.normal.toggle selected": []string{" "},
+	"keymap.normal.select all":      []string{"a"},
+	"keymap.normal.select none":     []string{"A"},
+	"keymap.normal.open in browser": []string{"o"},
+	"keymap.normal.filter mode":     []string{"/"},
+	"keymap.normal.command mode":    []string{":"},
+	"keymap.normal.toggle help":     []string{"?"},
+	"keymap.normal.quit":            []string{"q", "esc", "ctrl+c"},
+
+	"keymap.filter.confirm": []string{"enter"},
+	"keymap.filter.cancel":  []string{"esc", "ctrl+c"},
+
+	"keymap.command.confirm": []string{"enter"},
+	"keymap.command.cancel":  []string{"esc", "ctrl+c"},
+}
+
+func Default(path string) *viper.Viper {
+	v := viper.New()
+
+	for key, value := range Defaults {
+		v.SetDefault(key, value)
 	}
 
-	defaultEndpoint = Endpoint{
-		All:      true,
-		MaxRetry: 10,
-		MaxPage:  5,
+	if path == "" {
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+		v.AddConfigPath(ConfigDir())
+	} else {
+		v.SetConfigFile(path)
 	}
-)
 
-func Default() *Config {
-	return &Config{
-		Cache:    defaultCache,
-		Endpoint: defaultEndpoint,
-		Keymap:   defaultKeymap,
-	}
+	return v
 }
 
 func New(path string) (*Config, error) {
-	config := Default()
+	v := Default(path)
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			slog.Warn("config file not found, using default configuration", "path", path)
-			return config, nil
+	if err := v.ReadInConfig(); err != nil {
+		if errors.Is(err, viper.ConfigFileNotFoundError{}) ||
+			errors.Is(err, fs.ErrNotExist) {
+			slog.Warn("Config file not found, using default")
+		} else {
+			slog.Error("Failed to read config file", "err", err)
+			return nil, err
 		}
-
-		return nil, err
 	}
 
-	slog.Warn("config file found", "path", path)
-
-	if err := yaml.Unmarshal(content, config); err != nil {
+	config := &Config{}
+	if err := v.Unmarshal(&config); err != nil {
 		return nil, err
 	}
 
