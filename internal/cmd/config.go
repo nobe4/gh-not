@@ -54,7 +54,7 @@ func runConfig(cmd *cobra.Command, args []string) error {
 func initConfig() error {
 	slog.Debug("creating initial config file", "path", configPathFlag)
 
-	if err := configPkg.Default().Save(configPathFlag); err != nil {
+	if err := configPkg.Default(configPathFlag).WriteConfig(); err != nil {
 		slog.Error("Failed to save initial config", "err", err)
 		return err
 	}
