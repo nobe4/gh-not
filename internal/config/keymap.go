@@ -11,31 +11,6 @@ type KeyBindings map[string]KeyBinding
 
 type KeyBinding []string
 
-var defaultKeymap = Keymap{
-	"normal": KeyBindings{
-		"cursor up":       []string{"up", "k"},
-		"cursor down":     []string{"down", "j"},
-		"next page":       []string{"right", "l"},
-		"previous page":   []string{"left", "h"},
-		"toggle selected": []string{" "},
-		"select all":      []string{"a"},
-		"select none":     []string{"A"},
-		"open in browser": []string{"o"},
-		"filter mode":     []string{"/"},
-		"command mode":    []string{":"},
-		"toggle help":     []string{"?"},
-		"quit":            []string{"q", "esc", "ctrl+c"},
-	},
-	"filter": KeyBindings{
-		"confirm": []string{"enter"},
-		"cancel":  []string{"esc", "ctrl+c"},
-	},
-	"command": KeyBindings{
-		"confirm": []string{"enter"},
-		"cancel":  []string{"esc", "ctrl+c"},
-	},
-}
-
 var unicodeReplacement = []string{
 	"up", "↑",
 	"down", "↓",

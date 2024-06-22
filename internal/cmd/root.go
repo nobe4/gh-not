@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path"
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
@@ -51,7 +50,7 @@ func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
-	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", path.Join(configPkg.ConfigDir(), "config.yaml"), "Path to the YAML config file")
+	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", "", "Path to the YAML config file")
 
 	rootCmd.PersistentFlags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
 
@@ -70,7 +69,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 
 	config, err = configPkg.New(configPathFlag)
 	if err != nil {
-		slog.Error("Failed to load the cache", "path", configPathFlag, "err", err)
+		slog.Error("Failed to load the config", "path", configPathFlag, "err", err)
 		return err
 	}
 
@@ -92,7 +91,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		refresh = managerPkg.ForceNoRefresh
 	}
 
-	manager = managerPkg.New(config, caller)
+	manager = managerPkg.New(config.Data, caller)
 	if err := manager.Load(refresh); err != nil {
 		slog.Error("Failed to init the manager", "err", err)
 		return err

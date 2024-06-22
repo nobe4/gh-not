@@ -24,12 +24,12 @@ const (
 type Manager struct {
 	Notifications notifications.Notifications
 	cache         cache.ExpiringReadWriter
-	config        *config.Config
+	config        *config.Data
 	client        *gh.Client
 	Actors        actors.ActorsMap
 }
 
-func New(config *config.Config, caller api.Caller) *Manager {
+func New(config *config.Data, caller api.Caller) *Manager {
 	m := &Manager{}
 
 	m.config = config

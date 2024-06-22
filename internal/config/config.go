@@ -28,15 +28,19 @@ Example rules:
 package config
 
 import (
+	"errors"
+	"io/fs"
 	"log/slog"
-	"os"
-	"path"
-	"path/filepath"
 
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
+	viper *viper.Viper
+	Data  *Data
+}
+
+type Data struct {
 	Cache    Cache    `yaml:"cache"`
 	Endpoint Endpoint `yaml:"endpoint"`
 	Keymap   Keymap   `yaml:"keymap"`
@@ -54,58 +58,40 @@ type Cache struct {
 	Path       string `yaml:"path"`
 }
 
-var (
-	defaultCache = Cache{
-		TTLInHours: 1,
-		Path:       path.Join(StateDir(), "cache.json"),
+func Default(path string) *viper.Viper {
+	v := viper.New()
+
+	for key, value := range Defaults {
+		v.SetDefault(key, value)
 	}
 
-	defaultEndpoint = Endpoint{
-		All:      true,
-		MaxRetry: 10,
-		MaxPage:  5,
+	if path == "" {
+		v.SetConfigName("config")
+		v.SetConfigType("yaml")
+		v.AddConfigPath(ConfigDir())
+	} else {
+		v.SetConfigFile(path)
 	}
-)
 
-func Default() *Config {
-	return &Config{
-		Cache:    defaultCache,
-		Endpoint: defaultEndpoint,
-		Keymap:   defaultKeymap,
-	}
+	return v
 }
 
 func New(path string) (*Config, error) {
-	config := Default()
+	c := &Config{viper: Default(path)}
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			slog.Warn("config file not found, using default configuration", "path", path)
-			return config, nil
+	if err := c.viper.ReadInConfig(); err != nil {
+		if errors.Is(err, viper.ConfigFileNotFoundError{}) ||
+			errors.Is(err, fs.ErrNotExist) {
+			slog.Warn("Config file not found, using default")
+		} else {
+			slog.Error("Failed to read config file", "err", err)
+			return nil, err
 		}
+	}
 
+	if err := c.viper.Unmarshal(&c.Data); err != nil {
 		return nil, err
 	}
 
-	slog.Warn("config file found", "path", path)
-
-	if err := yaml.Unmarshal(content, config); err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
-func (c *Config) Save(path string) error {
-	marshalled, err := yaml.Marshal(c)
-	if err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return err
-	}
-
-	return os.WriteFile(path, marshalled, 0644)
+	return c, nil
 }
