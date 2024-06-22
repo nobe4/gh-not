@@ -26,25 +26,25 @@ var (
 	retryError     = RetryError{verb, endpoint}
 )
 
-func makeSubjectURL(id int) string {
+func mockSubjectUrl(id int) string {
 	return "https://subject.url/" + strconv.Itoa(id)
 }
 
-func makeNotifications(ids []int) []*notifications.Notification {
+func mockNotifications(ids []int) []*notifications.Notification {
 	n := []*notifications.Notification{}
 	for _, id := range ids {
 		n = append(n, &notifications.Notification{
 			Id: strconv.Itoa(id),
 			Subject: notifications.Subject{
-				URL: makeSubjectURL(id),
+				URL: mockSubjectUrl(id),
 			},
 		})
 	}
 	return n
 }
 
-func makeNotificationResponse(t *testing.T, ids []int, next bool) *http.Response {
-	n := makeNotifications(ids)
+func mockNotificationsResponse(t *testing.T, ids []int, next bool) *http.Response {
+	n := mockNotifications(ids)
 	body, err := json.Marshal(n)
 	if err != nil {
 		t.Fatal(err)
@@ -83,7 +83,7 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 	return true
 }
 
-func NewMockClient(c []mock.Call) *Client {
+func mockClient(c []mock.Call) *Client {
 	return &Client{
 		API:      mock.New(c),
 		endpoint: endpoint,
@@ -99,6 +99,11 @@ func TestIsRetryable(t *testing.T) {
 		want bool
 	}{
 		{
+			name: "http 404",
+			err:  &api.HTTPError{StatusCode: 404},
+			want: true,
+		},
+		{
 			name: "http 502",
 			err:  retriableError,
 			want: true,
@@ -109,8 +114,8 @@ func TestIsRetryable(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "io.EOF",
-			err:  io.EOF,
+			name: "DecodeError",
+			err:  decodeError,
 			want: true,
 		},
 		{
@@ -128,7 +133,7 @@ func TestIsRetryable(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			got := isRetryable(test.err)
 			if got != test.want {
-				t.Errorf("expected %v, got %v", test.want, got)
+				t.Errorf("expected %#v, got %#v", test.want, got)
 			}
 		})
 	}
@@ -152,24 +157,29 @@ func TestParse(t *testing.T) {
 			fails:    true,
 		},
 		{
+			name:     "invalid body",
+			response: &http.Response{Body: io.NopCloser(strings.NewReader(`{"a":1]`))},
+			fails:    true,
+		},
+		{
 			name:     "single notification",
-			response: makeNotificationResponse(t, []int{0}, false),
-			expected: makeNotifications([]int{0}),
+			response: mockNotificationsResponse(t, []int{0}, false),
+			expected: mockNotifications([]int{0}),
 		},
 		{
 			name:     "multiple notifications",
-			response: makeNotificationResponse(t, []int{0, 1}, false),
-			expected: makeNotifications([]int{0, 1}),
+			response: mockNotificationsResponse(t, []int{0, 1}, false),
+			expected: mockNotifications([]int{0, 1}),
 		},
 		{
 			name:     "next page",
-			response: makeNotificationResponse(t, []int{0, 1}, true),
-			expected: makeNotifications([]int{0, 1}),
+			response: mockNotificationsResponse(t, []int{0, 1}, true),
+			expected: mockNotifications([]int{0, 1}),
 			next:     "https://next.page",
 		},
 		{
 			name:     "next page with no notification",
-			response: makeNotificationResponse(t, []int{}, true),
+			response: mockNotificationsResponse(t, []int{}, true),
 			next:     "https://next.page",
 		},
 	}
@@ -181,7 +191,7 @@ func TestParse(t *testing.T) {
 			if test.fails && err == nil {
 				t.Errorf("expected test to fails")
 			} else if !test.fails && err != nil {
-				t.Errorf("expected test to pass, got %v", err)
+				t.Errorf("expected test to pass, got %#v", err)
 			}
 
 			if !notificationsEqual(test.expected, notifications) {
@@ -233,7 +243,7 @@ func TestNextPageLink(t *testing.T) {
 func TestRequest(t *testing.T) {
 	t.Run("errors", func(t *testing.T) {
 		expectedError := errors.New("error")
-		client := NewMockClient([]mock.Call{{Error: expectedError}})
+		client := mockClient([]mock.Call{{Error: expectedError}})
 
 		_, _, err := client.request(verb, endpoint, nil)
 		if err == nil {
@@ -241,7 +251,7 @@ func TestRequest(t *testing.T) {
 		}
 
 		if err != expectedError {
-			t.Errorf("expected %v, got %v", expectedError, err)
+			t.Errorf("expected %#v, got %#v", expectedError, err)
 		}
 	})
 
@@ -250,7 +260,7 @@ func TestRequest(t *testing.T) {
 			Body:   io.NopCloser(strings.NewReader(`[{"id":"0"}]`)),
 			Header: http.Header{"Link": []string{`<https://next.page>; rel="next"`}},
 		}
-		client := NewMockClient([]mock.Call{{Response: response}})
+		client := mockClient([]mock.Call{{Response: response}})
 
 		notifications, next, err := client.request(verb, endpoint, nil)
 		if err != nil {
@@ -287,9 +297,9 @@ func TestRetry(t *testing.T) {
 		{
 			name: "no retry, succeeds",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, false)},
+				{Response: mockNotificationsResponse(t, []int{0}, false)},
 			},
-			notifications: makeNotifications([]int{0}),
+			notifications: mockNotifications([]int{0}),
 		},
 		{
 			name: "retry, fails with an error",
@@ -315,16 +325,16 @@ func TestRetry(t *testing.T) {
 			calls: []mock.Call{
 				{Error: retriableError},
 				{Error: retriableError},
-				{Response: makeNotificationResponse(t, []int{0}, false)},
+				{Response: mockNotificationsResponse(t, []int{0}, false)},
 			},
-			notifications: makeNotifications([]int{0}),
+			notifications: mockNotifications([]int{0}),
 			maxRetry:      2,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(test.calls)
+			client := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 
 			notifications, _, err := client.retry(verb, endpoint, nil)
@@ -376,25 +386,25 @@ func TestPaginate(t *testing.T) {
 		{
 			name: "one page, succeeds",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0, 1}, false)},
+				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
-			notifications: makeNotifications([]int{0, 1}),
+			notifications: mockNotifications([]int{0, 1}),
 		},
 		{
 			name:     "one page, retries and succeeds",
 			maxRetry: 1,
 			calls: []mock.Call{
 				{Error: retriableError},
-				{Response: makeNotificationResponse(t, []int{0, 1}, false)},
+				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
-			notifications: makeNotifications([]int{0, 1}),
+			notifications: mockNotifications([]int{0, 1}),
 		},
 
 		{
 			name:    "two pages, fails with an error on the second page",
 			maxPage: 1,
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, true)},
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
 				{Error: sampleError},
 			},
 			error: sampleError,
@@ -403,26 +413,26 @@ func TestPaginate(t *testing.T) {
 			name:    "two pages, succeeds",
 			maxPage: 1,
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, true)},
-				{Response: makeNotificationResponse(t, []int{1}, true)},
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
+				{Response: mockNotificationsResponse(t, []int{1}, true)},
 			},
-			notifications: makeNotifications([]int{0, 1}),
+			notifications: mockNotifications([]int{0, 1}),
 		},
 		{
 			name:    "three pages, but only two are requested",
 			maxPage: 1,
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, true)},
-				{Response: makeNotificationResponse(t, []int{1}, true)},
-				{Response: makeNotificationResponse(t, []int{2}, true)},
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
+				{Response: mockNotificationsResponse(t, []int{1}, true)},
+				{Response: mockNotificationsResponse(t, []int{2}, true)},
 			},
-			notifications: makeNotifications([]int{0, 1}),
+			notifications: mockNotifications([]int{0, 1}),
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(test.calls)
+			client := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 			client.maxPage = test.maxPage
 
@@ -456,34 +466,34 @@ func TestNotifications(t *testing.T) {
 		{
 			name: "no notification",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{}, false)},
+				{Response: mockNotificationsResponse(t, []int{}, false)},
 			},
 		},
 		{
 			name: "one notification",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, false)},
-				{Endpoint: makeSubjectURL(0)},
+				{Response: mockNotificationsResponse(t, []int{0}, false)},
+				{Endpoint: mockSubjectUrl(0)},
 			},
-			notifications: makeNotifications([]int{0}),
+			notifications: mockNotifications([]int{0}),
 		},
 		{
 			name: "multiple notifications",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, true)},
-				{Response: makeNotificationResponse(t, []int{1, 2}, false)},
-				{Endpoint: makeSubjectURL(0)},
-				{Endpoint: makeSubjectURL(1)},
-				{Endpoint: makeSubjectURL(2)},
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
+				{Response: mockNotificationsResponse(t, []int{1, 2}, false)},
+				{Endpoint: mockSubjectUrl(0)},
+				{Endpoint: mockSubjectUrl(1)},
+				{Endpoint: mockSubjectUrl(2)},
 			},
-			notifications: makeNotifications([]int{0, 1, 2}),
+			notifications: mockNotifications([]int{0, 1, 2}),
 		},
 		{
 			name: "fail to enrich",
 			calls: []mock.Call{
-				{Response: makeNotificationResponse(t, []int{0}, true)},
-				{Response: makeNotificationResponse(t, []int{1}, false)},
-				{Endpoint: makeSubjectURL(0)},
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
+				{Response: mockNotificationsResponse(t, []int{1}, false)},
+				{Endpoint: mockSubjectUrl(0)},
 				{Error: sampleError},
 			},
 			error: sampleError,
@@ -492,7 +502,7 @@ func TestNotifications(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(test.calls)
+			client := mockClient(test.calls)
 
 			notifications, err := client.Notifications()
 

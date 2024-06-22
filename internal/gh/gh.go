@@ -47,16 +47,20 @@ func NewClient(api api.Caller, cache cache.ExpiringReadWriter, config config.End
 	}
 }
 
+// isRetryable returns true if the error is retryable.
+// It is pretty permissive, as the /notifications endpoint is flaky.
+// Unexpected status codes and decoding errors are considered retryable.
+// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user--status-codes
 func isRetryable(e error) bool {
 	var httpError *ghapi.HTTPError
 	if errors.As(e, &httpError) {
 		switch httpError.StatusCode {
-		case 502, 504:
+		case 404, 502, 504: // unexpected status code
 			return true
 		}
 	}
 
-	if errors.Is(e, io.EOF) {
+	if errors.Is(e, decodeError) {
 		return true
 	}
 
@@ -68,7 +72,11 @@ func parse(r *http.Response) ([]*notifications.Notification, string, error) {
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&n); err != nil {
-		return nil, "", err
+		slog.Warn("error decoding response", "error", err)
+
+		// Returning a generic error makes it retryable.
+		// A valid body can always be decoded, even if it is empty.
+		return nil, "", decodeError
 	}
 	defer r.Body.Close()
 
