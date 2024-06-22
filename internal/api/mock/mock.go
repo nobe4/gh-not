@@ -9,20 +9,17 @@ import (
 )
 
 type Mock struct {
-	responses []Response
-	calls     []Call
+	Calls []Call
 
 	index int
 }
 
-type Response struct {
+type Call struct {
+	Verb     string
+	Endpoint string
+	Data     any
 	Error    error
 	Response *http.Response
-}
-
-type Call struct {
-	verb     string
-	endpoint string
 }
 
 type MockError struct {
@@ -35,36 +32,40 @@ func (e *MockError) Error() string {
 	return fmt.Sprintf("mock error: %s %s: %s", e.verb, e.endpoint, e.message)
 }
 
-func New(r []Response) (api.Caller, error) {
+func New(c []Call) (api.Caller, error) {
 	return &Mock{
-		responses: r,
-		calls:     []Call{},
-		index:     0,
+		Calls: c,
+		index: 0,
 	}, nil
 }
 
 func (m *Mock) Do(verb, endpoint string, body io.Reader, out interface{}) error {
-	m.calls = append(m.calls, Call{verb, endpoint})
-
-	if m.index >= len(m.responses) {
-		return &MockError{verb, endpoint, "no more responses"}
+	if m.index >= len(m.Calls) {
+		return &MockError{verb, endpoint, "no more calls"}
 	}
 
-	e := m.responses[m.index].Error
+	call := m.Calls[m.index]
+	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
+		return &MockError{verb, endpoint, "unexpected call"}
+	}
+
 	m.index++
 
-	return e
+	out = call.Data
+	return call.Error
 }
 
 func (m *Mock) Request(verb, endpoint string, body io.Reader) (*http.Response, error) {
-	m.calls = append(m.calls, Call{verb, endpoint})
-
-	if m.index >= len(m.responses) {
-		return nil, &MockError{verb, endpoint, "no more responses"}
+	if m.index >= len(m.Calls) {
+		return nil, &MockError{verb, endpoint, "no more calls"}
 	}
 
-	r := m.responses[m.index]
+	call := m.Calls[m.index]
+	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
+		return nil, &MockError{verb, endpoint, "unexpected call"}
+	}
+
 	m.index++
 
-	return r.Response, r.Error
+	return call.Response, call.Error
 }
