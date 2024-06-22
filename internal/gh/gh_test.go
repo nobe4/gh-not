@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	ghapi "github.com/cli/go-gh/v2/pkg/api"
+	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/api/mock"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	retriableError = &ghapi.HTTPError{StatusCode: 502}
+	retriableError = &api.HTTPError{StatusCode: 502}
 	sampleError    = errors.New("error")
 	retryError     = RetryError{verb, endpoint}
 )
@@ -83,13 +83,9 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 	return true
 }
 
-func NewMockClient(t *testing.T, c []mock.Call) *Client {
-	api, err := mock.New(c)
-	if err != nil {
-		t.Fatal(err)
-	}
+func NewMockClient(c []mock.Call) *Client {
 	return &Client{
-		API:      api,
+		API:      mock.New(c),
 		endpoint: endpoint,
 		maxRetry: 100,
 		maxPage:  100,
@@ -109,7 +105,7 @@ func TestIsRetryable(t *testing.T) {
 		},
 		{
 			name: "http 504",
-			err:  &ghapi.HTTPError{StatusCode: 504},
+			err:  &api.HTTPError{StatusCode: 504},
 			want: true,
 		},
 		{
@@ -237,7 +233,7 @@ func TestNextPageLink(t *testing.T) {
 func TestRequest(t *testing.T) {
 	t.Run("errors", func(t *testing.T) {
 		expectedError := errors.New("error")
-		client := NewMockClient(t, []mock.Call{{Error: expectedError}})
+		client := NewMockClient([]mock.Call{{Error: expectedError}})
 
 		_, _, err := client.request(verb, endpoint, nil)
 		if err == nil {
@@ -254,7 +250,7 @@ func TestRequest(t *testing.T) {
 			Body:   io.NopCloser(strings.NewReader(`[{"id":"0"}]`)),
 			Header: http.Header{"Link": []string{`<https://next.page>; rel="next"`}},
 		}
-		client := NewMockClient(t, []mock.Call{{Response: response}})
+		client := NewMockClient([]mock.Call{{Response: response}})
 
 		notifications, next, err := client.request(verb, endpoint, nil)
 		if err != nil {
@@ -328,7 +324,7 @@ func TestRetry(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(t, test.calls)
+			client := NewMockClient(test.calls)
 			client.maxRetry = test.maxRetry
 
 			notifications, _, err := client.retry(verb, endpoint, nil)
@@ -426,7 +422,7 @@ func TestPaginate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(t, test.calls)
+			client := NewMockClient(test.calls)
 			client.maxRetry = test.maxRetry
 			client.maxPage = test.maxPage
 
@@ -496,7 +492,7 @@ func TestNotifications(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := NewMockClient(t, test.calls)
+			client := NewMockClient(test.calls)
 
 			notifications, err := client.Notifications()
 

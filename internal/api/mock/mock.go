@@ -32,8 +32,8 @@ func (e *MockError) Error() string {
 	return fmt.Sprintf("mock error: %s %s: %s", e.verb, e.endpoint, e.message)
 }
 
-func New(c []Call) (api.Caller, error) {
-	return &Mock{Calls: c}, nil
+func New(c []Call) api.Caller {
+	return &Mock{Calls: c}
 }
 
 func (m *Mock) call(verb, endpoint string) (Call, error) {
