@@ -7,7 +7,6 @@ import (
 )
 
 // inspired by https://github.com/cli/go-gh/blob/trunk/pkg/config/config.go
-
 const (
 	appData        = "AppData"
 	ghNotConfigDir = "GHNOT_CONFIG_DIR"
@@ -16,6 +15,7 @@ const (
 	xdgStateHome   = "XDG_STATE_HOME"
 )
 
+// ConfigDir returns the directory where the configuration files are stored.
 func ConfigDir() string {
 	var path string
 	if a := os.Getenv(ghNotConfigDir); a != "" {
@@ -31,6 +31,7 @@ func ConfigDir() string {
 	return path
 }
 
+// StateDir returns the directory where the state files are stored.
 func StateDir() string {
 	var path string
 	if a := os.Getenv(xdgStateHome); a != "" {
