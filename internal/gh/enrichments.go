@@ -7,16 +7,18 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+type Extra struct {
+	User    notifications.User `json:"user"`
+	State   string             `json:"state"`
+	HtmlUrl string             `json:"html_url"`
+}
+
 func (c *Client) enrichNotification(n *notifications.Notification) error {
 	if n.Meta.Done {
 		return nil
 	}
 
-	extra := struct {
-		User    notifications.User `json:"user"`
-		State   string             `json:"state"`
-		HtmlUrl string             `json:"html_url"`
-	}{}
+	extra := Extra{}
 	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &extra); err != nil {
 		return err
 	}

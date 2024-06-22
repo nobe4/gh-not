@@ -27,3 +27,5 @@ go.work
 /cache-test.json
 
 dist/
+coverage
+coverage.html

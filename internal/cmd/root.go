@@ -7,6 +7,7 @@ import (
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
+	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
@@ -77,7 +78,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 	if notificationDumpPath != "" {
 		caller = file.New(notificationDumpPath)
 	} else {
-		caller, err = api.NewGH()
+		caller, err = github.New()
 		if err != nil {
 			slog.Error("Failed to create an API REST client", "err", err)
 			return err

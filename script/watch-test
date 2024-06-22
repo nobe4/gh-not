@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+find . -name '*.go' | \
+    entr -c \
+    bash -c '
+        go test -cover -coverprofile=coverage ./... &&
+        go tool cover -html=coverage -o coverage.html
+    '
