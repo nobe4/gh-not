@@ -25,6 +25,15 @@ var (
 	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 )
 
+type RetryError struct {
+	verb     string
+	endpoint string
+}
+
+func (e RetryError) Error() string {
+	return fmt.Sprintf("retry exceeded for %s %s", e.verb, e.endpoint)
+}
+
 type Client struct {
 	API      api.Caller
 	cache    cache.ExpiringReadWriter
@@ -48,78 +57,39 @@ func NewClient(api api.Caller, cache cache.ExpiringReadWriter, config config.End
 	}
 }
 
-func isRetryable(err error) bool {
+func isRetryable(e error) bool {
 	var httpError *ghapi.HTTPError
-
-	if errors.As(err, &httpError) {
+	if errors.As(e, &httpError) {
 		switch httpError.StatusCode {
 		case 502, 504:
 			return true
 		}
 	}
 
+	if errors.Is(e, io.EOF) {
+		return true
+	}
+
 	return false
 }
 
-func (c *Client) retryRequest(verb, endpoint string, body io.Reader) (*http.Response, error) {
-	for i := c.maxRetry; i > 0; i-- {
-		response, err := c.API.Request(verb, endpoint, body)
-		if err == nil {
-			return response, nil
-		}
+func parse(r *http.Response) ([]*notifications.Notification, string, error) {
+	n := []*notifications.Notification{}
 
-		if isRetryable(err) {
-			slog.Warn("endpoint failed with retryable status", "endpoint", endpoint, "retry left", i)
-			continue
-		}
-
-		return nil, err
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&n); err != nil {
+		return nil, "", err
 	}
 
-	return nil, fmt.Errorf("retry exceeded for %s %s", verb, endpoint)
-}
-
-func decode(body io.ReadCloser, out any) error {
-	decoder := json.NewDecoder(body)
-
-	if err := decoder.Decode(&out); err != nil {
-		return err
+	if err := r.Body.Close(); err != nil {
+		return nil, "", err
 	}
 
-	return body.Close()
+	return n, nextPageLink(&r.Header), nil
 }
 
-// inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
-func (c *Client) paginateNotifications() (notifications.Notifications, error) {
-	var list notifications.Notifications
-
-	pageLeft := c.maxPage
-	endpoint := c.endpoint
-
-	for endpoint != "" && pageLeft > 0 {
-		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)
-
-		response, err := c.retryRequest(http.MethodGet, endpoint, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		pageList := []*notifications.Notification{}
-		if err := decode(response.Body, pageList); err != nil {
-			return nil, err
-		}
-
-		list = append(list, pageList...)
-
-		endpoint = nextPageLink(response)
-		pageLeft--
-	}
-
-	return list, nil
-}
-
-func nextPageLink(response *http.Response) string {
-	for _, m := range linkRE.FindAllStringSubmatch(response.Header.Get("Link"), -1) {
+func nextPageLink(h *http.Header) string {
+	for _, m := range linkRE.FindAllStringSubmatch(h.Get("Link"), -1) {
 		if len(m) > 2 && m[2] == "next" {
 			return m[1]
 		}
@@ -127,8 +97,60 @@ func nextPageLink(response *http.Response) string {
 	return ""
 }
 
-func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) {
-	list, err := c.paginateNotifications()
+func (c *Client) request(verb, endpoint string, body io.Reader) ([]*notifications.Notification, string, error) {
+	response, err := c.API.Request(verb, endpoint, body)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return parse(response)
+}
+
+func (c *Client) retry(verb, endpoint string, body io.Reader) ([]*notifications.Notification, string, error) {
+	for i := c.maxRetry; i >= 0; i-- {
+		notifications, next, err := c.request(verb, endpoint, body)
+		if err == nil {
+			return notifications, next, nil
+		}
+
+		if isRetryable(err) {
+			slog.Warn("endpoint failed with retryable error", "endpoint", endpoint, "retry left", i)
+			continue
+		}
+
+		return nil, "", err
+	}
+
+	return nil, "", RetryError{verb, endpoint}
+}
+
+// inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
+func (c *Client) paginate() (notifications.Notifications, error) {
+	var list notifications.Notifications
+	var pageList []*notifications.Notification
+	var err error
+
+	pageLeft := c.maxPage
+	endpoint := c.endpoint
+
+	for endpoint != "" && pageLeft > 0 {
+		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)
+
+		pageList, endpoint, err = c.retry(http.MethodGet, endpoint, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		list = append(list, pageList...)
+
+		pageLeft--
+	}
+
+	return list, nil
+}
+
+func (c *Client) fetch() (notifications.Notifications, error) {
+	list, err := c.paginate()
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +169,7 @@ func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) 
 func (c *Client) Notifications() (notifications.Notifications, error) {
 	allNotifications := notifications.Notifications{}
 
-	pulledNotifications, err := c.pullNotificationFromApi()
+	pulledNotifications, err := c.fetch()
 	if err != nil {
 		return nil, err
 	}

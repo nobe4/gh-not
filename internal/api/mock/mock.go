@@ -16,8 +16,8 @@ type Mock struct {
 }
 
 type Response struct {
-	error    error
-	response *http.Response
+	Error    error
+	Response *http.Response
 }
 
 type Call struct {
@@ -50,7 +50,7 @@ func (m *Mock) Do(verb, endpoint string, body io.Reader, out interface{}) error 
 		return &MockError{verb, endpoint, "no more responses"}
 	}
 
-	e := m.responses[m.index].error
+	e := m.responses[m.index].Error
 	m.index++
 
 	return e
@@ -66,5 +66,5 @@ func (m *Mock) Request(verb, endpoint string, body io.Reader) (*http.Response, e
 	r := m.responses[m.index]
 	m.index++
 
-	return r.response, r.error
+	return r.Response, r.Error
 }
