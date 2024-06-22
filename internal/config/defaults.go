@@ -10,6 +10,8 @@ var Defaults = map[string]any{
 	"endpoint.max_retry": 10,
 	"endpoint.max_page":  5,
 
+	"view.height": 40,
+
 	"rules": []Rule{},
 
 	"keymap.normal.cursor up":       []string{"up", "k"},
