@@ -21,6 +21,10 @@ const (
 	DefaultEndpoint = "https://api.github.com/notifications"
 )
 
+var (
+	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
+)
+
 type Client struct {
 	API      api.Caller
 	cache    cache.ExpiringReadWriter
@@ -60,34 +64,34 @@ func isRetryable(err error) bool {
 func (c *Client) retryRequest(verb, endpoint string, body io.Reader) (*http.Response, error) {
 	for i := c.maxRetry; i > 0; i-- {
 		response, err := c.API.Request(verb, endpoint, body)
-		if err != nil {
-			if isRetryable(err) {
-				slog.Warn("endpoint failed with retryable status", "endpoint", endpoint, "retry left", i)
-				continue
-			}
-
-			return nil, err
+		if err == nil {
+			return response, nil
 		}
 
-		return response, nil
+		if isRetryable(err) {
+			slog.Warn("endpoint failed with retryable status", "endpoint", endpoint, "retry left", i)
+			continue
+		}
+
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("retry exceeded for %s", endpoint)
+	return nil, fmt.Errorf("retry exceeded for %s %s", verb, endpoint)
+}
+
+func decode(body io.ReadCloser, out any) error {
+	decoder := json.NewDecoder(body)
+
+	if err := decoder.Decode(&out); err != nil {
+		return err
+	}
+
+	return body.Close()
 }
 
 // inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
 func (c *Client) paginateNotifications() (notifications.Notifications, error) {
 	var list notifications.Notifications
-
-	var linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
-	findNextPage := func(response *http.Response) string {
-		for _, m := range linkRE.FindAllStringSubmatch(response.Header.Get("Link"), -1) {
-			if len(m) > 2 && m[2] == "next" {
-				return m[1]
-			}
-		}
-		return ""
-	}
 
 	pageLeft := c.maxPage
 	endpoint := c.endpoint
@@ -100,24 +104,27 @@ func (c *Client) paginateNotifications() (notifications.Notifications, error) {
 			return nil, err
 		}
 
-		pageList := notifications.Notifications{}
-		decoder := json.NewDecoder(response.Body)
-		err = decoder.Decode(&pageList)
-		if err != nil {
+		pageList := []*notifications.Notification{}
+		if err := decode(response.Body, pageList); err != nil {
 			return nil, err
 		}
 
 		list = append(list, pageList...)
 
-		if err := response.Body.Close(); err != nil {
-			return nil, err
-		}
-
-		endpoint = findNextPage(response)
+		endpoint = nextPageLink(response)
 		pageLeft--
 	}
 
 	return list, nil
+}
+
+func nextPageLink(response *http.Response) string {
+	for _, m := range linkRE.FindAllStringSubmatch(response.Header.Get("Link"), -1) {
+		if len(m) > 2 && m[2] == "next" {
+			return m[1]
+		}
+	}
+	return ""
 }
 
 func (c *Client) pullNotificationFromApi() (notifications.Notifications, error) {
