@@ -44,6 +44,7 @@ type Data struct {
 	Cache    Cache    `yaml:"cache"`
 	Endpoint Endpoint `yaml:"endpoint"`
 	Keymap   Keymap   `yaml:"keymap"`
+	View     View     `yaml:"view"`
 	Rules    []Rule   `yaml:"rules"`
 }
 
@@ -56,6 +57,10 @@ type Endpoint struct {
 type Cache struct {
 	TTLInHours int    `yaml:"ttl_in_hours"`
 	Path       string `yaml:"path"`
+}
+
+type View struct {
+	Height int `yaml:"height"`
 }
 
 func Default(path string) *viper.Viper {
