@@ -67,12 +67,14 @@ type Model struct {
 	filter  tea.Model
 	command tea.Model
 
+	height int
+
 	actors actors.ActorsMap
 
 	result string
 }
 
-func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap) Model {
+func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap, view config.View) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
@@ -94,6 +96,7 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 		choices:     notifications,
 		selected:    map[int]bool{},
 		renderCache: strings.Split(renderCache, "\n"),
+		height:      view.Height,
 		actors:      actors,
 		paginator:   paginator.New(),
 	}
@@ -103,7 +106,7 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 
 	// handling it in normal mode to display the help
 	model.paginator.KeyMap = paginator.KeyMap{}
-	model.paginator.PerPage = 40
+	model.paginator.PerPage = model.height
 
 	return model
 }
@@ -213,10 +216,15 @@ func (m Model) View() string {
 		m.help.ShowAll = false
 	}
 
-	start, end := m.paginator.GetSliceBounds(len(m.visibleChoices))
-
 	out := ""
 
+	// padding to keep the help at the bottom
+	visibleChoicesLen := len(m.visibleChoices)
+	for i := visibleChoicesLen; i < m.height; i++ {
+		out += "\n"
+	}
+
+	start, end := m.paginator.GetSliceBounds(visibleChoicesLen)
 	for i, id := range m.visibleChoices[start:end] {
 		cursor := " "
 		if m.cursor == i {
