@@ -8,7 +8,7 @@ import (
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
-	"github.com/nobe4/gh-not/internal/config"
+	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -24,12 +24,12 @@ const (
 type Manager struct {
 	Notifications notifications.Notifications
 	cache         cache.ExpiringReadWriter
-	config        *config.Config
+	config        *configPkg.Data
 	client        *gh.Client
 	Actors        actors.ActorsMap
 }
 
-func New(config *config.Config, caller api.Caller) *Manager {
+func New(config *configPkg.Data, caller api.Caller) *Manager {
 	m := &Manager{}
 
 	m.config = config
