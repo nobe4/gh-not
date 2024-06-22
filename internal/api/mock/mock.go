@@ -33,39 +33,39 @@ func (e *MockError) Error() string {
 }
 
 func New(c []Call) (api.Caller, error) {
-	return &Mock{
-		Calls: c,
-		index: 0,
-	}, nil
+	return &Mock{Calls: c}, nil
 }
 
-func (m *Mock) Do(verb, endpoint string, body io.Reader, out interface{}) error {
+func (m *Mock) call(verb, endpoint string) (Call, error) {
 	if m.index >= len(m.Calls) {
-		return &MockError{verb, endpoint, "no more calls"}
+		return Call{}, &MockError{verb, endpoint, "no more calls"}
 	}
 
 	call := m.Calls[m.index]
 	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
-		return &MockError{verb, endpoint, "unexpected call"}
+		return Call{}, &MockError{verb, endpoint, "unexpected call"}
 	}
 
 	m.index++
+
+	return call, nil
+}
+
+func (m *Mock) Do(verb, endpoint string, body io.Reader, out interface{}) error {
+	call, err := m.call(verb, endpoint)
+	if err != nil {
+		return err
+	}
 
 	out = call.Data
 	return call.Error
 }
 
 func (m *Mock) Request(verb, endpoint string, body io.Reader) (*http.Response, error) {
-	if m.index >= len(m.Calls) {
-		return nil, &MockError{verb, endpoint, "no more calls"}
+	call, err := m.call(verb, endpoint)
+	if err != nil {
+		return nil, err
 	}
-
-	call := m.Calls[m.index]
-	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
-		return nil, &MockError{verb, endpoint, "unexpected call"}
-	}
-
-	m.index++
 
 	return call.Response, call.Error
 }
