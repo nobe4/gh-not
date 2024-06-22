@@ -4,7 +4,6 @@ package gh
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -24,15 +23,6 @@ const (
 var (
 	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 )
-
-type RetryError struct {
-	verb     string
-	endpoint string
-}
-
-func (e RetryError) Error() string {
-	return fmt.Sprintf("retry exceeded for %s %s", e.verb, e.endpoint)
-}
 
 type Client struct {
 	API      api.Caller
@@ -80,10 +70,7 @@ func parse(r *http.Response) ([]*notifications.Notification, string, error) {
 	if err := decoder.Decode(&n); err != nil {
 		return nil, "", err
 	}
-
-	if err := r.Body.Close(); err != nil {
-		return nil, "", err
-	}
+	defer r.Body.Close()
 
 	return n, nextPageLink(&r.Header), nil
 }
@@ -149,7 +136,7 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	return list, nil
 }
 
-func (c *Client) fetch() (notifications.Notifications, error) {
+func (c *Client) Notifications() (notifications.Notifications, error) {
 	list, err := c.paginate()
 	if err != nil {
 		return nil, err
@@ -164,21 +151,4 @@ func (c *Client) fetch() (notifications.Notifications, error) {
 	}
 
 	return list, nil
-}
-
-func (c *Client) Notifications() (notifications.Notifications, error) {
-	allNotifications := notifications.Notifications{}
-
-	pulledNotifications, err := c.fetch()
-	if err != nil {
-		return nil, err
-	}
-
-	allNotifications = append(allNotifications, pulledNotifications...)
-
-	if err := c.cache.Write(allNotifications); err != nil {
-		slog.Error("Error while writing the cache: %#v", err)
-	}
-
-	return allNotifications.Uniq(), nil
 }

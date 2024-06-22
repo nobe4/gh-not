@@ -45,7 +45,6 @@ func makeNotifications(ids []int) []*notifications.Notification {
 
 func makeNotificationResponse(t *testing.T, ids []int, next bool) *http.Response {
 	n := makeNotifications(ids)
-
 	body, err := json.Marshal(n)
 	if err != nil {
 		t.Fatal(err)
@@ -68,10 +67,16 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 	}
 
 	for i := range a {
-		if a != nil && b != nil {
-			if a[i].Id != b[i].Id {
-				return false
-			}
+		if a[i] == nil && b[i] == nil {
+			continue
+		}
+
+		if a[i] == nil || b[i] == nil {
+			return false
+		}
+
+		if a[i].Id != b[i].Id {
+			return false
 		}
 	}
 
@@ -438,7 +443,7 @@ func TestPaginate(t *testing.T) {
 	}
 }
 
-func TestFetch(t *testing.T) {
+func TestNotifications(t *testing.T) {
 	tests := []struct {
 		name          string
 		calls         []mock.Call
@@ -470,11 +475,12 @@ func TestFetch(t *testing.T) {
 			name: "multiple notifications",
 			calls: []mock.Call{
 				{Response: makeNotificationResponse(t, []int{0}, true)},
-				{Response: makeNotificationResponse(t, []int{1}, false)},
+				{Response: makeNotificationResponse(t, []int{1, 2}, false)},
 				{Endpoint: makeSubjectURL(0)},
 				{Endpoint: makeSubjectURL(1)},
+				{Endpoint: makeSubjectURL(2)},
 			},
-			notifications: makeNotifications([]int{0, 1}),
+			notifications: makeNotifications([]int{0, 1, 2}),
 		},
 		{
 			name: "fail to enrich",
@@ -492,7 +498,7 @@ func TestFetch(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			client := NewMockClient(t, test.calls)
 
-			notifications, err := client.fetch()
+			notifications, err := client.Notifications()
 
 			if !errors.Is(err, test.error) {
 				t.Errorf("want %#v, got %#v", test.error, err)
