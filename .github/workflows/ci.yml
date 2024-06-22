@@ -42,7 +42,7 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Test
-        run: go test -v -cover ./...
+        run: go test -v -cover ./... | column -t -s'	'
 
   lint:
     runs-on: ubuntu-latest
