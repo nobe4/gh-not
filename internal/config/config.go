@@ -14,6 +14,7 @@ import (
 	"log/slog"
 
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds the configuration data.
@@ -101,4 +102,14 @@ func New(path string) (*Config, error) {
 	}
 
 	return c, nil
+}
+
+func (c *Config) Marshal() ([]byte, error) {
+	marshalled, err := yaml.Marshal(c.Data)
+	if err != nil {
+		slog.Error("Failed to marshall config", "err", err)
+		return nil, err
+	}
+
+	return marshalled, nil
 }
