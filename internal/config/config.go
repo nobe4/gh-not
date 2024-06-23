@@ -26,11 +26,11 @@ type Config struct {
 
 // Data holds the configuration data.
 type Data struct {
-	Cache    Cache    `yaml:"cache"`
-	Endpoint Endpoint `yaml:"endpoint"`
-	Keymap   Keymap   `yaml:"keymap"`
-	View     View     `yaml:"view"`
-	Rules    []Rule   `yaml:"rules"`
+	Cache    Cache    `mapstructure:"cache"`
+	Endpoint Endpoint `mapstructure:"endpoint"`
+	Keymap   Keymap   `mapstructure:"keymap"`
+	View     View     `mapstructure:"view"`
+	Rules    []Rule   `mapstructure:"rules"`
 }
 
 // Endpoint is the configuration for the GitHub API endpoint.
@@ -39,32 +39,32 @@ type Endpoint struct {
 	// By default, only the unread notifications are fetched.
 	// This maps to `?all=true|false` in the GitHub API.
 	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
-	All bool `yaml:"all"`
+	All bool `mapstructure:"all"`
 
 	// The maximum number of retries to fetch notifications.
 	// The Notifications API is notably flaky, retrying HTTP requests is
 	// definitely needed.
-	MaxRetry int `yaml:"max_retry"`
+	MaxRetry int `mapstructure:"max_retry"`
 
 	// The number of notification pages to fetch.
 	// This will cap the `?page=X` parameter in the GitHub API.
 	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
-	MaxPage int `yaml:"max_page"`
+	MaxPage int `mapstructure:"max_page"`
 }
 
 // Cache is the configuration for the cache file.
 type Cache struct {
 	// The path to the cache file.
-	Path string `yaml:"path"`
+	Path string `mapstructure:"path"`
 
 	// The time-to-live of the cache in hours.
-	TTLInHours int `yaml:"ttl_in_hours"`
+	TTLInHours int `mapstructure:"ttl_in_hours"`
 }
 
 // View is the configuration for the terminal view.
 type View struct {
 	// Number of notifications to display at once.
-	Height int `yaml:"height"`
+	Height int `mapstructure:"height"`
 }
 
 func Default(path string) *viper.Viper {
