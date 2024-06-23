@@ -22,7 +22,7 @@ import (
 //	      - .repository.full_name == "nobe4/gh-not"
 //	      - .reason == "ci_activity"
 type Rule struct {
-	Name string `yaml:"name"`
+	Name string `mapstructure:"name"`
 
 	// Filters is a list of jq filters to filter the notifications.
 	// The filters are applied in order, like they are joined by 'and'.
@@ -31,11 +31,11 @@ type Rule struct {
 	// E.g.:
 	// filters: ["A", "B or C"]
 	// Will filter `A and (B or C)`.
-	Filters []string `yaml:"filters"`
+	Filters []string `mapstructure:"filters"`
 
 	// Action is the action to take on the filtered notifications.
 	// See github.com/nobe4/internal/actors for list of available actions.
-	Action string `yaml:"action"`
+	Action string `mapstructure:"action"`
 }
 
 // FilterIds filters the notifications with the jq filters and returns the IDs.
