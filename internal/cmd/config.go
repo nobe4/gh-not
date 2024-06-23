@@ -8,7 +8,6 @@ import (
 
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -40,13 +39,11 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		return editConfig()
 	}
 
-	marshalled, err := yaml.Marshal(config)
+	marshalled, err := config.Marshal()
 	if err != nil {
-		slog.Error("Failed to marshall config", "err", err)
 		return err
 	}
-
-	fmt.Printf("Config sourced from: %s\n\n%s\n", configPathFlag, marshalled)
+	fmt.Printf("Config sourced from: %s\n\n%s\n", config.Path, marshalled)
 
 	return nil
 }

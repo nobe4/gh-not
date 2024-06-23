@@ -14,11 +14,13 @@ import (
 	"log/slog"
 
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds the configuration data.
 type Config struct {
 	viper *viper.Viper
+	Path  string
 	Data  *Data
 }
 
@@ -66,12 +68,14 @@ type View struct {
 }
 
 func Default(path string) *viper.Viper {
+	slog.Debug("loading default configuration")
 	v := viper.New()
 
 	for key, value := range Defaults {
 		v.SetDefault(key, value)
 	}
 
+	slog.Debug("setting config name and path", "path", path)
 	if path == "" {
 		v.SetConfigName("config")
 		v.SetConfigType("yaml")
@@ -84,7 +88,8 @@ func Default(path string) *viper.Viper {
 }
 
 func New(path string) (*Config, error) {
-	c := &Config{viper: Default(path)}
+	slog.Debug("loading configuration", "path", path)
+	c := &Config{viper: Default(path), Path: path}
 
 	if err := c.viper.ReadInConfig(); err != nil {
 		if errors.Is(err, viper.ConfigFileNotFoundError{}) ||
@@ -95,10 +100,21 @@ func New(path string) (*Config, error) {
 			return nil, err
 		}
 	}
+	c.Path = c.viper.ConfigFileUsed()
 
 	if err := c.viper.Unmarshal(&c.Data); err != nil {
 		return nil, err
 	}
 
 	return c, nil
+}
+
+func (c *Config) Marshal() ([]byte, error) {
+	marshalled, err := yaml.Marshal(c.Data)
+	if err != nil {
+		slog.Error("Failed to marshall config", "err", err)
+		return nil, err
+	}
+
+	return marshalled, nil
 }
