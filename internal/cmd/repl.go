@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log/slog"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/views/normal"
 	"github.com/spf13/cobra"
@@ -20,6 +22,11 @@ func init() {
 }
 
 func runRepl(cmd *cobra.Command, args []string) error {
+	if err := manager.Load(); err != nil {
+		slog.Error("Failed to load the notifications", "err", err)
+		return err
+	}
+
 	notifications := manager.Notifications.Visible()
 
 	renderCache, err := notifications.Table()

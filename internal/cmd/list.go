@@ -33,6 +33,11 @@ func init() {
 }
 
 func runList(cmd *cobra.Command, args []string) error {
+	if err := manager.Load(); err != nil {
+		slog.Error("Failed to load the notifications", "err", err)
+		return err
+	}
+
 	notifications := manager.Notifications.Visible()
 
 	if filterFlag != "" {
