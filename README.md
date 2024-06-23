@@ -93,7 +93,7 @@ rule contains three fields:
     jq '.[] | select((.author.login == "dependabot[bot]") or (.author.login == "nobe4"))' | jq '.[] | select(.repository.full_name == "nobe4/gh-not")'
     ```
 
-    See more at [`config.go`](./internal/config/config.go).
+    See more at [`config.go`](./internal/config/config.go) and [`rule.go`](./internal/config/rule.go).
 
 # Automatic fetching
 
