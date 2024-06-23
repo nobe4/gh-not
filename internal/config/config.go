@@ -5,25 +5,6 @@ It also comes with a default configuration that can be used if no file is found.
 See individual types for more information on the configuration.
 
 Output the default configuration (free of rules) with `gh-not config --init`.
-
-Example rules:
-
-	rules:
-	  - name: showcasing conditionals
-	    action: debug
-	    # Filters are run one after the other, like they are joined by 'and'.
-	    # Having 'or' can be done via '(cond1) or (cond2) or ...'.
-	    filters:
-	      - .author.login == "dependabot[bot]"
-	      - >
-	        (.subject.title | contains("something unimportant")) or
-	        (.subject.title | contains("something already done"))
-
-	  - name: ignore ci failures for the current repo
-	    action: done
-	    filters:
-	      - .repository.full_name == "nobe4/gh-not"
-	      - .reason == "ci_activity"
 */
 package config
 
@@ -35,11 +16,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config holds the configuration data.
 type Config struct {
 	viper *viper.Viper
 	Data  *Data
 }
 
+// Data holds the configuration data.
 type Data struct {
 	Cache    Cache    `yaml:"cache"`
 	Endpoint Endpoint `yaml:"endpoint"`
@@ -48,18 +31,37 @@ type Data struct {
 	Rules    []Rule   `yaml:"rules"`
 }
 
+// Endpoint is the configuration for the GitHub API endpoint.
 type Endpoint struct {
-	All      bool `yaml:"all"`
-	MaxRetry int  `yaml:"max_retry"`
-	MaxPage  int  `yaml:"max_page"`
+	// Pull all notifications from the endpoint.
+	// By default, only the unread notifications are fetched.
+	// This maps to `?all=true|false` in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	All bool `yaml:"all"`
+
+	// The maximum number of retries to fetch notifications.
+	// The Notifications API is notably flaky, retrying HTTP requests is
+	// definitely needed.
+	MaxRetry int `yaml:"max_retry"`
+
+	// The number of notification pages to fetch.
+	// This will cap the `?page=X` parameter in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	MaxPage int `yaml:"max_page"`
 }
 
+// Cache is the configuration for the cache file.
 type Cache struct {
-	TTLInHours int    `yaml:"ttl_in_hours"`
-	Path       string `yaml:"path"`
+	// The path to the cache file.
+	Path string `yaml:"path"`
+
+	// The time-to-live of the cache in hours.
+	TTLInHours int `yaml:"ttl_in_hours"`
 }
 
+// View is the configuration for the terminal view.
 type View struct {
+	// Number of notifications to display at once.
 	Height int `yaml:"height"`
 }
 
