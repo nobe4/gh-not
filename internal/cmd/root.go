@@ -3,12 +3,12 @@ package cmd
 import (
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
+	"github.com/nobe4/gh-not/internal/logger"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
 )
@@ -61,7 +61,7 @@ func init() {
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
-	if err := initLogger(); err != nil {
+	if err := logger.Init(verbosityFlag); err != nil {
 		slog.Error("Failed to init the logger", "err", err)
 		return err
 	}
@@ -94,7 +94,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 
 	manager = managerPkg.New(config.Data, caller)
 	if err := manager.Load(refresh); err != nil {
-		slog.Error("Failed to init the manager", "err", err)
+		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
 
@@ -106,30 +106,6 @@ func postRunE(_ *cobra.Command, _ []string) error {
 		slog.Error("Failed to save the notifications", "err", err)
 		return err
 	}
-
-	return nil
-}
-
-func initLogger() error {
-	opts := &slog.HandlerOptions{}
-
-	switch verbosityFlag {
-	case 1:
-		opts.Level = slog.LevelError
-	case 2:
-		opts.Level = slog.LevelWarn
-	case 3:
-		opts.Level = slog.LevelInfo
-	case 4:
-		opts.Level = slog.LevelDebug
-	case 5:
-		opts.Level = slog.LevelDebug
-		opts.AddSource = true
-	}
-
-	handler := slog.NewTextHandler(os.Stderr, opts)
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
 
 	return nil
 }
