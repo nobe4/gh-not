@@ -27,9 +27,10 @@ type Manager struct {
 	config        *config.Data
 	client        *gh.Client
 	Actors        actors.ActorsMap
+	refresh       RefreshStrategy
 }
 
-func New(config *config.Data, caller api.Caller) *Manager {
+func New(config *config.Data, caller api.Caller, refresh, noRefresh bool) *Manager {
 	m := &Manager{}
 
 	m.config = config
@@ -37,10 +38,21 @@ func New(config *config.Data, caller api.Caller) *Manager {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
 
+	m.setRefresh(refresh, noRefresh)
+
 	return m
 }
 
-func (m *Manager) Load(refresh RefreshStrategy) error {
+func (m *Manager) setRefresh(refresh, noRefresh bool) {
+	m.refresh = DefaultRefresh
+	if refresh {
+		m.refresh = ForceRefresh
+	} else if noRefresh {
+		m.refresh = ForceNoRefresh
+	}
+}
+
+func (m *Manager) Load() error {
 	allNotifications := notifications.Notifications{}
 
 	cachedNotifications, expired, err := m.loadCache()
@@ -50,7 +62,7 @@ func (m *Manager) Load(refresh RefreshStrategy) error {
 		allNotifications = cachedNotifications
 	}
 
-	if shouldRefresh(expired, refresh) {
+	if m.shouldRefresh(expired) {
 		fmt.Printf("Refreshing the cache...\n")
 
 		remoteNotifications, err := m.client.Notifications()
@@ -70,13 +82,13 @@ func (m *Manager) Load(refresh RefreshStrategy) error {
 	return nil
 }
 
-func shouldRefresh(expired bool, refresh RefreshStrategy) bool {
-	if !expired && refresh == ForceRefresh {
+func (m *Manager) shouldRefresh(expired bool) bool {
+	if !expired && m.refresh == ForceRefresh {
 		slog.Info("forcing a refresh")
 		return true
 	}
 
-	if expired && refresh == ForceNoRefresh {
+	if expired && m.refresh == ForceNoRefresh {
 		slog.Info("preventing a refresh")
 		return false
 	}

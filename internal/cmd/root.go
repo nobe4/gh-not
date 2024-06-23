@@ -85,15 +85,8 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	refresh := managerPkg.DefaultRefresh
-	if refreshFlag {
-		refresh = managerPkg.ForceRefresh
-	} else if noRefreshFlag {
-		refresh = managerPkg.ForceNoRefresh
-	}
-
-	manager = managerPkg.New(config.Data, caller)
-	if err := manager.Load(refresh); err != nil {
+	manager = managerPkg.New(config.Data, caller, refreshFlag, noRefreshFlag)
+	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
