@@ -2,6 +2,9 @@
 
 > GitHub rule-based notifications management
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/nobe4/gh-not.svg)](https://pkg.go.dev/github.com/nobe4/gh-not)
+[![CI](https://github.com/nobe4/gh-not/actions/workflows/ci.yml/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/ci.yml)
+
 # Install
 
 - Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
@@ -90,7 +93,7 @@ rule contains three fields:
     jq '.[] | select((.author.login == "dependabot[bot]") or (.author.login == "nobe4"))' | jq '.[] | select(.repository.full_name == "nobe4/gh-not")'
     ```
 
-    See more at [`config.go`](./internal/config/config.go).
+    See more at [`config.go`](./internal/config/config.go) and [`rule.go`](./internal/config/rule.go).
 
 # Automatic fetching
 
