@@ -2,6 +2,8 @@
 
 > GitHub rule-based notifications management
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/nobe4/gh-not@latest/.svg)](https://pkg.go.dev/github.com/nobe4/gh-not@latest/) [![CI](https://github.com/nobe4/gh-not/actions/workflows/ci.yml/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/ci.yml)
+
 # Install
 
 - Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
