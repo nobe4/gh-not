@@ -29,6 +29,11 @@ func init() {
 }
 
 func runSync(cmd *cobra.Command, args []string) error {
+	if err := manager.Load(); err != nil {
+		slog.Error("Failed to load the notifications", "err", err)
+		return err
+	}
+
 	if err := manager.Apply(noop); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
 		return err
