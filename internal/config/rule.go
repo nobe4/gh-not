@@ -43,6 +43,9 @@ type Rule struct {
 func (r Rule) FilterIds(n notifications.Notifications) ([]string, error) {
 	var err error
 
+	// TODO: accept only a single filter so that we can use the jq.Filter function
+	// once instead of looping over the filters.
+	// Given that it's joined by `and`, we can just write the filters directly.
 	for _, filter := range r.Filters {
 		n, err = jq.Filter(filter, n)
 		if err != nil {
