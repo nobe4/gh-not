@@ -1,8 +1,10 @@
 package jq
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/itchyny/gojq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -22,11 +24,11 @@ func notificationsEqual(a notifications.Notifications, ids []string) bool {
 
 func TestFilter(t *testing.T) {
 	tests := []struct {
-		name   string
-		filter string
-		n      notifications.Notifications
-		want   []string
-		err    string
+		name      string
+		filter    string
+		n         notifications.Notifications
+		want      []string
+		assertErr func(t *testing.T, err error)
 	}{
 		{
 			name:   "empty filter",
@@ -41,7 +43,16 @@ func TestFilter(t *testing.T) {
 		{
 			name:   "invalid filter",
 			filter: "!!!",
-			err:    `unexpected token "!"`,
+			assertErr: func(t *testing.T, err error) {
+				if err == nil {
+					t.Fatalf("expected error but got nil")
+				}
+
+				expected := &gojq.ParseError{}
+				if !errors.As(err, &expected) {
+					t.Fatalf("expected error of type %T but got %T", expected, err)
+				}
+			},
 		},
 		{
 			name:   "filter on specific id",
@@ -68,8 +79,8 @@ func TestFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got, err := Filter(test.filter, test.n)
-			if err != nil && err.Error() != test.err {
-				t.Fatalf("expected error %s but got %s", test.err, err.Error())
+			if test.assertErr != nil {
+				test.assertErr(t, err)
 			}
 
 			if !notificationsEqual(got, test.want) {
