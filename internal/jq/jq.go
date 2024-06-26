@@ -15,12 +15,10 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 		return n, nil
 	}
 
-	filteredIDs := []string{}
-
 	// The filter does only selection, not extraction.
 	query, err := gojq.Parse(fmt.Sprintf(".[] | select(%s) | .id", filter))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// gojq works only on `any` data, so we need to convert Notifications to
@@ -29,6 +27,8 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 	if err != nil {
 		return nil, err
 	}
+
+	filteredIDs := []string{}
 
 	iter := query.Run(notificationsRaw)
 	for {
