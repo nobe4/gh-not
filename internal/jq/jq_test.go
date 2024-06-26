@@ -1,10 +1,8 @@
 package jq
 
 import (
-	"errors"
 	"testing"
 
-	"github.com/itchyny/gojq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -28,7 +26,7 @@ func TestFilter(t *testing.T) {
 		filter string
 		n      notifications.Notifications
 		want   []string
-		err    error
+		err    string
 	}{
 		{
 			name:   "empty filter",
@@ -43,19 +41,39 @@ func TestFilter(t *testing.T) {
 		{
 			name:   "invalid filter",
 			filter: "!!!",
-			err:    &gojq.ParseError{},
+			err:    `unexpected token "!"`,
+		},
+		{
+			name:   "filter on specific id",
+			filter: `.id == "1"`,
+			n: notifications.Notifications{
+				&notifications.Notification{Id: "0"},
+				&notifications.Notification{Id: "1"},
+				&notifications.Notification{Id: "2"},
+			},
+			want: []string{"1"},
+		},
+		{
+			name:   "composite filter",
+			filter: `(.id == "1" or .id == "2") and (.unread == true)`,
+			n: notifications.Notifications{
+				&notifications.Notification{Id: "0"},
+				&notifications.Notification{Id: "1", Unread: true},
+				&notifications.Notification{Id: "2", Unread: false},
+			},
+			want: []string{"1"},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got, err := Filter(test.filter, test.n)
-			if !errors.Is(err, test.err) {
-				t.Fatalf("expected error %#v but got %#v", test.err, err)
+			if err != nil && err.Error() != test.err {
+				t.Fatalf("expected error %s but got %s", test.err, err.Error())
 			}
 
 			if !notificationsEqual(got, test.want) {
-				t.Fatalf("expected %#v but got %#v", test.want, got)
+				t.Fatalf("expected %#v but got %#v", test.want, got.IDList())
 			}
 		})
 	}
