@@ -74,6 +74,16 @@ func TestFilter(t *testing.T) {
 			},
 			want: []string{"1"},
 		},
+		{
+			name:   "composite filter",
+			filter: `.id == "1" or (.id == "2" and .unread == true)`,
+			n: notifications.Notifications{
+				&notifications.Notification{Id: "0"},
+				&notifications.Notification{Id: "1", Unread: false},
+				&notifications.Notification{Id: "2", Unread: true},
+			},
+			want: []string{"1", "2"},
+		},
 	}
 
 	for _, test := range tests {
