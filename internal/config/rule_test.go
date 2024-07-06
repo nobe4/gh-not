@@ -74,6 +74,26 @@ func TestFilterIds(t *testing.T) {
 			},
 			want: []string{"0"},
 		},
+
+		// Issue-related tests
+		{
+			r: Rule{
+				Name: "https://github.com/nobe4/gh-not/issues/86",
+				Filters: []string{
+					`(.repository.full_name == "org/repo1" or .repository.full_name == "org/repo2")`,
+					`.reason == "review_requested"`,
+				},
+			},
+			n: notifications.Notifications{
+				{Id: "0", Repository: notifications.Repository{FullName: "org/repo1"}, Reason: "review_requested"},
+				{Id: "1", Repository: notifications.Repository{FullName: "org/repo1"}, Reason: "test"},
+				{Id: "2", Repository: notifications.Repository{FullName: "org/repo2"}, Reason: "review_requested"},
+				{Id: "3", Repository: notifications.Repository{FullName: "org/repo2"}, Reason: "test"},
+				{Id: "4", Repository: notifications.Repository{FullName: "org/repo3"}, Reason: "review_requested"},
+				{Id: "5", Repository: notifications.Repository{FullName: "org/repo3"}, Reason: "test"},
+			},
+			want: []string{"0", "2"},
+		},
 	}
 
 	for _, test := range tests {
