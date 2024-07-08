@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log/slog"
+
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -36,6 +38,18 @@ type Rule struct {
 	// Action is the action to take on the filtered notifications.
 	// See github.com/nobe4/internal/actors for list of available actions.
 	Action string `mapstructure:"action"`
+}
+
+// Test tests the rule for correctness.
+func (r Rule) Test() error {
+	for _, filter := range r.Filters {
+		if err := jq.Validate(filter); err != nil {
+			slog.Error("rule failed", "rule", r.Name, "filter", filter, "err", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // FilterIds filters the notifications with the jq filters and returns the IDs.
