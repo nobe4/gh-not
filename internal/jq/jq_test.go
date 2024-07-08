@@ -65,7 +65,7 @@ func TestFilter(t *testing.T) {
 			want: []string{"1"},
 		},
 		{
-			name:   "composite filter",
+			name:   "composite filter: parenthesis define the priority",
 			filter: `(.id == "1" or .id == "2") and (.unread == true)`,
 			n: notifications.Notifications{
 				&notifications.Notification{Id: "0"},
@@ -75,8 +75,18 @@ func TestFilter(t *testing.T) {
 			want: []string{"1"},
 		},
 		{
-			name:   "composite filter",
+			name:   "composite filter: parenthesis can be added for clarity",
 			filter: `.id == "1" or (.id == "2" and .unread == true)`,
+			n: notifications.Notifications{
+				&notifications.Notification{Id: "0"},
+				&notifications.Notification{Id: "1", Unread: false},
+				&notifications.Notification{Id: "2", Unread: true},
+			},
+			want: []string{"1", "2"},
+		},
+		{
+			name:   "composite filter: and is evaluated first",
+			filter: `.id == "1" or .id == "2" and .unread == true`,
 			n: notifications.Notifications{
 				&notifications.Notification{Id: "0"},
 				&notifications.Notification{Id: "1", Unread: false},
