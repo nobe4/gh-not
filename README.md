@@ -17,15 +17,18 @@
     Is used with `gh not`, while the others `gh-not`. The documentation uses
     `gh-not` exclusively.
 
-- Install via `go`:
+- Install via `go install`:
     ```shell
-    go install github.com/nobe4/gh-not/cmd/gh-not@latest
+    go install \
+        --ldflags="-s -w -X github.com/nobe4/gh-not/internal/version.tag=$(git tag --points-at HEAD)" \
+        github.com/nobe4/gh-not/cmd/gh-not@latest
     ```
 
 - Build from sources
-
     ```shell
-    go build ./cmd/gh-not
+    go build \
+        --ldflags="-s -w -X github.com/nobe4/gh-not/internal/version.tag=$(git tag --points-at HEAD)" \
+        ./cmd/gh-not
     ```
 
 # Getting started
