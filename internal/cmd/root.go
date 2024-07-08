@@ -24,8 +24,9 @@ var (
 	manager *managerPkg.Manager
 
 	rootCmd = &cobra.Command{
-		Use:   "gh-not",
-		Short: "Manage your GitHub notifications",
+		Use:     "gh-not",
+		Short:   "Manage your GitHub notifications",
+		Version: version.String(),
 		Example: `
   gh-not --config list
   gh-not --no-refresh list
@@ -42,8 +43,6 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.Version = version.String()
-
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
 	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
