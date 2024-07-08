@@ -5,9 +5,13 @@ import (
 	"runtime/debug"
 )
 
-var tag = "dev" // set via ldflags
-var commit = "123abc"
-var date = "now"
+var (
+	tag    = "dev" // set via ldflags
+	commit = "123abc"
+	date   = "now"
+)
+
+const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
 
 func String() string {
 	info, ok := debug.ReadBuildInfo()
@@ -23,5 +27,5 @@ func String() string {
 		}
 	}
 
-	return fmt.Sprintf("%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s", tag, commit, date, tag)
+	return fmt.Sprintf(template, tag, commit, date, tag)
 }
