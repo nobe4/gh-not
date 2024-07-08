@@ -106,6 +106,12 @@ func New(path string) (*Config, error) {
 		return nil, err
 	}
 
+	for _, rule := range c.Data.Rules {
+		if err := rule.Test(); err != nil {
+			return nil, err
+		}
+	}
+
 	return c, nil
 }
 

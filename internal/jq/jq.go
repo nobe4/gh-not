@@ -55,3 +55,8 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 
 	return n.FilterFromIds(filteredIDs), nil
 }
+
+func Validate(filter string) error {
+	_, err := gojq.Parse(filter)
+	return err
+}

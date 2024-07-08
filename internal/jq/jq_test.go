@@ -109,3 +109,43 @@ func TestFilter(t *testing.T) {
 		})
 	}
 }
+
+func TestValidate(t *testing.T) {
+	tests := []struct {
+		name      string
+		filter    string
+		assertErr func(t *testing.T, err error)
+	}{
+		{
+			name:   "empty filter",
+			filter: "",
+		},
+		{
+			name:   "invalid filter",
+			filter: "!!!",
+			assertErr: func(t *testing.T, err error) {
+				if err == nil {
+					t.Fatalf("expected error but got nil")
+				}
+
+				expected := &gojq.ParseError{}
+				if !errors.As(err, &expected) {
+					t.Fatalf("expected error of type %T but got %T", expected, err)
+				}
+			},
+		},
+		{
+			name:   "valid filter",
+			filter: ".id == 1",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := Validate(test.filter)
+			if test.assertErr != nil {
+				test.assertErr(t, err)
+			}
+		})
+	}
+}
