@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log/slog"
 
 	"github.com/nobe4/gh-not/internal/api"
@@ -10,14 +9,11 @@ import (
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/logger"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
+	"github.com/nobe4/gh-not/internal/version"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version = "dev"
-	commit  = "123abc"
-	date    = "now"
-
 	verbosityFlag        int
 	configPathFlag       string
 	notificationDumpPath string
@@ -29,8 +25,8 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:     "gh-not",
-		Version: fmt.Sprintf("v%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/v%s", version, commit, date, version),
 		Short:   "Manage your GitHub notifications",
+		Version: version.String(),
 		Example: `
   gh-not --config list
   gh-not --no-refresh list
