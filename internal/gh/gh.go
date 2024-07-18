@@ -144,19 +144,18 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	return list, nil
 }
 
-func (c *Client) Notifications() (notifications.Notifications, error) {
-	list, err := c.paginate()
-	if err != nil {
-		return nil, err
-	}
-
-	for i, n := range list {
+func (c *Client) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
+	for i, n := range ns {
 		if err := c.enrichNotification(n); err != nil {
 			return nil, err
 		}
 
-		list[i] = n
+		ns[i] = n
 	}
 
-	return list, nil
+	return ns, nil
+}
+
+func (c *Client) Notifications() (notifications.Notifications, error) {
+	return c.paginate()
 }
