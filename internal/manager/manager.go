@@ -79,7 +79,9 @@ func (m *Manager) Load() error {
 
 	m.Notifications = allNotifications.Uniq()
 
-	return nil
+	m.Notifications, err = m.client.Enrich(m.Notifications)
+
+	return err
 }
 
 func (m *Manager) shouldRefresh(expired bool) bool {
@@ -131,6 +133,7 @@ func (m *Manager) Apply(noop bool) error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
+			// TODO: add --force flag to ignore this
 			if notification.Meta.Done {
 				continue
 			}
