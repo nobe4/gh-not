@@ -53,35 +53,20 @@ func (m *Manager) setRefresh(refresh, noRefresh bool) {
 }
 
 func (m *Manager) Load() error {
-	allNotifications := notifications.Notifications{}
+	m.Notifications = notifications.Notifications{}
 
 	cachedNotifications, expired, err := m.loadCache()
 	if err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
 	} else if cachedNotifications != nil {
-		allNotifications = cachedNotifications
+		m.Notifications = cachedNotifications
 	}
 
 	if m.shouldRefresh(expired) {
-		fmt.Printf("Refreshing the cache...\n")
-
-		remoteNotifications, err := m.client.Notifications()
-		if err != nil {
-			return err
-		}
-
-		allNotifications = notifications.Sync(allNotifications, remoteNotifications)
-
-		if err := m.cache.Write(allNotifications); err != nil {
-			slog.Error("Error while writing the cache: %#v", err)
-		}
+		return m.refreshNotifications()
 	}
 
-	m.Notifications = allNotifications.Uniq()
-
-	m.Notifications, err = m.client.Enrich(m.Notifications)
-
-	return err
+	return nil
 }
 
 func (m *Manager) shouldRefresh(expired bool) bool {
@@ -97,6 +82,27 @@ func (m *Manager) shouldRefresh(expired bool) bool {
 
 	slog.Debug("refresh", "refresh", expired)
 	return expired
+}
+
+func (m *Manager) refreshNotifications() error {
+	fmt.Printf("Refreshing the cache...\n")
+
+	remoteNotifications, err := m.client.Notifications()
+	if err != nil {
+		return err
+	}
+
+	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
+
+	if err := m.cache.Write(m.Notifications); err != nil {
+		slog.Error("Error while writing the cache: %#v", err)
+	}
+
+	m.Notifications = m.Notifications.Uniq()
+
+	m.Notifications, err = m.client.Enrich(m.Notifications)
+
+	return err
 }
 
 func (m *Manager) Save() error {
