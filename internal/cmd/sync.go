@@ -13,7 +13,6 @@ import (
 
 var (
 	noop                 bool
-	force                bool
 	notificationDumpPath string
 
 	refreshStrategy managerPkg.RefreshStrategy
@@ -27,6 +26,12 @@ var (
 
 Use this command when you want to make sure that your notification list is up to
 date with your ruleset.
+
+E.g.:
+  gh-not sync
+  gh-not sync --force-strategy=noop,sync
+  gh-not sync --refresh-strategy=prevent
+  gh-not sync --from-file=notifications.json
 `,
 		RunE: runSync,
 	}
@@ -34,8 +39,6 @@ date with your ruleset.
 
 func init() {
 	rootCmd.AddCommand(syncCmd)
-
-	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
 
 	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", fmt.Sprintf("Force strategy: %s", forceStrategy.Allowed()))
 	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))

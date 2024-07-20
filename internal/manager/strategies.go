@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 )
 
@@ -36,6 +37,23 @@ func (r *RefreshStrategy) Allowed() string {
 	return "auto, force, prevent"
 }
 
+func (r RefreshStrategy) ShouldRefresh(expired bool) bool {
+	switch r {
+
+	case ForceRefresh:
+		slog.Info("forcing a refresh")
+		return true
+
+	case PreventRefresh:
+		slog.Info("preventing a refresh")
+		return false
+
+	default:
+		slog.Debug("refresh based on cache expiration", "expired", expired)
+		return expired
+	}
+}
+
 func (r *RefreshStrategy) Set(value string) error {
 	switch value {
 	case "auto":
@@ -64,6 +82,9 @@ const (
 	// even the ones marked as Done.
 	ForceApply ForceStrategy = 1 << iota
 
+	// ForceNoop prevents any Action from being executed.
+	ForceNoop
+
 	// ForceApply forces the enrichment of all notifications, even the ones
 	// marked as Done.
 	ForceEnrich
@@ -80,6 +101,10 @@ func (r ForceStrategy) String() string {
 		s = append(s, "apply")
 	}
 
+	if r.Has(ForceNoop) {
+		s = append(s, "noop")
+	}
+
 	if r.Has(ForceEnrich) {
 		s = append(s, "enrich")
 	}
@@ -88,7 +113,7 @@ func (r ForceStrategy) String() string {
 }
 
 func (r ForceStrategy) Allowed() string {
-	return "apply, enrich"
+	return "apply, noop, enrich"
 }
 
 func (r *ForceStrategy) Set(value string) error {
@@ -98,6 +123,8 @@ func (r *ForceStrategy) Set(value string) error {
 		switch s {
 		case "apply":
 			*r |= ForceApply
+		case "noop":
+			*r |= ForceNoop
 		case "enrich":
 			*r |= ForceEnrich
 		default:

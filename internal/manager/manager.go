@@ -20,8 +20,9 @@ type Manager struct {
 	client        *gh.Client
 	Actors        actors.ActorsMap
 
-	Refresh RefreshStrategy
-	Force   ForceStrategy
+	RefreshStrategy RefreshStrategy
+	ForceStrategy   ForceStrategy
+	Noop            bool
 }
 
 func New(config *config.Data) *Manager {
@@ -83,7 +84,7 @@ func (m *Manager) Save() error {
 
 func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
 	for i, n := range ns {
-		if n.Meta.Done && !m.Force.Has(ForceEnrich) {
+		if n.Meta.Done && !m.ForceStrategy.Has(ForceEnrich) {
 			continue
 		}
 
@@ -113,12 +114,12 @@ func (m *Manager) Apply() error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
-			if notification.Meta.Done && !m.Force.Has(ForceApply) {
+			if notification.Meta.Done && !m.ForceStrategy.Has(ForceApply) {
 				slog.Debug("skipping done notification", "id", notification.Id)
 				continue
 			}
 
-			if noop {
+			if m.ForceStrategy.Has(ForceNoop) {
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
 				continue
 			}
