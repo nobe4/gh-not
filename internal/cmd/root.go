@@ -31,7 +31,10 @@ var (
 		Short:   "Lists your GitHub notifications",
 		Version: version.String(),
 		Example: `
-  gh-not --no-refresh
+  gh-not --verbosity 2
+  gh-not --config /path/to/config.yaml
+  gh-not --filter '.repository.full_name | contains("nobe4")'
+  gh-not --repl
 `,
 		PersistentPreRunE: setupGlobals,
 		SilenceErrors:     true,
@@ -62,7 +65,8 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	config, err := configPkg.New(configPathFlag)
+	var err error
+	config, err = configPkg.New(configPathFlag)
 	if err != nil {
 		slog.Error("Failed to load the config", "path", configPathFlag, "err", err)
 		return err
