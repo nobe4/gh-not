@@ -22,7 +22,6 @@ type Manager struct {
 
 	RefreshStrategy RefreshStrategy
 	ForceStrategy   ForceStrategy
-	Noop            bool
 }
 
 func New(config *config.Data) *Manager {

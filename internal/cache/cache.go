@@ -59,12 +59,11 @@ func (c *FileCache) Expired() bool {
 
 	if err != nil {
 		// We could return the error here, but we will get it again when we try
-		// to read/write the cache, so we can ignore it here.
+		// to read/write the cache, so we can ignore it.
 		return true
 	}
 
 	expiration := info.ModTime().Add(c.ttl)
-	expired := time.Now().After(expiration)
 
-	return expired
+	return time.Now().After(expiration)
 }

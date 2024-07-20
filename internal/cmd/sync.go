@@ -61,10 +61,7 @@ func runSync(cmd *cobra.Command, args []string) error {
 	}
 	manager.SetCaller(caller)
 
-	slog.Info("Force strategy", "strategy", forceStrategy)
 	manager.ForceStrategy = forceStrategy
-
-	slog.Info("Refresh strategy", "strategy", refreshStrategy)
 	manager.RefreshStrategy = refreshStrategy
 
 	if err := manager.Load(); err != nil {
