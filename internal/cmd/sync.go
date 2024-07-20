@@ -1,13 +1,20 @@
 package cmd
 
 import (
+	"fmt"
 	"log/slog"
 
+	"github.com/nobe4/gh-not/internal/api"
+	"github.com/nobe4/gh-not/internal/api/file"
+	"github.com/nobe4/gh-not/internal/api/github"
+	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
 )
 
 var (
-	noop bool
+	noop                 bool
+	notificationDumpPath string
+	refreshStrategy      managerPkg.RefreshStrategy
 
 	syncCmd = &cobra.Command{
 		Use:   "sync",
@@ -26,9 +33,25 @@ func init() {
 	rootCmd.AddCommand(syncCmd)
 
 	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
+	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))
+	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
 }
 
 func runSync(cmd *cobra.Command, args []string) error {
+	var caller api.Caller
+	var err error
+
+	if notificationDumpPath != "" {
+		caller = file.New(notificationDumpPath)
+	} else {
+		caller, err = github.New()
+		if err != nil {
+			slog.Error("Failed to create an API REST client", "err", err)
+			return err
+		}
+	}
+	manager.WithRefresh(refreshStrategy).WithCaller(caller)
+
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
