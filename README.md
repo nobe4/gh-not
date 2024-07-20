@@ -5,6 +5,10 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/nobe4/gh-not.svg)](https://pkg.go.dev/github.com/nobe4/gh-not)
 [![CI](https://github.com/nobe4/gh-not/actions/workflows/ci.yml/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/ci.yml)
 
+> [!IMPORTANT]
+> Under heavy development, expect nothing.
+> PRs/issues welcome!
+
 # Install
 
 - Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
