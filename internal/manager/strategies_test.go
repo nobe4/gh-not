@@ -65,7 +65,7 @@ func TestForceStrategy(t *testing.T) {
 			{ForceStrategy(0), ""},
 			{ForceApply, "apply"},
 			{ForceEnrich, "enrich"},
-			{ForceApply | ForceEnrich, "apply,enrich"},
+			{ForceApply | ForceEnrich, "apply, enrich"},
 		}
 
 		for _, test := range tests {

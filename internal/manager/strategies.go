@@ -10,8 +10,13 @@ import (
 type RefreshStrategy int
 
 const (
+	// AutoRefresh refreshes the notifications if the cache is expired.
 	AutoRefresh RefreshStrategy = iota
+
+	// ForceRefresh always refreshes the notifications.
 	ForceRefresh
+
+	// PreventRefresh never refreshes the notifications.
 	PreventRefresh
 )
 
@@ -55,7 +60,12 @@ func (r RefreshStrategy) Type() string {
 type ForceStrategy int
 
 const (
+	// ForceApply forces the application of the ruleset on all notifications,
+	// even the ones marked as Done.
 	ForceApply ForceStrategy = 1 << iota
+
+	// ForceApply forces the enrichment of all notifications, even the ones
+	// marked as Done.
 	ForceEnrich
 )
 
@@ -74,11 +84,11 @@ func (r ForceStrategy) String() string {
 		s = append(s, "enrich")
 	}
 
-	return strings.Join(s, ",")
+	return strings.Join(s, ", ")
 }
 
 func (r ForceStrategy) Allowed() string {
-	return "apply,enrich"
+	return "apply, enrich"
 }
 
 func (r *ForceStrategy) Set(value string) error {
