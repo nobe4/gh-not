@@ -144,7 +144,6 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	return list, nil
 }
 
-
 func (c *Client) Notifications() (notifications.Notifications, error) {
 	return c.paginate()
 }
