@@ -78,6 +78,13 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 }
 
 func runRoot(cmd *cobra.Command, args []string) error {
+	caller, err := github.New()
+	if err != nil {
+		slog.Error("Failed to create an API REST client", "err", err)
+		return err
+	}
+	manager.SetCaller(caller)
+
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
@@ -121,13 +128,6 @@ func displayTable(table string, notifications notifications.Notifications) {
 }
 
 func displayRepl(renderCache string, n notifications.Notifications) error {
-	caller, err := github.New()
-	if err != nil {
-		slog.Error("Failed to create an API REST client", "err", err)
-		return err
-	}
-	manager.WithCaller(caller)
-
 	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
 
 	p := tea.NewProgram(model)
