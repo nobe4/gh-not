@@ -77,6 +77,10 @@ func (m *Manager) shouldRefresh(expired bool) bool {
 }
 
 func (m *Manager) refreshNotifications() error {
+	if m.client == nil {
+		return fmt.Errorf("manager has no client, cannot refresh notifications")
+	}
+
 	fmt.Printf("Refreshing the cache...\n")
 
 	remoteNotifications, err := m.client.Notifications()
