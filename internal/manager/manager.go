@@ -33,11 +33,9 @@ func New(config *config.Data) *Manager {
 	return m
 }
 
-func (m *Manager) WithCaller(caller api.Caller) *Manager {
+func (m *Manager) SetCaller(caller api.Caller) {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
-
-	return m
 }
 
 func (m *Manager) Load() error {
@@ -99,7 +97,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 	return ns, nil
 }
 
-func (m *Manager) Apply(noop, force bool) error {
+func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
 		actor, ok := m.Actors[rule.Action]
 		if !ok {

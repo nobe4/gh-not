@@ -55,5 +55,7 @@ func Sync(local, remote Notifications) Notifications {
 
 	n.Sort()
 
+	// TODO: add uniq here
+
 	return n
 }

@@ -56,16 +56,25 @@ func runSync(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	manager.Force = forceStrategy
-	manager.Refresh = refreshStrategy
-	manager.WithCaller(caller)
+	manager.SetCaller(caller)
+
+	slog.Info("Force strategy", "strategy", forceStrategy)
+	manager.ForceStrategy = forceStrategy
+
+	slog.Info("Refresh strategy", "strategy", refreshStrategy)
+	manager.RefreshStrategy = refreshStrategy
 
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
 
-	if err := manager.Apply(noop, force); err != nil {
+	if err := manager.Refresh(); err != nil {
+		slog.Error("Failed to refresh the notifications", "err", err)
+		return err
+	}
+
+	if err := manager.Apply(); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
 		return err
 	}
