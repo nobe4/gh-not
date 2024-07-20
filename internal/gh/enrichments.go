@@ -13,7 +13,11 @@ type Extra struct {
 	HtmlUrl string             `json:"html_url"`
 }
 
-func (c *Client) enrichNotification(n *notifications.Notification) error {
+func (c *Client) Enrich(n *notifications.Notification) error {
+	if n == nil {
+		return nil
+	}
+
 	extra := Extra{}
 	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &extra); err != nil {
 		return err

@@ -19,7 +19,9 @@ type Manager struct {
 	config        *config.Data
 	client        *gh.Client
 	Actors        actors.ActorsMap
-	refresh       RefreshStrategy
+
+	Refresh RefreshStrategy
+	Force   ForceStrategy
 }
 
 func New(config *config.Data) *Manager {
@@ -34,12 +36,6 @@ func New(config *config.Data) *Manager {
 func (m *Manager) WithCaller(caller api.Caller) *Manager {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
-
-	return m
-}
-
-func (m *Manager) WithRefresh(refresh RefreshStrategy) *Manager {
-	m.refresh = refresh
 
 	return m
 }
@@ -64,12 +60,12 @@ func (m *Manager) Load() error {
 }
 
 func (m *Manager) shouldRefresh(expired bool) bool {
-	if !expired && m.refresh == ForceRefresh {
+	if !expired && m.Refresh == ForceRefresh {
 		slog.Info("forcing a refresh")
 		return true
 	}
 
-	if expired && m.refresh == PreventRefresh {
+	if expired && m.Refresh == PreventRefresh {
 		slog.Info("preventing a refresh")
 		return false
 	}
@@ -98,13 +94,29 @@ func (m *Manager) refreshNotifications() error {
 
 	m.Notifications = m.Notifications.Uniq()
 
-	m.Notifications, err = m.client.Enrich(m.Notifications)
+	m.Notifications, err = m.Enrich(m.Notifications)
 
 	return err
 }
 
 func (m *Manager) Save() error {
 	return m.cache.Write(m.Notifications.Compact())
+}
+
+func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
+	for i, n := range ns {
+		if n.Meta.Done && !m.Force.Has(ForceEnrich) {
+			continue
+		}
+
+		if err := m.client.Enrich(n); err != nil {
+			return nil, err
+		}
+
+		ns[i] = n
+	}
+
+	return ns, nil
 }
 
 func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
@@ -137,7 +149,7 @@ func (m *Manager) Apply(noop, force bool) error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
-			if notification.Meta.Done && !force {
+			if notification.Meta.Done && !m.Force.Has(ForceApply) {
 				slog.Debug("skipping done notification", "id", notification.Id)
 				continue
 			}
