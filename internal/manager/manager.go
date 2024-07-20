@@ -13,14 +13,6 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type RefreshStrategy int
-
-const (
-	DefaultRefresh RefreshStrategy = iota
-	ForceRefresh
-	ForceNoRefresh
-)
-
 type Manager struct {
 	Notifications notifications.Notifications
 	cache         cache.ExpiringReadWriter
@@ -30,26 +22,16 @@ type Manager struct {
 	refresh       RefreshStrategy
 }
 
-func New(config *config.Data, caller api.Caller, refresh, noRefresh bool) *Manager {
+func New(config *config.Data, caller api.Caller, refresh RefreshStrategy) *Manager {
 	m := &Manager{}
 
 	m.config = config
 	m.cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
-
-	m.setRefresh(refresh, noRefresh)
+	m.refresh = refresh
 
 	return m
-}
-
-func (m *Manager) setRefresh(refresh, noRefresh bool) {
-	m.refresh = DefaultRefresh
-	if refresh {
-		m.refresh = ForceRefresh
-	} else if noRefresh {
-		m.refresh = ForceNoRefresh
-	}
 }
 
 func (m *Manager) Load() error {
@@ -75,7 +57,7 @@ func (m *Manager) shouldRefresh(expired bool) bool {
 		return true
 	}
 
-	if expired && m.refresh == ForceNoRefresh {
+	if expired && m.refresh == PreventRefresh {
 		slog.Info("preventing a refresh")
 		return false
 	}

@@ -22,8 +22,6 @@ var (
 	verbosityFlag        int
 	configPathFlag       string
 	notificationDumpPath string
-	refreshFlag          bool
-	noRefreshFlag        bool
 	filterFlag           = ""
 	jqFlag               = ""
 	repl                 bool
@@ -61,9 +59,6 @@ func init() {
 
 	// TODO: move to sync
 	rootCmd.PersistentFlags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
-	rootCmd.PersistentFlags().BoolVarP(&refreshFlag, "refresh", "r", false, "Force a refresh")
-	rootCmd.PersistentFlags().BoolVarP(&noRefreshFlag, "no-refresh", "R", false, "Prevent a refresh")
-	rootCmd.MarkFlagsMutuallyExclusive("refresh", "no-refresh")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -93,7 +88,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 	}
 
 	// TODO: inject gh client only when necessary in the manager
-	manager = managerPkg.New(config.Data, caller, refreshFlag, noRefreshFlag)
+	manager = managerPkg.New(config.Data, caller, refreshStrategy)
 
 	return nil
 }

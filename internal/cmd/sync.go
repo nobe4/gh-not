@@ -1,13 +1,18 @@
 package cmd
 
 import (
+	"fmt"
 	"log/slog"
 
+	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/spf13/cobra"
 )
 
 var (
-	noop bool
+	noop            bool
+	refreshFlag     bool
+	noRefreshFlag   bool
+	refreshStrategy managerPkg.RefreshStrategy
 
 	syncCmd = &cobra.Command{
 		Use:   "sync",
@@ -26,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(syncCmd)
 
 	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
+	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))
 }
 
 func runSync(cmd *cobra.Command, args []string) error {
