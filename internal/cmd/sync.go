@@ -29,7 +29,7 @@ date with your ruleset.
 
 E.g.:
   gh-not sync
-  gh-not sync --force-strategy=noop,sync
+  gh-not sync --force-strategy=noop,enrich
   gh-not sync --refresh-strategy=prevent
   gh-not sync --from-file=notifications.json
 `,
