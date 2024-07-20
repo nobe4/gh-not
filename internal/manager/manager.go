@@ -20,8 +20,8 @@ type Manager struct {
 	client        *gh.Client
 	Actors        actors.ActorsMap
 
-	Refresh RefreshStrategy
-	Force   ForceStrategy
+	RefreshStrategy RefreshStrategy
+	ForceStrategy   ForceStrategy
 }
 
 func New(config *config.Data) *Manager {
@@ -33,25 +33,14 @@ func New(config *config.Data) *Manager {
 	return m
 }
 
-func (m *Manager) WithCaller(caller api.Caller) *Manager {
+func (m *Manager) SetCaller(caller api.Caller) {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
-
-	return m
 }
 
 func (m *Manager) Load() error {
-	m.Notifications = notifications.Notifications{}
-
-	cachedNotifications, expired, err := m.loadCache()
-	if err != nil {
+	if err := m.cache.Read(&m.Notifications); err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
-	} else if cachedNotifications != nil {
-		m.Notifications = cachedNotifications
-	}
-
-	if m.shouldRefresh(expired) {
-		return m.refreshNotifications()
 	}
 
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
@@ -59,19 +48,14 @@ func (m *Manager) Load() error {
 	return nil
 }
 
-func (m *Manager) shouldRefresh(expired bool) bool {
-	if !expired && m.Refresh == ForceRefresh {
-		slog.Info("forcing a refresh")
-		return true
+func (m *Manager) Refresh() error {
+	if m.RefreshStrategy.ShouldRefresh(m.cache.Expired()) {
+		return m.refreshNotifications()
 	}
 
-	if expired && m.Refresh == PreventRefresh {
-		slog.Info("preventing a refresh")
-		return false
-	}
+	slog.Info("Refreshed notifications", "count", len(m.Notifications))
 
-	slog.Debug("refresh", "refresh", expired)
-	return expired
+	return nil
 }
 
 func (m *Manager) refreshNotifications() error {
@@ -87,13 +71,7 @@ func (m *Manager) refreshNotifications() error {
 	}
 
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
-
-	if err := m.cache.Write(m.Notifications); err != nil {
-		slog.Error("Error while writing the cache: %#v", err)
-	}
-
 	m.Notifications = m.Notifications.Uniq()
-
 	m.Notifications, err = m.Enrich(m.Notifications)
 
 	return err
@@ -105,7 +83,7 @@ func (m *Manager) Save() error {
 
 func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
 	for i, n := range ns {
-		if n.Meta.Done && !m.Force.Has(ForceEnrich) {
+		if n.Meta.Done && !m.ForceStrategy.Has(ForceEnrich) {
 			continue
 		}
 
@@ -119,21 +97,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 	return ns, nil
 }
 
-func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
-	expired, err := m.cache.Expired()
-	if err != nil {
-		return nil, false, err
-	}
-
-	n := notifications.Notifications{}
-	if err := m.cache.Read(&n); err != nil {
-		return nil, expired, err
-	}
-
-	return n, expired, nil
-}
-
-func (m *Manager) Apply(noop, force bool) error {
+func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
 		actor, ok := m.Actors[rule.Action]
 		if !ok {
@@ -149,12 +113,12 @@ func (m *Manager) Apply(noop, force bool) error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
-			if notification.Meta.Done && !m.Force.Has(ForceApply) {
+			if notification.Meta.Done && !m.ForceStrategy.Has(ForceApply) {
 				slog.Debug("skipping done notification", "id", notification.Id)
 				continue
 			}
 
-			if noop {
+			if m.ForceStrategy.Has(ForceNoop) {
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
 				continue
 			}

@@ -13,7 +13,6 @@ import (
 
 var (
 	noop                 bool
-	force                bool
 	notificationDumpPath string
 
 	refreshStrategy managerPkg.RefreshStrategy
@@ -27,6 +26,12 @@ var (
 
 Use this command when you want to make sure that your notification list is up to
 date with your ruleset.
+
+E.g.:
+  gh-not sync
+  gh-not sync --force-strategy=noop,enrich
+  gh-not sync --refresh-strategy=prevent
+  gh-not sync --from-file=notifications.json
 `,
 		RunE: runSync,
 	}
@@ -34,8 +39,6 @@ date with your ruleset.
 
 func init() {
 	rootCmd.AddCommand(syncCmd)
-
-	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
 
 	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", fmt.Sprintf("Force strategy: %s", forceStrategy.Allowed()))
 	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))
@@ -56,16 +59,22 @@ func runSync(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	manager.Force = forceStrategy
-	manager.Refresh = refreshStrategy
-	manager.WithCaller(caller)
+	manager.SetCaller(caller)
+
+	manager.ForceStrategy = forceStrategy
+	manager.RefreshStrategy = refreshStrategy
 
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
 
-	if err := manager.Apply(noop, force); err != nil {
+	if err := manager.Refresh(); err != nil {
+		slog.Error("Failed to refresh the notifications", "err", err)
+		return err
+	}
+
+	if err := manager.Apply(); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
 		return err
 	}

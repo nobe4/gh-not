@@ -126,7 +126,7 @@ func displayRepl(renderCache string, n notifications.Notifications) error {
 		slog.Error("Failed to create an API REST client", "err", err)
 		return err
 	}
-	manager.WithCaller(caller)
+	manager.SetCaller(caller)
 
 	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
 
