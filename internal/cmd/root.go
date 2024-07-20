@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
@@ -11,7 +12,9 @@ import (
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/logger"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
+	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/version"
+	"github.com/nobe4/gh-not/internal/views/normal"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +26,7 @@ var (
 	noRefreshFlag        bool
 	filterFlag           = ""
 	jqFlag               = ""
+	repl                 bool
 
 	config  *configPkg.Config
 	manager *managerPkg.Manager
@@ -53,6 +57,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
 	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
 	rootCmd.MarkFlagsMutuallyExclusive("filter", "jq")
+	rootCmd.Flags().BoolVarP(&repl, "repl", "", false, "Start a REPL with the notifications list")
 
 	// TODO: move to sync
 	rootCmd.PersistentFlags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
@@ -113,15 +118,40 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("`gh-not list --jq` implementation needed")
 	}
 
-	out, err := notifications.Table()
+	table, err := notifications.Table()
 	if err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
-		out = notifications.String()
+		table = notifications.String()
 	}
 
+	if repl {
+		return displayRepl(table, notifications)
+	}
+
+	displayTable(table, notifications)
+
+	return nil
+}
+
+func displayTable(table string, notifications notifications.Notifications) {
+	out := table
 	out += fmt.Sprintf("\nFound %d notifications", len(notifications))
 
 	fmt.Println(out)
+}
+
+func displayRepl(renderCache string, n notifications.Notifications) error {
+	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
+
+	p := tea.NewProgram(model)
+	if _, err := p.Run(); err != nil {
+		return err
+	}
+
+	if err := manager.Save(); err != nil {
+		slog.Error("Failed to save the notifications", "err", err)
+		return err
+	}
 
 	return nil
 }
