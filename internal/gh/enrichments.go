@@ -14,10 +14,6 @@ type Extra struct {
 }
 
 func (c *Client) enrichNotification(n *notifications.Notification) error {
-	if n.Meta.Done {
-		return nil
-	}
-
 	extra := Extra{}
 	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &extra); err != nil {
 		return err
