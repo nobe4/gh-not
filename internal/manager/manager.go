@@ -22,13 +22,23 @@ type Manager struct {
 	refresh       RefreshStrategy
 }
 
-func New(config *config.Data, caller api.Caller, refresh RefreshStrategy) *Manager {
+func New(config *config.Data) *Manager {
 	m := &Manager{}
 
 	m.config = config
 	m.cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
+
+	return m
+}
+
+func (m *Manager) WithCaller(caller api.Caller) *Manager {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actors = actors.Map(m.client)
+
+	return m
+}
+
+func (m *Manager) WithRefresh(refresh RefreshStrategy) *Manager {
 	m.refresh = refresh
 
 	return m

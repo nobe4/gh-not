@@ -5,8 +5,6 @@ import (
 	"log/slog"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/nobe4/gh-not/internal/api"
-	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/jq"
@@ -19,12 +17,11 @@ import (
 )
 
 var (
-	verbosityFlag        int
-	configPathFlag       string
-	notificationDumpPath string
-	filterFlag           = ""
-	jqFlag               = ""
-	repl                 bool
+	verbosityFlag  int
+	configPathFlag string
+	filterFlag     string
+	jqFlag         string
+	repl           bool
 
 	config  *configPkg.Config
 	manager *managerPkg.Manager
@@ -55,10 +52,8 @@ func init() {
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
 	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
 	rootCmd.MarkFlagsMutuallyExclusive("filter", "jq")
-	rootCmd.Flags().BoolVarP(&repl, "repl", "", false, "Start a REPL with the notifications list")
 
-	// TODO: move to sync
-	rootCmd.PersistentFlags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
+	rootCmd.Flags().BoolVarP(&repl, "repl", "", false, "Start a REPL with the notifications list")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -67,28 +62,13 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var err error
-
-	config, err = configPkg.New(configPathFlag)
+	config, err := configPkg.New(configPathFlag)
 	if err != nil {
 		slog.Error("Failed to load the config", "path", configPathFlag, "err", err)
 		return err
 	}
 
-	// TODO: move to sync
-	var caller api.Caller
-	if notificationDumpPath != "" {
-		caller = file.New(notificationDumpPath)
-	} else {
-		caller, err = github.New()
-		if err != nil {
-			slog.Error("Failed to create an API REST client", "err", err)
-			return err
-		}
-	}
-
-	// TODO: inject gh client only when necessary in the manager
-	manager = managerPkg.New(config.Data, caller, refreshStrategy)
+	manager = managerPkg.New(config.Data)
 
 	return nil
 }
@@ -131,11 +111,19 @@ func runRoot(cmd *cobra.Command, args []string) error {
 func displayTable(table string, notifications notifications.Notifications) {
 	out := table
 	out += fmt.Sprintf("\nFound %d notifications", len(notifications))
+	// TODO: add a notice if the notifications could be refreshed
 
 	fmt.Println(out)
 }
 
 func displayRepl(renderCache string, n notifications.Notifications) error {
+	caller, err := github.New()
+	if err != nil {
+		slog.Error("Failed to create an API REST client", "err", err)
+		return err
+	}
+	manager.WithCaller(caller)
+
 	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
 
 	p := tea.NewProgram(model)
