@@ -58,6 +58,8 @@ func (m *Manager) Load() error {
 		return m.refreshNotifications()
 	}
 
+	slog.Info("Loaded notifications", "count", len(m.Notifications))
+
 	return nil
 }
 
@@ -119,7 +121,7 @@ func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
 	return n, expired, nil
 }
 
-func (m *Manager) Apply(noop bool) error {
+func (m *Manager) Apply(noop, force bool) error {
 	for _, rule := range m.config.Rules {
 		actor, ok := m.Actors[rule.Action]
 		if !ok {
@@ -135,8 +137,8 @@ func (m *Manager) Apply(noop bool) error {
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
 
 		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
-			// TODO: add --force flag to ignore this
-			if notification.Meta.Done {
+			if notification.Meta.Done && !force {
+				slog.Debug("skipping done notification", "id", notification.Id)
 				continue
 			}
 
