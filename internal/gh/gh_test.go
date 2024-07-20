@@ -360,13 +360,15 @@ func TestPaginate(t *testing.T) {
 		error         error
 	}{
 		{
-			name:  "one page, fails with an error",
-			calls: []mock.Call{{Error: sampleError}},
-			error: sampleError,
+			name:    "one page, fails with an error",
+			maxPage: 1,
+			calls:   []mock.Call{{Error: sampleError}},
+			error:   sampleError,
 		},
 		{
 			name:     "one page, retries and fails with an error",
 			maxRetry: 1,
+			maxPage:  1,
 			calls: []mock.Call{
 				{Error: retriableError},
 				{Error: sampleError},
@@ -376,6 +378,7 @@ func TestPaginate(t *testing.T) {
 		{
 			name:     "one page, retries to many times and fails",
 			maxRetry: 1,
+			maxPage:  1,
 			calls: []mock.Call{
 				{Error: retriableError},
 				{Error: retriableError},
@@ -384,7 +387,8 @@ func TestPaginate(t *testing.T) {
 			error: retryError,
 		},
 		{
-			name: "one page, succeeds",
+			name:    "one page, succeeds",
+			maxPage: 1,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
@@ -393,16 +397,25 @@ func TestPaginate(t *testing.T) {
 		{
 			name:     "one page, retries and succeeds",
 			maxRetry: 1,
+			maxPage:  1,
 			calls: []mock.Call{
 				{Error: retriableError},
 				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
 			notifications: mockNotifications([]int{0, 1}),
 		},
-
+		{
+			name:    "two pages available, fetch only one",
+			maxPage: 1,
+			calls: []mock.Call{
+				{Response: mockNotificationsResponse(t, []int{0}, true)},
+				{Error: sampleError},
+			},
+			notifications: mockNotifications([]int{0}),
+		},
 		{
 			name:    "two pages, fails with an error on the second page",
-			maxPage: 1,
+			maxPage: 2,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
 				{Error: sampleError},
@@ -411,7 +424,7 @@ func TestPaginate(t *testing.T) {
 		},
 		{
 			name:    "two pages, succeeds",
-			maxPage: 1,
+			maxPage: 2,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
 				{Response: mockNotificationsResponse(t, []int{1}, true)},
@@ -420,7 +433,7 @@ func TestPaginate(t *testing.T) {
 		},
 		{
 			name:    "three pages, but only two are requested",
-			maxPage: 1,
+			maxPage: 2,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
 				{Response: mockNotificationsResponse(t, []int{1}, true)},
@@ -456,23 +469,13 @@ func TestNotifications(t *testing.T) {
 		notifications []*notifications.Notification
 		error         error
 	}{
-		{
-			name: "fails",
-			calls: []mock.Call{
-				{Error: sampleError},
-			},
-			error: sampleError,
-		},
+
 		{
 			name: "no notification",
-			calls: []mock.Call{
-				{Response: mockNotificationsResponse(t, []int{}, false)},
-			},
 		},
 		{
 			name: "one notification",
 			calls: []mock.Call{
-				{Response: mockNotificationsResponse(t, []int{0}, false)},
 				{Endpoint: mockSubjectUrl(0)},
 			},
 			notifications: mockNotifications([]int{0}),
@@ -480,8 +483,6 @@ func TestNotifications(t *testing.T) {
 		{
 			name: "multiple notifications",
 			calls: []mock.Call{
-				{Response: mockNotificationsResponse(t, []int{0}, true)},
-				{Response: mockNotificationsResponse(t, []int{1, 2}, false)},
 				{Endpoint: mockSubjectUrl(0)},
 				{Endpoint: mockSubjectUrl(1)},
 				{Endpoint: mockSubjectUrl(2)},
@@ -491,12 +492,11 @@ func TestNotifications(t *testing.T) {
 		{
 			name: "fail to enrich",
 			calls: []mock.Call{
-				{Response: mockNotificationsResponse(t, []int{0}, true)},
-				{Response: mockNotificationsResponse(t, []int{1}, false)},
 				{Endpoint: mockSubjectUrl(0)},
 				{Error: sampleError},
 			},
-			error: sampleError,
+			notifications: mockNotifications([]int{0, 1}),
+			error:         sampleError,
 		},
 	}
 
@@ -504,15 +504,18 @@ func TestNotifications(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			client := mockClient(test.calls)
 
-			notifications, err := client.Notifications()
+			notifications, err := client.Enrich(test.notifications)
 
-			if !errors.Is(err, test.error) {
-				t.Errorf("want %#v, got %#v", test.error, err)
+			if test.error == nil {
+				if !notificationsEqual(notifications, test.notifications) {
+					t.Errorf("want %#v, got %#v", test.notifications, notifications)
+				}
+			} else {
+				if !errors.Is(err, test.error) {
+					t.Errorf("want %#v, got %#v", test.error, err)
+				}
 			}
 
-			if !notificationsEqual(notifications, test.notifications) {
-				t.Errorf("want %#v, got %#v", test.notifications, notifications)
-			}
 		})
 	}
 }
