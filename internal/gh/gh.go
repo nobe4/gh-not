@@ -128,7 +128,7 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	pageLeft := c.maxPage
 	endpoint := c.endpoint
 
-	for endpoint != "" && pageLeft >= 0 {
+	for endpoint != "" && pageLeft > 0 {
 		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)
 
 		pageList, endpoint, err = c.retry(http.MethodGet, endpoint, nil)
