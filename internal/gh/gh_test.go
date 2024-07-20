@@ -360,6 +360,9 @@ func TestPaginate(t *testing.T) {
 		error         error
 	}{
 		{
+			name: "zero page",
+		},
+		{
 			name:    "one page, fails with an error",
 			maxPage: 1,
 			calls:   []mock.Call{{Error: sampleError}},
