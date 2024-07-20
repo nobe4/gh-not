@@ -2,6 +2,8 @@ package manager
 
 import "fmt"
 
+// RefreshStrategy is an enum for the refresh strategy.
+// It implements https://pkg.go.dev/github.com/spf13/pflag#Value.
 type RefreshStrategy int
 
 const (
