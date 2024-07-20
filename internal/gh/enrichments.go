@@ -13,8 +13,8 @@ type Extra struct {
 	HtmlUrl string             `json:"html_url"`
 }
 
-func (c *Client) enrichNotification(n *notifications.Notification) error {
-	if n.Meta.Done {
+func (c *Client) Enrich(n *notifications.Notification) error {
+	if n == nil {
 		return nil
 	}
 

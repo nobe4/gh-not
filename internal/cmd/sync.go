@@ -15,7 +15,9 @@ var (
 	noop                 bool
 	force                bool
 	notificationDumpPath string
-	refreshStrategy      managerPkg.RefreshStrategy
+
+	refreshStrategy managerPkg.RefreshStrategy
+	forceStrategy   managerPkg.ForceStrategy
 
 	syncCmd = &cobra.Command{
 		Use:   "sync",
@@ -34,8 +36,10 @@ func init() {
 	rootCmd.AddCommand(syncCmd)
 
 	syncCmd.Flags().BoolVarP(&noop, "noop", "n", false, "Doesn't execute any action")
-	syncCmd.Flags().BoolVarP(&force, "force", "f", false, "Force the execution of the rules on Done notifications")
+
+	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", fmt.Sprintf("Force strategy: %s", forceStrategy.Allowed()))
 	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))
+
 	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
 }
 
@@ -52,7 +56,9 @@ func runSync(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	manager.WithRefresh(refreshStrategy).WithCaller(caller)
+	manager.Force = forceStrategy
+	manager.Refresh = refreshStrategy
+	manager.WithCaller(caller)
 
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)

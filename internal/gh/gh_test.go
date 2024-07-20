@@ -30,15 +30,19 @@ func mockSubjectUrl(id int) string {
 	return "https://subject.url/" + strconv.Itoa(id)
 }
 
+func mockNotification(id int) *notifications.Notification {
+	return &notifications.Notification{
+		Id: strconv.Itoa(id),
+		Subject: notifications.Subject{
+			URL: mockSubjectUrl(id),
+		},
+	}
+}
+
 func mockNotifications(ids []int) []*notifications.Notification {
 	n := []*notifications.Notification{}
 	for _, id := range ids {
-		n = append(n, &notifications.Notification{
-			Id: strconv.Itoa(id),
-			Subject: notifications.Subject{
-				URL: mockSubjectUrl(id),
-			},
-		})
+		n = append(n, mockNotification(id))
 	}
 	return n
 }
@@ -467,53 +471,36 @@ func TestPaginate(t *testing.T) {
 
 func TestNotifications(t *testing.T) {
 	tests := []struct {
-		name          string
-		calls         []mock.Call
-		notifications []*notifications.Notification
-		error         error
+		name         string
+		calls        mock.Call
+		notification *notifications.Notification
+		error        error
 	}{
 
 		{
 			name: "no notification",
 		},
 		{
-			name: "one notification",
-			calls: []mock.Call{
-				{Endpoint: mockSubjectUrl(0)},
-			},
-			notifications: mockNotifications([]int{0}),
+			name:         "one notification",
+			calls:        mock.Call{Endpoint: mockSubjectUrl(0)},
+			notification: mockNotification(0),
 		},
 		{
-			name: "multiple notifications",
-			calls: []mock.Call{
-				{Endpoint: mockSubjectUrl(0)},
-				{Endpoint: mockSubjectUrl(1)},
-				{Endpoint: mockSubjectUrl(2)},
-			},
-			notifications: mockNotifications([]int{0, 1, 2}),
-		},
-		{
-			name: "fail to enrich",
-			calls: []mock.Call{
-				{Endpoint: mockSubjectUrl(0)},
-				{Error: sampleError},
-			},
-			notifications: mockNotifications([]int{0, 1}),
-			error:         sampleError,
+			name:         "fail to enrich",
+			calls:        mock.Call{Error: sampleError},
+			notification: mockNotification(0),
+			error:        sampleError,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := mockClient(test.calls)
+			client := mockClient([]mock.Call{test.calls})
 
-			notifications, err := client.Enrich(test.notifications)
+			err := client.Enrich(test.notification)
 
-			if test.error == nil {
-				if !notificationsEqual(notifications, test.notifications) {
-					t.Errorf("want %#v, got %#v", test.notifications, notifications)
-				}
-			} else {
+			// TODO: make this test check for the author/subject
+			if test.error != nil {
 				if !errors.Is(err, test.error) {
 					t.Errorf("want %#v, got %#v", test.error, err)
 				}
