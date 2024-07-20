@@ -108,7 +108,7 @@ E.g.
 - `cron`
 
     ```shell
-    0 * * * *  gh-not sync --config=/path/to/config.yaml --refresh --verbosity=4 >> /tmp/gh-not-sync.out 2>> /tmp/gh-not-sync.err
+    0 * * * *  gh-not sync --config=/path/to/config.yaml --verbosity=4 >> /tmp/gh-not-sync.out 2>> /tmp/gh-not-sync.err
     ```
 
 - [`launchd`](https://launchd.info/) (macOS)
@@ -131,7 +131,7 @@ E.g.
         <array>
           <string>sh</string>
           <string>-c</string>
-          <string>gh-not sync --config=/path/to/config.yaml --refresh --verbosity=4</string>
+          <string>gh-not sync --config=/path/to/config.yaml --verbosity=4</string>
         </array>
 
         <key>StandardErrorPath</key>
