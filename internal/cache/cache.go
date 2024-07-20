@@ -12,7 +12,7 @@ import (
 type ExpiringReadWriter interface {
 	Read(any) error
 	Write(any) error
-	Expired() (bool, error)
+	Expired() bool
 }
 
 type FileCache struct {
@@ -54,18 +54,17 @@ func (c *FileCache) Write(in any) error {
 	return os.WriteFile(c.path, marshalled, 0644)
 }
 
-func (c *FileCache) Expired() (bool, error) {
+func (c *FileCache) Expired() bool {
 	info, err := os.Stat(c.path)
 
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return true, nil
-		}
-		return false, err
+		// We could return the error here, but we will get it again when we try
+		// to read/write the cache, so we can ignore it here.
+		return true
 	}
 
 	expiration := info.ModTime().Add(c.ttl)
 	expired := time.Now().After(expiration)
 
-	return expired, nil
+	return expired
 }

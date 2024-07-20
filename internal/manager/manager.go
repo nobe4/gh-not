@@ -41,17 +41,8 @@ func (m *Manager) WithCaller(caller api.Caller) *Manager {
 }
 
 func (m *Manager) Load() error {
-	m.Notifications = notifications.Notifications{}
-
-	cachedNotifications, expired, err := m.loadCache()
-	if err != nil {
+	if err := m.cache.Read(&m.Notifications); err != nil {
 		slog.Warn("cannot read the cache: %#v\n", err)
-	} else if cachedNotifications != nil {
-		m.Notifications = cachedNotifications
-	}
-
-	if m.shouldRefresh(expired) {
-		return m.refreshNotifications()
 	}
 
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
@@ -59,19 +50,14 @@ func (m *Manager) Load() error {
 	return nil
 }
 
-func (m *Manager) shouldRefresh(expired bool) bool {
-	if !expired && m.Refresh == ForceRefresh {
-		slog.Info("forcing a refresh")
-		return true
+func (m *Manager) Refresh() error {
+	if m.RefreshStrategy.ShouldRefresh(m.cache.Expired()) {
+		return m.refreshNotifications()
 	}
 
-	if expired && m.Refresh == PreventRefresh {
-		slog.Info("preventing a refresh")
-		return false
-	}
+	slog.Info("Refreshed notifications", "count", len(m.Notifications))
 
-	slog.Debug("refresh", "refresh", expired)
-	return expired
+	return nil
 }
 
 func (m *Manager) refreshNotifications() error {
@@ -87,13 +73,7 @@ func (m *Manager) refreshNotifications() error {
 	}
 
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
-
-	if err := m.cache.Write(m.Notifications); err != nil {
-		slog.Error("Error while writing the cache: %#v", err)
-	}
-
 	m.Notifications = m.Notifications.Uniq()
-
 	m.Notifications, err = m.Enrich(m.Notifications)
 
 	return err
@@ -117,20 +97,6 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 	}
 
 	return ns, nil
-}
-
-func (m *Manager) loadCache() (notifications.Notifications, bool, error) {
-	expired, err := m.cache.Expired()
-	if err != nil {
-		return nil, false, err
-	}
-
-	n := notifications.Notifications{}
-	if err := m.cache.Read(&n); err != nil {
-		return nil, expired, err
-	}
-
-	return n, expired, nil
 }
 
 func (m *Manager) Apply(noop, force bool) error {
