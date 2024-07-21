@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
 	"github.com/cli/go-gh/v2/pkg/term"
+	"github.com/cli/go-gh/v2/pkg/text"
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
 func (n Notification) String() string {
-	return fmt.Sprintf("%s %s %s %s by %s: '%s' ", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, n.Subject.Title)
+	return fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
 }
 
 func (n Notification) Debug() string {
@@ -98,6 +100,7 @@ func (n Notifications) Table() (string, error) {
 		printer.AddField(n.Repository.FullName)
 		printer.AddField(n.Author.Login)
 		printer.AddField(n.Subject.Title)
+		printer.AddField(text.RelativeTimeAgo(time.Now(), n.UpdatedAt))
 		printer.EndRow()
 	}
 
