@@ -63,7 +63,7 @@ func (m *Manager) refreshNotifications() error {
 		return fmt.Errorf("manager has no client, cannot refresh notifications")
 	}
 
-	fmt.Printf("Refreshing the cache...\n")
+	fmt.Printf("Refreshing notifications...\n")
 
 	remoteNotifications, err := m.client.Notifications()
 	if err != nil {

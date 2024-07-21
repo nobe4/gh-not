@@ -68,21 +68,26 @@ func runSync(cmd *cobra.Command, args []string) error {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
+	loadedNotifications := len(manager.Notifications)
 
 	if err := manager.Refresh(); err != nil {
 		slog.Error("Failed to refresh the notifications", "err", err)
 		return err
 	}
+	refreshedNotifications := len(manager.Notifications)
 
 	if err := manager.Apply(); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
 		return err
 	}
+	visibleNotifications := len(manager.Notifications.Visible())
 
 	if err := manager.Save(); err != nil {
 		slog.Error("Failed to save the notifications", "err", err)
 		return err
 	}
+
+	fmt.Printf("Loaded %d, refreshed %d, visible %d\n", loadedNotifications, refreshedNotifications, visibleNotifications)
 
 	return nil
 }
