@@ -84,6 +84,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	}
 
 	notifications := manager.Notifications.Visible()
+	notifications.Sort()
 
 	if filterFlag != "" {
 		notificationsList, err := jq.Filter(filterFlag, notifications)

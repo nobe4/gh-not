@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -101,7 +100,12 @@ func (n Notifications) Compact() Notifications {
 
 func (n Notifications) Sort() {
 	slices.SortFunc(n, func(a, b *Notification) int {
-		return strings.Compare(a.Id, b.Id)
+		if a.UpdatedAt.Before(b.UpdatedAt) {
+			return 1
+		} else if a.UpdatedAt.After(b.UpdatedAt) {
+			return -1
+		}
+		return 0
 	})
 }
 
