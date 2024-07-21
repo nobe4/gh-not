@@ -226,9 +226,11 @@ func (m Model) View() string {
 
 	start, end := m.paginator.GetSliceBounds(visibleChoicesLen)
 	for i, id := range m.visibleChoices[start:end] {
+		line := m.renderCache[id]
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
+			line = strings.ReplaceAll(line, " ", "⋅")
 		}
 
 		checked := " "
@@ -236,7 +238,7 @@ func (m Model) View() string {
 			checked = "x"
 		}
 
-		out += fmt.Sprintf("%s%s%s\n", checked, cursor, m.renderCache[id])
+		out += fmt.Sprintf("%s%s%s\n", checked, cursor, line)
 	}
 
 	if m.paginator.TotalPages > 1 {
