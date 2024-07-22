@@ -105,14 +105,14 @@ func (m *Manager) Apply() error {
 			continue
 		}
 
-		selectedIds, err := rule.FilterIds(m.Notifications)
+		selectedNotifications, err := rule.Filter(m.Notifications)
 		if err != nil {
 			return err
 		}
 
-		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedIds))
+		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedNotifications))
 
-		for _, notification := range m.Notifications.FilterFromIds(selectedIds) {
+		for _, notification := range selectedNotifications {
 			if notification.Meta.Done && !m.ForceStrategy.Has(ForceApply) {
 				slog.Debug("skipping done notification", "id", notification.Id)
 				continue

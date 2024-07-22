@@ -16,7 +16,7 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 	}
 
 	// Extract the IDs from the notifications that match the filter.
-	// The actual selection will be done by the parent.
+	// FilterFromIds will be used to get back the notifications from the IDs.
 	query, err := gojq.Parse(fmt.Sprintf(".[] | select(%s) | .id", filter))
 	if err != nil {
 		return nil, err

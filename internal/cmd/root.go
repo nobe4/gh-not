@@ -132,14 +132,14 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 	if ruleFlag != "" {
 		found := false
 
+		var err error
 		for _, rule := range config.Data.Rules {
 			if rule.Name == ruleFlag {
 				found = true
-				seletedIds, err := rule.FilterIds(notifications)
+				notifications, err = rule.Filter(notifications)
 				if err != nil {
 					return nil, err
 				}
-				notifications = notifications.FilterFromIds(seletedIds)
 			}
 		}
 

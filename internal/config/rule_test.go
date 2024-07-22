@@ -161,7 +161,7 @@ func TestFilterIds(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.r.Name, func(t *testing.T) {
-			got, err := test.r.FilterIds(test.n)
+			got, err := test.r.Filter(test.n)
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
@@ -170,7 +170,7 @@ func TestFilterIds(t *testing.T) {
 				t.Fatalf("want %#v, but got %#v", test.want, got)
 			}
 
-			if !slices.Equal(got, test.want) {
+			if !slices.Equal(got.IDList(), test.want) {
 				t.Fatalf("want %#v, but got %#v", test.want, got)
 			}
 		})
