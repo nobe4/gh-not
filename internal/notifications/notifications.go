@@ -40,6 +40,10 @@ type Meta struct {
 	// Mark the notification as done, will be deleted as soon as it's missing
 	// from the remote notification list.
 	Done bool `json:"done"`
+
+	// RemoteExists is used to track if the notification is still present in the
+	// remote list (i.e. the API).
+	RemoteExists bool `json:"remote_exists"`
 }
 
 type Subject struct {

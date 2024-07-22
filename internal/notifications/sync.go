@@ -35,6 +35,8 @@ func Sync(local, remote Notifications) Notifications {
 	for localId, local := range localMap {
 		remote, remoteExist := remoteMap[localId]
 
+		local.Meta.RemoteExists = remoteExist
+
 		if remoteExist {
 			// (2)Update
 			slog.Debug("sync", "action", "update", "notification", remote.Debug())

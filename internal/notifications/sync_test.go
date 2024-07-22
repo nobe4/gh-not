@@ -84,4 +84,23 @@ func TestSync(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("update remoteExist", func(t *testing.T) {
+		got := Sync(
+			Notifications{
+				&Notification{Id: "0", UpdatedAt: time.Unix(0, 1)},
+				&Notification{Id: "1", Meta: Meta{RemoteExists: true}, UpdatedAt: time.Unix(0, 0)},
+			},
+			Notifications{
+				&Notification{Id: "0", UpdatedAt: time.Unix(0, 1)},
+			},
+		)
+
+		if !got[0].Meta.RemoteExists {
+			t.Fatalf("expected RemoteExists to be true but got false")
+		}
+		if got[1].Meta.RemoteExists {
+			t.Fatalf("expected RemoteExists to be false but got true")
+		}
+	})
 }
