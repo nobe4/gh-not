@@ -23,6 +23,7 @@ var (
 	jqFlag         string
 	replFlag       bool
 	jsonFlag       bool
+	allFlag        bool
 
 	config  *configPkg.Config
 	manager *managerPkg.Manager
@@ -53,6 +54,8 @@ func init() {
 
 	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", "", "Path to the YAML config file")
+
+	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications.")
 
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
 	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
@@ -87,7 +90,12 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	notifications := manager.Notifications.Visible()
+	var notifications notifications.Notifications
+	if allFlag {
+		notifications = manager.Notifications
+	} else {
+		notifications = manager.Notifications.Visible()
+	}
 	notifications.Sort()
 
 	if filterFlag != "" {
