@@ -21,7 +21,6 @@ var (
 	configPathFlag string
 	ruleFlag       string
 	filterFlag     string
-	jqFlag         string
 	replFlag       bool
 	jsonFlag       bool
 	allFlag        bool
@@ -36,8 +35,8 @@ var (
 		Example: `
   gh-not --verbosity 2
   gh-not --config /path/to/config.yaml
-  gh-not --filter '.repository.full_name | contains("nobe4")'
-  gh-not --json
+  gh-not --filter '(.repository.full_name | contains("nobe4")) or (.subject.title | contains("CI"))'
+  gh-not --json --all --rule 'ignore CI'
   gh-not --repl
 `,
 		PersistentPreRunE: setupGlobals,
@@ -60,8 +59,7 @@ func init() {
 
 	rootCmd.Flags().StringVarP(&ruleFlag, "rule", "r", "", "Filter based on a rule name")
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
-	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
-	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter", "jq")
+	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter")
 
 	rootCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output the selected notifications as JSON")
 
@@ -149,10 +147,6 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 			slog.Error("Rule not found", "rule", ruleFlag)
 			return nil, fmt.Errorf("Rule '%s' not found", ruleFlag)
 		}
-	}
-
-	if jqFlag != "" {
-		return nil, fmt.Errorf("`gh-not list --jq` implementation needed")
 	}
 
 	return notifications, nil
