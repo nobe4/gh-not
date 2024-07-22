@@ -1,13 +1,16 @@
 package notifications
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestSync(t *testing.T) {
-	n0 := &Notification{Id: "0"}
-	n0Hidden := &Notification{Id: "0", Meta: Meta{Hidden: true}}
-	n0Updated := &Notification{Id: "0"}
-	n1 := &Notification{Id: "1"}
-	n1Done := &Notification{Id: "1", Meta: Meta{Done: true}}
+	n0 := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1)}
+	n0Hidden := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1), Meta: Meta{Hidden: true}}
+	n0Updated := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1)}
+	n1 := &Notification{Id: "1", UpdatedAt: time.Unix(0, 0)}
+	n1Done := &Notification{Id: "1", Meta: Meta{Done: true}, UpdatedAt: time.Unix(0, 0)}
 
 	tests := []struct {
 		name     string
