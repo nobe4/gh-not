@@ -135,15 +135,24 @@ func (n Notifications) FilterFromIds(ids []string) Notifications {
 	return newList
 }
 
-func (n Notifications) Marshall() (interface{}, error) {
-	marshalled, err := json.Marshal(n)
+func (n Notifications) Marshal() ([]byte, error) {
+	marshaled, err := json.Marshal(n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal notifications: %w", err)
 	}
 
+	return marshaled, nil
+}
+
+func (n Notifications) Interface() (interface{}, error) {
+	marshaled, err := n.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
 	var i interface{}
-	if err := json.Unmarshal(marshalled, &i); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal interface: %w", err)
+	if err := json.Unmarshal(marshaled, &i); err != nil {
+		return nil, fmt.Errorf("cannot convert to interface: %w", err)
 	}
 
 	return i, nil

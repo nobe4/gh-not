@@ -21,7 +21,8 @@ var (
 	configPathFlag string
 	filterFlag     string
 	jqFlag         string
-	repl           bool
+	replFlag       bool
+	jsonFlag       bool
 
 	config  *configPkg.Config
 	manager *managerPkg.Manager
@@ -34,6 +35,7 @@ var (
   gh-not --verbosity 2
   gh-not --config /path/to/config.yaml
   gh-not --filter '.repository.full_name | contains("nobe4")'
+  gh-not --json
   gh-not --repl
 `,
 		PersistentPreRunE: setupGlobals,
@@ -56,7 +58,9 @@ func init() {
 	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
 	rootCmd.MarkFlagsMutuallyExclusive("filter", "jq")
 
-	rootCmd.Flags().BoolVarP(&repl, "repl", "", false, "Start a REPL with the notifications list")
+	rootCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output the selected notifications as JSON")
+
+	rootCmd.Flags().BoolVarP(&replFlag, "repl", "", false, "Start a REPL with the notifications list")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -98,13 +102,17 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("`gh-not list --jq` implementation needed")
 	}
 
+	if jsonFlag {
+		return displayJson(notifications)
+	}
+
 	table, err := notifications.Table()
 	if err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
 		table = notifications.String()
 	}
 
-	if repl {
+	if replFlag {
 		return displayRepl(table, notifications)
 	}
 
@@ -119,6 +127,17 @@ func displayTable(table string, notifications notifications.Notifications) {
 	// TODO: add a notice if the notifications could be refreshed
 
 	fmt.Println(out)
+}
+
+func displayJson(notifications notifications.Notifications) error {
+	marshaled, err := notifications.Marshal()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s\n", marshaled)
+
+	return nil
 }
 
 func displayRepl(renderCache string, n notifications.Notifications) error {
