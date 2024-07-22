@@ -19,8 +19,8 @@ import (
 var (
 	verbosityFlag  int
 	configPathFlag string
+	ruleFlag       string
 	filterFlag     string
-	jqFlag         string
 	replFlag       bool
 	jsonFlag       bool
 	allFlag        bool
@@ -35,8 +35,8 @@ var (
 		Example: `
   gh-not --verbosity 2
   gh-not --config /path/to/config.yaml
-  gh-not --filter '.repository.full_name | contains("nobe4")'
-  gh-not --json
+  gh-not --filter '(.repository.full_name | contains("nobe4")) or (.subject.title | contains("CI"))'
+  gh-not --json --all --rule 'ignore CI'
   gh-not --repl
 `,
 		PersistentPreRunE: setupGlobals,
@@ -57,9 +57,9 @@ func init() {
 
 	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications.")
 
+	rootCmd.Flags().StringVarP(&ruleFlag, "rule", "r", "", "Filter based on a rule name")
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
-	rootCmd.Flags().StringVarP(&jqFlag, "jq", "q", "", "jq expression to run on the notification list")
-	rootCmd.MarkFlagsMutuallyExclusive("filter", "jq")
+	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter")
 
 	rootCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output the selected notifications as JSON")
 
@@ -90,26 +90,69 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	notifications := load()
+
+	notifications, err := filter(notifications)
+	if err != nil {
+		slog.Error("Failed to filter the notifications", "err", err)
+		return err
+	}
+
+	if err := display(notifications); err != nil {
+		slog.Error("Failed to display the notifications", "err", err)
+		return err
+	}
+
+	return nil
+}
+
+func load() notifications.Notifications {
 	var notifications notifications.Notifications
+
 	if allFlag {
 		notifications = manager.Notifications
 	} else {
 		notifications = manager.Notifications.Visible()
 	}
+
 	notifications.Sort()
 
+	return notifications
+}
+
+func filter(notifications notifications.Notifications) (notifications.Notifications, error) {
 	if filterFlag != "" {
 		notificationsList, err := jq.Filter(filterFlag, notifications)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		notifications = notificationsList
 	}
 
-	if jqFlag != "" {
-		return fmt.Errorf("`gh-not list --jq` implementation needed")
+	if ruleFlag != "" {
+		found := false
+
+		for _, rule := range config.Data.Rules {
+			if rule.Name == ruleFlag {
+				found = true
+				seletedIds, err := rule.FilterIds(notifications)
+				if err != nil {
+					return nil, err
+				}
+				notifications = notifications.FilterFromIds(seletedIds)
+			}
+		}
+
+		if found == false {
+			slog.Error("Rule not found", "rule", ruleFlag)
+			return nil, fmt.Errorf("Rule '%s' not found", ruleFlag)
+		}
 	}
 
+	return notifications, nil
+}
+
+func display(notifications notifications.Notifications) error {
 	if jsonFlag {
 		return displayJson(notifications)
 	}
