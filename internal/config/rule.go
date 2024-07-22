@@ -52,9 +52,8 @@ func (r Rule) Test() error {
 	return nil
 }
 
-// FilterIds filters the notifications with the jq filters and returns the IDs.
-// TODO: return the notifications instead of the IDs.
-func (r Rule) FilterIds(n notifications.Notifications) ([]string, error) {
+// Filter filters the notifications with the jq filters and returns the IDs.
+func (r Rule) Filter(n notifications.Notifications) (notifications.Notifications, error) {
 	var err error
 
 	// TODO: accept only a single filter so that we can use the jq.Filter function
@@ -67,5 +66,5 @@ func (r Rule) FilterIds(n notifications.Notifications) ([]string, error) {
 		}
 	}
 
-	return n.IDList(), nil
+	return n, nil
 }
