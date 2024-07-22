@@ -1,6 +1,7 @@
 package notifications
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -88,19 +89,27 @@ func TestSync(t *testing.T) {
 	t.Run("update remoteExist", func(t *testing.T) {
 		got := Sync(
 			Notifications{
-				&Notification{Id: "0", UpdatedAt: time.Unix(0, 1)},
-				&Notification{Id: "1", Meta: Meta{RemoteExists: true}, UpdatedAt: time.Unix(0, 0)},
+				&Notification{Id: "0", UpdatedAt: time.Unix(0, 2), Meta: Meta{RemoteExists: false}},
+				&Notification{Id: "1", UpdatedAt: time.Unix(0, 1), Meta: Meta{RemoteExists: true}},
 			},
 			Notifications{
-				&Notification{Id: "0", UpdatedAt: time.Unix(0, 1)},
+				&Notification{Id: "0", UpdatedAt: time.Unix(0, 2)},
+				&Notification{Id: "2", UpdatedAt: time.Unix(0, 0)},
 			},
 		)
+
+		fmt.Printf("%#v\n", got[0])
+		fmt.Printf("%#v\n", got[1])
+		fmt.Printf("%#v\n", got[2])
 
 		if !got[0].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be true but got false")
 		}
 		if got[1].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be false but got true")
+		}
+		if !got[2].Meta.RemoteExists {
+			t.Fatalf("expected RemoteExists to be true but got false")
 		}
 	})
 }
