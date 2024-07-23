@@ -68,7 +68,7 @@ func editConfig() error {
 		return fmt.Errorf("EDITOR environment variable not set")
 	}
 
-	cmd := exec.Command(editor, configPathFlag)
+	cmd := exec.Command(editor, config.Path)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
