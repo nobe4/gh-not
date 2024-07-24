@@ -37,7 +37,7 @@ var (
   gh-not --config /path/to/config.yaml
   gh-not --filter '(.repository.full_name | contains("nobe4")) or (.subject.title | contains("CI"))'
   gh-not --json --all --rule 'ignore CI'
-  gh-not --repl
+  gh-not --repl  // will log in the file /tmp/gh-not-debug.log
 `,
 		PersistentPreRunE: setupGlobals,
 		SilenceErrors:     true,
@@ -67,10 +67,7 @@ func init() {
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
-	if err := logger.Init(verbosityFlag); err != nil {
-		slog.Error("Failed to init the logger", "err", err)
-		return err
-	}
+	logger.Init(verbosityFlag)
 
 	var err error
 	config, err = configPkg.New(configPathFlag)
@@ -199,8 +196,16 @@ func displayRepl(renderCache string, n notifications.Notifications) error {
 	}
 	manager.SetCaller(caller)
 
-	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
+	// Launching bubbletea will occupy STDOUT and STDERR, so we need to redirect
+	// the logs to a file.
+	f, err := logger.InitWithFile(verbosityFlag, "/tmp/gh-not-debug.log")
+	if err != nil {
+		slog.Error("Failed to init the logger", "err", err)
+		return err
+	}
+	defer f.Close()
 
+	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		return err

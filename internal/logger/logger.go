@@ -1,11 +1,28 @@
 package logger
 
 import (
+	"fmt"
+	"io"
 	"log/slog"
 	"os"
 )
 
-func Init(verbosity int) error {
+func Init(verbosity int) {
+	initWithWriter(os.Stderr, verbosity)
+}
+
+func InitWithFile(verbosity int, path string) (*os.File, error) {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	if err != nil {
+		return nil, fmt.Errorf("error opening file for logging: %w", err)
+	}
+
+	initWithWriter(f, verbosity)
+
+	return f, nil
+}
+
+func initWithWriter(w io.Writer, verbosity int) {
 	opts := &slog.HandlerOptions{}
 
 	switch verbosity {
@@ -22,9 +39,7 @@ func Init(verbosity int) error {
 		opts.AddSource = true
 	}
 
-	handler := slog.NewTextHandler(os.Stderr, opts)
+	handler := slog.NewTextHandler(w, opts)
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
-
-	return nil
 }
