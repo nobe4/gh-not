@@ -1,6 +1,8 @@
 package views
 
 import (
+	"log/slog"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/colors"
 )
@@ -21,6 +23,7 @@ type ChangeModeMsg struct {
 
 func ChangeMode(m Mode) tea.Cmd {
 	return func() tea.Msg {
+		slog.Debug("ChangeMode", "mode", m)
 		return ChangeModeMsg{Mode: m}
 	}
 }
