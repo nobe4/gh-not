@@ -161,7 +161,7 @@ func display(notifications notifications.Notifications) error {
 	}
 
 	if replFlag {
-		return displayRepl(table, notifications)
+		return displayRepl(notifications)
 	}
 
 	displayTable(table, notifications)
@@ -188,7 +188,7 @@ func displayJson(notifications notifications.Notifications) error {
 	return nil
 }
 
-func displayRepl(renderCache string, n notifications.Notifications) error {
+func displayRepl(n notifications.Notifications) error {
 	caller, err := github.New()
 	if err != nil {
 		slog.Error("Failed to create an API REST client", "err", err)
@@ -205,16 +205,17 @@ func displayRepl(renderCache string, n notifications.Notifications) error {
 	}
 	defer f.Close()
 
-	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
+	model := normal.New(manager.Actors, n, config.Data.Keymap, config.Data.View)
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		return err
 	}
 
-	if err := manager.Save(); err != nil {
-		slog.Error("Failed to save the notifications", "err", err)
-		return err
-	}
+	// XXX: remove after test
+	// if err := manager.Save(); err != nil {
+	// 	slog.Error("Failed to save the notifications", "err", err)
+	// 	return err
+	// }
 
 	return nil
 }

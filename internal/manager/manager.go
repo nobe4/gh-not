@@ -20,8 +20,9 @@ type Manager struct {
 	client        *gh.Client
 	Actors        actors.ActorsMap
 
-	RefreshStrategy RefreshStrategy
-	ForceStrategy   ForceStrategy
+	RefreshStrategy  RefreshStrategy
+	ForceStrategy    ForceStrategy
+	AllNotifications bool
 }
 
 func New(config *config.Data) *Manager {

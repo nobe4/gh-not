@@ -2,6 +2,7 @@ package normal
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -42,6 +43,8 @@ func (k Keymap) FullHelp() [][]key.Binding {
 	}
 }
 
+type UpdateListMsg struct{}
+
 type SelectMsg struct {
 	id       int
 	selected bool
@@ -56,10 +59,10 @@ type Model struct {
 	Keys Keymap
 	help help.Model
 
-	cursor         int
-	choices        notifications.Notifications
-	visibleChoices []int
-	paginator      paginator.Model
+	cursor               int
+	notifications        notifications.Notifications
+	visibleNotifications []int
+	paginator            paginator.Model
 
 	renderCache []string
 	selected    map[int]bool
@@ -74,7 +77,7 @@ type Model struct {
 	result string
 }
 
-func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap, view config.View) Model {
+func New(actors actors.ActorsMap, notifications notifications.Notifications, keymap config.Keymap, view config.View) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
@@ -91,15 +94,16 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 			help:     keymap.Binding("normal", "toggle help"),
 			quit:     keymap.Binding("normal", "quit"),
 		},
-		help:        help.New(),
-		cursor:      0,
-		choices:     notifications,
-		selected:    map[int]bool{},
-		renderCache: strings.Split(renderCache, "\n"),
-		height:      view.Height,
-		actors:      actors,
-		paginator:   paginator.New(),
+		help:          help.New(),
+		cursor:        0,
+		notifications: notifications,
+		selected:      map[int]bool{},
+		height:        view.Height,
+		actors:        actors,
+		paginator:     paginator.New(),
 	}
+
+	model.reloadTable()
 
 	model.command = command.New(actors, model.SelectedNotificationsFunc, keymap)
 	model.filter = filter.New(model.VisibleLinesFunc, keymap)
@@ -109,6 +113,16 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 	model.paginator.PerPage = model.height
 
 	return model
+}
+
+func (m *Model) reloadTable() {
+	slog.Debug("normal.reloadTable", "notifications", len(m.notifications))
+	renderCache, err := m.notifications.Table()
+	if err != nil {
+		renderCache = m.notifications.String()
+	}
+
+	m.renderCache = strings.Split(renderCache, "\n")
 }
 
 func (m Model) Init() tea.Cmd {
@@ -122,9 +136,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case filter.FilterMsg:
-		m.visibleChoices = msg.IntSlice()
+		m.visibleNotifications = msg.IntSlice()
 		m.paginator.Page = 0
-		m.paginator.SetTotalPages(len(m.visibleChoices))
+		m.paginator.SetTotalPages(len(m.visibleNotifications))
 
 	case views.ResultMsg:
 		m.result = msg.String()
@@ -139,51 +153,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case views.ChangeModeMsg:
 		m.Mode = msg.Mode
 
+	case UpdateListMsg:
+		slog.Debug("updating list", "notifications", len(m.notifications))
+		renderCache, err := m.notifications.Table()
+		if err != nil {
+			renderCache = m.notifications.String()
+		}
+
+		m.renderCache = strings.Split(renderCache, "\n")
+
 	case tea.KeyMsg:
 		switch m.Mode {
 		case views.NormalMode:
-			switch {
-			case key.Matches(msg, m.Keys.up):
-				if m.cursor > 0 {
-					m.cursor--
-				}
-
-			case key.Matches(msg, m.Keys.down):
-				if m.cursor < len(m.visibleChoices)-1 {
-					m.cursor++
-				}
-
-			case key.Matches(msg, m.Keys.next):
-				m.paginator.NextPage()
-
-			case key.Matches(msg, m.Keys.previous):
-				m.paginator.PrevPage()
-
-			case key.Matches(msg, m.Keys.toggle):
-				return m, m.toggleSelect()
-
-			case key.Matches(msg, m.Keys.all):
-				return m, m.selectAll(true)
-
-			case key.Matches(msg, m.Keys.none):
-				return m, m.selectAll(false)
-
-			case key.Matches(msg, m.Keys.open):
-				return m, m.openCurrent()
-
-			case key.Matches(msg, m.Keys.filter):
-				return m, views.ChangeMode(views.SearchMode)
-
-			case key.Matches(msg, m.Keys.command):
-				return m, views.ChangeMode(views.CommandMode)
-
-			case key.Matches(msg, m.Keys.help):
-				return m, views.ChangeMode(views.HelpMode)
-
-			case key.Matches(msg, m.Keys.quit):
-				return m, tea.Quit
-
-			}
+			cmds = append(cmds, m.handleKeypress(msg))
 
 		case views.SearchMode:
 			m.filter, cmd = m.filter.Update(msg)
@@ -219,13 +201,13 @@ func (m Model) View() string {
 	out := ""
 
 	// padding to keep the help at the bottom
-	visibleChoicesLen := len(m.visibleChoices)
+	visibleChoicesLen := len(m.visibleNotifications)
 	for i := visibleChoicesLen; i < m.height; i++ {
 		out += "\n"
 	}
 
 	start, end := m.paginator.GetSliceBounds(visibleChoicesLen)
-	for i, id := range m.visibleChoices[start:end] {
+	for i, id := range m.visibleNotifications[start:end] {
 		line := m.renderCache[id]
 		cursor := " "
 		if m.cursor == i {
@@ -257,10 +239,57 @@ func (m Model) View() string {
 	return out
 }
 
+func (m *Model) handleKeypress(msg tea.KeyMsg) tea.Cmd {
+	switch {
+	case key.Matches(msg, m.Keys.up):
+		if m.cursor > 0 {
+			m.cursor--
+		}
+
+	case key.Matches(msg, m.Keys.down):
+		if m.cursor < len(m.visibleNotifications)-1 {
+			m.cursor++
+		}
+
+	case key.Matches(msg, m.Keys.next):
+		m.paginator.NextPage()
+
+	case key.Matches(msg, m.Keys.previous):
+		m.paginator.PrevPage()
+
+	case key.Matches(msg, m.Keys.toggle):
+		return m.toggleSelect()
+
+	case key.Matches(msg, m.Keys.all):
+		return m.selectAll(true)
+
+	case key.Matches(msg, m.Keys.none):
+		return m.selectAll(false)
+
+	case key.Matches(msg, m.Keys.open):
+		// return m.openCurrent()
+		return m.test()
+
+	case key.Matches(msg, m.Keys.filter):
+		return views.ChangeMode(views.SearchMode)
+
+	case key.Matches(msg, m.Keys.command):
+		return views.ChangeMode(views.CommandMode)
+
+	case key.Matches(msg, m.Keys.help):
+		return views.ChangeMode(views.HelpMode)
+
+	case key.Matches(msg, m.Keys.quit):
+		return tea.Quit
+	}
+
+	return nil
+}
+
 func (m Model) SelectedNotificationsFunc(cb func(*notifications.Notification)) {
 	for i, selected := range m.selected {
 		if selected {
-			cb(m.choices[i])
+			cb(m.notifications[i])
 		}
 	}
 }
@@ -273,7 +302,7 @@ func (m Model) VisibleLinesFunc(cb func(string, int)) {
 
 func (m Model) toggleSelect() tea.Cmd {
 	return func() tea.Msg {
-		visibleLineId := m.visibleChoices[m.cursor]
+		visibleLineId := m.visibleNotifications[m.cursor]
 		selected, ok := m.selected[visibleLineId]
 
 		return SelectMsg{
@@ -282,10 +311,20 @@ func (m Model) toggleSelect() tea.Cmd {
 		}
 	}
 }
+
+func (m *Model) test() tea.Cmd {
+	return func() tea.Msg {
+		m.notifications[0].Meta.Done = true
+		m.notifications = m.notifications.Compact()
+
+		return UpdateListMsg{}
+	}
+}
+
 func (m Model) selectAll(selected bool) tea.Cmd {
 	cmds := tea.BatchMsg{}
 
-	for _, id := range m.visibleChoices {
+	for _, id := range m.visibleNotifications {
 		cmds = append(
 			cmds,
 			func() tea.Msg {
@@ -299,7 +338,7 @@ func (m Model) selectAll(selected bool) tea.Cmd {
 
 func (m Model) openCurrent() tea.Cmd {
 	return func() tea.Msg {
-		visibleLineId := m.visibleChoices[m.cursor]
-		return OpenMessage{notification: m.choices[visibleLineId]}
+		visibleLineId := m.visibleNotifications[m.cursor]
+		return OpenMessage{notification: m.notifications[visibleLineId]}
 	}
 }
