@@ -154,8 +154,7 @@ func display(notifications notifications.Notifications) error {
 		return displayJson(notifications)
 	}
 
-	err := notifications.Render()
-	if err != nil {
+	if err := notifications.Render(); err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
 	}
 
@@ -168,11 +167,9 @@ func display(notifications notifications.Notifications) error {
 	return nil
 }
 
-func displayTable(notifications notifications.Notifications) {
-	for _, n := range notifications {
-		fmt.Println(n)
-	}
-	fmt.Printf("\nFound %d notifications\n", len(notifications))
+func displayTable(n notifications.Notifications) {
+	fmt.Println(n)
+	fmt.Printf("Found %d notifications\n", len(n))
 	// TODO: add a notice if the notifications could be refreshed
 }
 

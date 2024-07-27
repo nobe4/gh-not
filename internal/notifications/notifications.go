@@ -32,6 +32,7 @@ type Notification struct {
 	// syncs.
 	Meta Meta `json:"meta"`
 
+	// Rendered string for display, set by Notifications.Render
 	rendered string
 }
 
