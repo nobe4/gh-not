@@ -18,7 +18,7 @@ type Actor struct {
 }
 
 func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
-	slog.Debug("marking notification as done", "notification", n.Debug())
+	slog.Debug("marking notification as done", "notification", n)
 
 	n.Meta.Done = true
 

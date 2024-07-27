@@ -61,8 +61,7 @@ type Model struct {
 	visibleChoices []int
 	paginator      paginator.Model
 
-	renderCache []string
-	selected    map[int]bool
+	selected map[int]bool
 
 	filter  tea.Model
 	command tea.Model
@@ -74,7 +73,7 @@ type Model struct {
 	result string
 }
 
-func New(actors actors.ActorsMap, notifications notifications.Notifications, renderCache string, keymap config.Keymap, view config.View) Model {
+func New(actors actors.ActorsMap, notifications notifications.Notifications, keymap config.Keymap, view config.View) Model {
 	model := Model{
 		Mode: views.NormalMode,
 		Keys: Keymap{
@@ -91,14 +90,13 @@ func New(actors actors.ActorsMap, notifications notifications.Notifications, ren
 			help:     keymap.Binding("normal", "toggle help"),
 			quit:     keymap.Binding("normal", "quit"),
 		},
-		help:        help.New(),
-		cursor:      0,
-		choices:     notifications,
-		selected:    map[int]bool{},
-		renderCache: strings.Split(renderCache, "\n"),
-		height:      view.Height,
-		actors:      actors,
-		paginator:   paginator.New(),
+		help:      help.New(),
+		cursor:    0,
+		choices:   notifications,
+		selected:  map[int]bool{},
+		height:    view.Height,
+		actors:    actors,
+		paginator: paginator.New(),
 	}
 
 	model.command = command.New(actors, model.SelectedNotificationsFunc, keymap)
@@ -226,7 +224,8 @@ func (m Model) View() string {
 
 	start, end := m.paginator.GetSliceBounds(visibleChoicesLen)
 	for i, id := range m.visibleChoices[start:end] {
-		line := m.renderCache[id]
+		line := m.choices[id].String()
+
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
@@ -266,8 +265,8 @@ func (m Model) SelectedNotificationsFunc(cb func(*notifications.Notification)) {
 }
 
 func (m Model) VisibleLinesFunc(cb func(string, int)) {
-	for i, line := range m.renderCache {
-		cb(line, i)
+	for i, n := range m.choices {
+		cb(n.String(), i)
 	}
 }
 

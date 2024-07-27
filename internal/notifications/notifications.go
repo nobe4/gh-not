@@ -31,6 +31,9 @@ type Notification struct {
 	// Those fields are not part of the GitHub API and will persist between
 	// syncs.
 	Meta Meta `json:"meta"`
+
+	// Rendered string for display, set by Notifications.Render
+	rendered string
 }
 
 type Meta struct {

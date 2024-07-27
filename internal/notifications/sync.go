@@ -27,7 +27,7 @@ func Sync(local, remote Notifications) Notifications {
 	for remoteId, remote := range remoteMap {
 		if _, ok := localMap[remoteId]; !ok {
 			// (1)Insert
-			slog.Debug("sync", "action", "insert", "notification", remote.Debug())
+			slog.Debug("sync", "action", "insert", "notification", remote)
 
 			remote.Meta.RemoteExists = true
 			n = append(n, remote)
@@ -41,19 +41,19 @@ func Sync(local, remote Notifications) Notifications {
 
 		if remoteExist {
 			// (2)Update
-			slog.Debug("sync", "action", "update", "notification", remote.Debug())
+			slog.Debug("sync", "action", "update", "notification", remote)
 
 			remote.Meta = local.Meta
 			n = append(n, remote)
 		} else {
 			if local.Meta.Done {
 				// (4)Drop
-				slog.Debug("sync", "action", "drop", "notification", local.Debug())
+				slog.Debug("sync", "action", "drop", "notification", local)
 				continue
 			}
 
 			// (3)Keep
-			slog.Debug("sync", "action", "keep", "notification", local.Debug())
+			slog.Debug("sync", "action", "keep", "notification", local)
 			n = append(n, local)
 		}
 	}
