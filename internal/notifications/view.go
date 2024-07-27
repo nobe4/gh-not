@@ -12,10 +12,6 @@ import (
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
-func (n Notification) String() string {
-	return fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
-}
-
 var prettyRead = map[bool]string{
 	false: colors.Red("RD"),
 	true:  colors.Green("UR"),
@@ -30,6 +26,10 @@ var prettyState = map[string]string{
 	"open":   colors.Green("OP"),
 	"closed": colors.Red("CL"),
 	"merged": colors.Magenta("MG"),
+}
+
+func (n Notification) String() string {
+	return n.rendered
 }
 
 func (n Notification) prettyRead() string {
@@ -59,7 +59,7 @@ func (n Notification) prettyState() string {
 func (n Notifications) String() string {
 	out := ""
 	for _, n := range n {
-		out += n.String() + "\n"
+		out += fmt.Sprintf("%s\n", n)
 	}
 	return out
 }
@@ -78,13 +78,21 @@ func (n Notification) Visible() bool {
 	return !n.Meta.Done && !n.Meta.Hidden
 }
 
-func (n Notifications) Table() (string, error) {
+// Render the notifications in a human readable format.
+// If possible, render a table, otherwise render a simple string.
+func (n Notifications) Render() error {
+	// Default to a simple string
+	for _, n := range n {
+		n.rendered = fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
+	}
+
+	// Try to render a table
 	out := bytes.Buffer{}
 
 	t := term.FromEnv()
 	w, _, err := t.Size()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
@@ -101,8 +109,12 @@ func (n Notifications) Table() (string, error) {
 	}
 
 	if err := printer.Render(); err != nil {
-		return "", err
+		return err
 	}
 
-	return strings.TrimRight(out.String(), "\n"), nil
+	for i, l := range strings.Split(strings.TrimRight(out.String(), "\n"), "\n") {
+		n[i].rendered = l
+	}
+
+	return nil
 }

@@ -154,27 +154,26 @@ func display(notifications notifications.Notifications) error {
 		return displayJson(notifications)
 	}
 
-	table, err := notifications.Table()
+	err := notifications.Render()
 	if err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
-		table = notifications.String()
 	}
 
 	if replFlag {
-		return displayRepl(table, notifications)
+		return displayRepl(notifications)
 	}
 
-	displayTable(table, notifications)
+	displayTable(notifications)
 
 	return nil
 }
 
-func displayTable(table string, notifications notifications.Notifications) {
-	out := table
-	out += fmt.Sprintf("\nFound %d notifications", len(notifications))
+func displayTable(notifications notifications.Notifications) {
+	for _, n := range notifications {
+		fmt.Println(n)
+	}
+	fmt.Printf("\nFound %d notifications\n", len(notifications))
 	// TODO: add a notice if the notifications could be refreshed
-
-	fmt.Println(out)
 }
 
 func displayJson(notifications notifications.Notifications) error {
@@ -188,7 +187,7 @@ func displayJson(notifications notifications.Notifications) error {
 	return nil
 }
 
-func displayRepl(renderCache string, n notifications.Notifications) error {
+func displayRepl(n notifications.Notifications) error {
 	caller, err := github.New()
 	if err != nil {
 		slog.Error("Failed to create an API REST client", "err", err)
@@ -205,7 +204,7 @@ func displayRepl(renderCache string, n notifications.Notifications) error {
 	}
 	defer f.Close()
 
-	model := normal.New(manager.Actors, n, renderCache, config.Data.Keymap, config.Data.View)
+	model := normal.New(manager.Actors, n, config.Data.Keymap, config.Data.View)
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		return err
