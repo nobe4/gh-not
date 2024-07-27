@@ -16,10 +16,6 @@ func (n Notification) String() string {
 	return fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
 }
 
-func (n Notification) Debug() string {
-	return fmt.Sprintf("%s:%s:%s:%s", n.Id, n.Repository.FullName, n.Author.Login, n.Subject.Title)
-}
-
 var prettyRead = map[bool]string{
 	false: colors.Red("RD"),
 	true:  colors.Green("UR"),

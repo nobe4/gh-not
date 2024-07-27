@@ -14,7 +14,7 @@ type Actor struct {
 }
 
 func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
-	slog.Debug("open notification in browser", "notification", n.Debug())
+	slog.Debug("open notification in browser", "notification", n)
 
 	browser := browser.New("", w, w)
 	return browser.Browse(n.Subject.HtmlUrl)
