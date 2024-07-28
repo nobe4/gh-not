@@ -17,11 +17,8 @@ const listHeight = 10
 const listDefaultWidth = 20
 
 var (
-	paginationStyle   = lipgloss.NewStyle().PaddingLeft(0)
-	helpStyle         = lipgloss.NewStyle().PaddingLeft(0).PaddingBottom(0)
-	filterPromptStyle = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#ff0000", Dark: "#00ff00"})
-	filterCursorStyle = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#00ffff", Dark: "#ffff00"})
-	quitTextStyle     = lipgloss.NewStyle().MarginBottom(1)
+	noStyle       = lipgloss.NewStyle()
+	quitTextStyle = lipgloss.NewStyle().MarginBottom(1)
 )
 
 type item struct {
@@ -70,9 +67,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
+
 		case "q", "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
+
+		case "?":
+			m.list.SetShowHelp(!m.list.ShowHelp())
 
 		case "enter":
 			i, ok := m.list.SelectedItem().(item)
@@ -93,7 +94,22 @@ func (m model) View() string {
 		return quitTextStyle.Render(fmt.Sprintf("%s? Sounds good to me.", m.choice))
 	}
 
-	return m.list.View() + "\n" + m.list.Paginator.View() + " " + m.list.FilterInput.View()
+	paginationLine := m.list.Paginator.View() + " "
+	if m.list.FilterState() == list.Filtering {
+		paginationLine += m.list.FilterInput.View()
+	} else {
+		paginationLine += m.list.Help.Styles.ShortDesc.Render("press ? to toggle help")
+	}
+
+	listView := m.list.View()
+
+	content := noStyle.Height(m.list.Height() - 1).Render(listView)
+	sections := []string{
+		content,
+		paginationLine,
+	}
+
+	return lipgloss.JoinVertical(lipgloss.Left, sections...)
 }
 
 func Init(n notifications.Notifications) {
@@ -113,13 +129,15 @@ func Init(n notifications.Notifications) {
 	l.Paginator.Type = paginator.Arabic
 
 	l.FilterInput.Prompt = "/"
-	l.FilterInput.Cursor.Style = lipgloss.NewStyle()
-	l.FilterInput.PromptStyle = lipgloss.NewStyle()
+	l.FilterInput.Cursor.Style = noStyle
+	l.FilterInput.PromptStyle = noStyle
+
+	l.SetShowFilter(false)
 
 	l.Styles = list.Styles{
-		PaginationStyle: paginationStyle,
-		HelpStyle:       helpStyle,
-		StatusBar:       lipgloss.NewStyle(),
+		PaginationStyle: noStyle,
+		HelpStyle:       noStyle,
+		StatusBar:       noStyle,
 	}
 
 	m := model{list: l}
