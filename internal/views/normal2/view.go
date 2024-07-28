@@ -1,0 +1,85 @@
+package normal2
+
+import (
+	"fmt"
+	"io"
+	"strings"
+
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/paginator"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	noStyle       = lipgloss.NewStyle()
+	quitTextStyle = noStyle.MarginBottom(1)
+)
+
+type itemDelegate struct{}
+
+func (d itemDelegate) Height() int                             { return 1 }
+func (d itemDelegate) Spacing() int                            { return 0 }
+func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	n, ok := listItem.(item)
+	if !ok {
+		return
+	}
+
+	cursor := " "
+	str := n.String()
+
+	if index == m.Index() {
+		cursor = ">"
+		str = strings.ReplaceAll(str, " ", "⋅")
+	}
+
+	fmt.Fprint(w, cursor+str)
+}
+
+func (m *model) initView() {
+	m.list.SetShowStatusBar(false)
+	m.list.SetShowTitle(false)
+	m.list.SetShowFilter(false)
+	m.list.SetShowHelp(false)
+	m.list.SetShowPagination(false)
+
+	m.list.Paginator.Type = paginator.Arabic
+
+	m.list.FilterInput.Prompt = "/"
+	m.list.FilterInput.Cursor.Style = noStyle
+	m.list.FilterInput.PromptStyle = noStyle
+	m.list.FilterInput.Placeholder = "filter"
+
+	m.list.SetShowFilter(false)
+
+	m.list.Styles = list.Styles{
+		PaginationStyle: noStyle,
+		HelpStyle:       noStyle,
+		StatusBar:       noStyle,
+	}
+}
+
+func (m model) View() string {
+	if m.choice != nil {
+		return quitTextStyle.Render(m.choice.String())
+	}
+
+	paginationLine := m.list.Paginator.View() + " "
+	if m.list.FilterState() == list.Filtering {
+		paginationLine += m.list.FilterInput.View()
+	} else {
+		paginationLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
+	}
+
+	listView := m.list.View()
+
+	content := noStyle.Height(m.list.Height() - 1).Render(listView)
+	sections := []string{
+		content,
+		paginationLine,
+	}
+
+	return lipgloss.JoinVertical(lipgloss.Left, sections...)
+}
