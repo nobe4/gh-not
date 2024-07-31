@@ -27,15 +27,19 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		return
 	}
 
+	selected := " "
+	if n.selected {
+		selected = "x"
+	}
 	cursor := " "
-	str := n.String()
 
+	str := n.notification.String()
 	if index == m.Index() {
 		cursor = ">"
 		str = strings.ReplaceAll(str, " ", "⋅")
 	}
 
-	fmt.Fprint(w, cursor+str)
+	fmt.Fprintf(w, "%s%s%s", selected, cursor, str)
 }
 
 func (m *model) initView() {
@@ -63,7 +67,7 @@ func (m *model) initView() {
 
 func (m model) View() string {
 	if m.choice != nil {
-		return quitTextStyle.Render(m.choice.String())
+		return quitTextStyle.Render(m.choice.notification.String())
 	}
 
 	paginationLine := m.list.Paginator.View() + " "

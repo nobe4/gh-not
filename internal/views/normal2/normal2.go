@@ -14,10 +14,11 @@ const listHeight = 10
 const listDefaultWidth = 20
 
 type item struct {
-	*notifications.Notification
+	notification *notifications.Notification
+	selected     bool
 }
 
-func (i item) FilterValue() string { return i.String() }
+func (i item) FilterValue() string { return i.notification.String() }
 
 type model struct {
 	list   list.Model
@@ -54,11 +55,18 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 	case "?":
 		m.list.SetShowHelp(!m.list.ShowHelp())
 
-	case "enter":
+	case " ":
 		if i, ok := m.list.SelectedItem().(item); ok {
-			m.choice = &i
+			i.selected = !i.selected
+			m.list.SetItem(m.list.Index(), i)
 		}
-		return tea.Quit
+
+	case "enter":
+		for _, i := range m.list.Items() {
+			if i, ok := i.(item); ok && i.selected {
+				slog.Debug("selected", "notification", i.notification.String())
+			}
+		}
 	}
 
 	var cmd tea.Cmd
@@ -77,7 +85,7 @@ func Init(n notifications.Notifications) {
 	items := []list.Item{}
 
 	for _, notification := range n {
-		items = append(items, item{notification})
+		items = append(items, item{notification: notification})
 	}
 
 	l := list.New(items, itemDelegate{}, listDefaultWidth, listHeight)
