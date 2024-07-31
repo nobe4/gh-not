@@ -58,7 +58,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 	case " ":
 		if i, ok := m.list.SelectedItem().(item); ok {
 			i.selected = !i.selected
-			m.list.SetItem(m.list.Index(), i)
+			return m.list.SetItem(m.list.GlobalIndex(), i)
 		}
 
 	case "enter":

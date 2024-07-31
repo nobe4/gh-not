@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.6
-	github.com/charmbracelet/lipgloss v0.10.1-0.20240413172830-d0be07ea6b9c
+	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/cli/go-gh v1.2.1
 	github.com/cli/go-gh/v2 v2.9.0
 	github.com/fatih/color v1.17.0
@@ -15,11 +15,13 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+// Needed until https://github.com/charmbracelet/bubbles/pull/574 is merged
+replace github.com/charmbracelet/bubbles v0.18.0 => github.com/nobe4/bubbles v0.18.1
+
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/x/ansi v0.1.2 // indirect
-	github.com/charmbracelet/x/exp/term v0.0.0-20240425164147-ba2a9512b05f // indirect
 	github.com/charmbracelet/x/input v0.1.0 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.1.0 // indirect
@@ -48,7 +50,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/sahilm/fuzzy v0.1.1-0.20230530133925-c48e322e2a8f // indirect
+	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
