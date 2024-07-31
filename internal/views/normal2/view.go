@@ -68,12 +68,7 @@ func (m *model) initView() {
 }
 
 func (m model) View() string {
-	if m.choice != nil {
-		return quitTextStyle.Render(m.choice.notification.String())
-	}
-
 	if m.help.ShowAll {
-		// TODO add custom help here
 		return lipgloss.JoinVertical(
 			lipgloss.Left,
 			"default",

@@ -13,11 +13,8 @@ import (
 
 type model struct {
 	list   list.Model
-	choice *item
-
 	keymap Keymap
-
-	help help.Model
+	help   help.Model
 }
 
 func Init(n notifications.Notifications, keymap config.Keymap, view config.View) error {
