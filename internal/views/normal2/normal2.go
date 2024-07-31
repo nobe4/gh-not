@@ -1,17 +1,45 @@
 package normal2
 
 import (
-	"fmt"
 	"log/slog"
-	"os"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-const listHeight = 10
-const listDefaultWidth = 20
+type model struct {
+	list   list.Model
+	choice *item
+
+	keymap Keymap
+
+	help help.Model
+}
+
+func Init(n notifications.Notifications, keymap config.Keymap, view config.View) error {
+	items := []list.Item{}
+
+	for _, notification := range n {
+		items = append(items, item{notification: notification})
+	}
+
+	l := list.New(items, itemDelegate{}, 0, view.Height)
+
+	m := model{list: l}
+
+	m.initView()
+	m.initKeymap(keymap)
+
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 type item struct {
 	notification *notifications.Notification
@@ -20,14 +48,7 @@ type item struct {
 
 func (i item) FilterValue() string { return i.notification.String() }
 
-type model struct {
-	list   list.Model
-	choice *item
-}
-
-func (m model) Init() tea.Cmd {
-	return nil
-}
+func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -51,17 +72,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 	slog.Debug("browsing", "key", msg.String())
 
-	switch keystroke := msg.String(); keystroke {
-	case "?":
-		m.list.SetShowHelp(!m.list.ShowHelp())
+	switch {
+	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
+		m.help.ShowAll = !m.help.ShowAll
 
-	case " ":
+	case key.Matches(msg, m.keymap.Toggle):
 		if i, ok := m.list.SelectedItem().(item); ok {
 			i.selected = !i.selected
 			return m.list.SetItem(m.list.GlobalIndex(), i)
 		}
 
-	case "enter":
+	case key.Matches(msg, m.keymap.Test):
 		for _, i := range m.list.Items() {
 			if i, ok := i.(item); ok && i.selected {
 				slog.Debug("selected", "notification", i.notification.String())
@@ -79,21 +100,4 @@ func (m *model) handleFiltering(msg tea.KeyMsg) tea.Cmd {
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return cmd
-}
-
-func Init(n notifications.Notifications) {
-	items := []list.Item{}
-
-	for _, notification := range n {
-		items = append(items, item{notification: notification})
-	}
-
-	l := list.New(items, itemDelegate{}, listDefaultWidth, listHeight)
-	m := model{list: l}
-	m.initView()
-
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
-	}
 }

@@ -63,6 +63,8 @@ func (m *model) initView() {
 		HelpStyle:       noStyle,
 		StatusBar:       noStyle,
 	}
+
+	m.help.Styles = m.list.Help.Styles
 }
 
 func (m model) View() string {
@@ -70,11 +72,22 @@ func (m model) View() string {
 		return quitTextStyle.Render(m.choice.notification.String())
 	}
 
+	if m.help.ShowAll {
+		// TODO add custom help here
+		return lipgloss.JoinVertical(
+			lipgloss.Left,
+			"default",
+			m.help.View(m.keymap),
+			"\nlist and filter",
+			m.list.Help.View(m.list),
+		)
+	}
+
 	paginationLine := m.list.Paginator.View() + " "
 	if m.list.FilterState() == list.Filtering {
 		paginationLine += m.list.FilterInput.View()
 	} else {
-		paginationLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
+		paginationLine += m.help.Styles.ShortDesc.Render("? to toggle help")
 	}
 
 	listView := m.list.View()
