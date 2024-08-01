@@ -239,5 +239,5 @@ func displayRepl2(n notifications.Notifications) error {
 	}
 	defer f.Close()
 
-	return normal2.Init(n, config.Data.Keymap, config.Data.View)
+	return normal2.Init(n, manager.Actors, config.Data.Keymap, config.Data.View)
 }

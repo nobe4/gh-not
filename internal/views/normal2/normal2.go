@@ -6,27 +6,33 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 type model struct {
-	list   list.Model
-	keymap Keymap
-	help   help.Model
+	list    list.Model
+	keymap  Keymap
+	help    help.Model
+	command textinput.Model
+	actors  actors.ActorsMap
 }
 
-func Init(n notifications.Notifications, keymap config.Keymap, view config.View) error {
+func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.Keymap, view config.View) error {
 	items := []list.Item{}
 
 	for _, notification := range n {
 		items = append(items, item{notification: notification})
 	}
 
-	l := list.New(items, itemDelegate{}, 0, view.Height)
-
-	m := model{list: l}
+	m := model{
+		list:    list.New(items, itemDelegate{}, 0, view.Height),
+		command: textinput.New(),
+		actors:  actors,
+	}
 
 	m.initView()
 	m.initKeymap(keymap)
@@ -48,22 +54,46 @@ func (i item) FilterValue() string { return i.notification.String() }
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
+
 	case tea.WindowSizeMsg:
 		m.list.SetWidth(msg.Width)
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.command.Focused() {
+			return m, m.handleCommand(msg)
+		}
+
 		if m.list.FilterState() == list.Filtering {
 			return m, m.handleFiltering(msg)
-		} else {
-			return m, m.handleBrowsing(msg)
 		}
+
+		return m, m.handleBrowsing(msg)
 	}
 
-	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
+
 	return m, cmd
+}
+
+func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
+	var cmd tea.Cmd
+
+	switch {
+	case key.Matches(msg, m.keymap.CommandAccept):
+		panic(m.command.Value())
+
+	case key.Matches(msg, m.keymap.CommandCancel):
+		m.command.SetValue("")
+		m.command.Blur()
+		return nil
+	}
+
+	m.command, cmd = m.command.Update(msg)
+	return cmd
 }
 
 func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
@@ -80,11 +110,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 		}
 
 	case key.Matches(msg, m.keymap.Test):
-		for _, i := range m.list.Items() {
-			if i, ok := i.(item); ok && i.selected {
-				slog.Debug("selected", "notification", i.notification.String())
-			}
-		}
+		m.command.Focus()
 	}
 
 	var cmd tea.Cmd

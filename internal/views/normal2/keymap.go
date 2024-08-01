@@ -9,6 +9,9 @@ import (
 type Keymap struct {
 	Toggle key.Binding
 	Test   key.Binding
+
+	CommandAccept key.Binding
+	CommandCancel key.Binding
 }
 
 func (k Keymap) ShortHelp() []key.Binding {
@@ -19,13 +22,16 @@ func (k Keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Toggle},
 		{k.Test},
+		{k.CommandAccept, k.CommandCancel},
 	}
 }
 
 func (m *model) initKeymap(keymap config.Keymap) {
 	m.keymap = Keymap{
-		Toggle: keymap.Binding("normal", "toggle selected"),
-		Test:   key.NewBinding(key.WithKeys("enter")),
+		Toggle:        keymap.Binding("normal", "toggle selected"),
+		Test:          key.NewBinding(key.WithKeys(":")),
+		CommandCancel: key.NewBinding(key.WithKeys("esc")),
+		CommandAccept: key.NewBinding(key.WithKeys("enter")),
 	}
 
 	m.list.KeyMap = list.KeyMap{

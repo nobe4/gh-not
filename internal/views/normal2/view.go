@@ -64,6 +64,19 @@ func (m *model) initView() {
 		StatusBar:       noStyle,
 	}
 
+	m.command.Prompt = ":"
+	m.command.Cursor.Style = noStyle
+	m.command.PromptStyle = noStyle
+	m.command.Placeholder = "filter"
+
+	suggestions := []string{}
+	for k := range m.actors {
+		suggestions = append(suggestions, k)
+	}
+
+	m.command.SetSuggestions(suggestions)
+	m.command.ShowSuggestions = true
+
 	m.help.Styles = m.list.Help.Styles
 }
 
@@ -79,10 +92,14 @@ func (m model) View() string {
 	}
 
 	paginationLine := m.list.Paginator.View() + " "
-	if m.list.FilterState() == list.Filtering {
-		paginationLine += m.list.FilterInput.View()
+	if m.command.Focused() {
+		paginationLine = m.command.View()
 	} else {
-		paginationLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+		if m.list.FilterState() == list.Filtering {
+			paginationLine += m.list.FilterInput.View()
+		} else {
+			paginationLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+		}
 	}
 
 	listView := m.list.View()
