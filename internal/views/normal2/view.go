@@ -48,6 +48,7 @@ func (m *model) initView() {
 	m.list.SetShowTitle(false)
 	m.list.SetShowFilter(false)
 	m.list.SetShowHelp(false)
+	m.list.Help.ShowAll = false
 	m.list.SetDelegate(itemDelegate{})
 	m.list.SetShowPagination(false)
 
@@ -104,30 +105,46 @@ func (m model) View() string {
 	if m.help.ShowAll {
 		return lipgloss.JoinVertical(
 			lipgloss.Left,
-			"default",
-			m.help.View(m.keymap),
-			"\nlist and filter",
-			m.list.Help.View(m.list),
+			"default", m.help.View(m.keymap),
+			"list and filter", m.list.Help.View(m.list),
 		)
 	}
 
-	paginationLine := m.list.Paginator.View() + " "
-	if m.command.Focused() {
-		paginationLine = m.command.View()
-	} else {
-		if m.list.FilterState() == list.Filtering {
-			paginationLine += m.list.FilterInput.View()
-		} else {
-			paginationLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+	content := ""
+	statusLine := ""
+
+	if m.showResult {
+		content = m.result.View()
+
+		if !m.result.AtTop() {
+			statusLine = m.help.Styles.ShortDesc.Render("↑ to scroll up ")
 		}
+		if !m.result.AtBottom() {
+			statusLine += m.help.Styles.ShortDesc.Render("↓ to scroll down ")
+		}
+
+		statusLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+	} else {
+		statusLine = m.list.Paginator.View() + " "
+
+		if m.command.Focused() {
+			statusLine = m.command.View()
+		} else {
+			if m.list.FilterState() == list.Filtering {
+				statusLine += m.list.FilterInput.View()
+			} else {
+				statusLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+			}
+		}
+
+		listView := m.list.View()
+
+		content = noStyle.Height(m.list.Height() - 1).Render(listView)
 	}
 
-	listView := m.list.View()
-
-	content := noStyle.Height(m.list.Height() - 1).Render(listView)
 	sections := []string{
 		content,
-		paginationLine,
+		statusLine,
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, sections...)

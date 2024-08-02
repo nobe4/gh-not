@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -23,8 +24,10 @@ type model struct {
 	command textinput.Model
 	result  viewport.Model
 
-	ready     bool
-	maxHeigth int
+	ready        bool
+	showResult   bool
+	processQueue []item
+	maxHeigth    int
 }
 
 func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.Keymap, view config.View) error {
@@ -67,11 +70,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
+	case ItemsSelectedMsg:
+		slog.Debug("items selected", "items", msg.Items)
+		content := []string{}
+		for _, i := range msg.Items {
+			content = append(content, i.notification.String())
+			content = append(content, i.notification.String())
+			content = append(content, i.notification.String())
+			content = append(content, i.notification.String())
+			content = append(content, i.notification.String())
+		}
+		m.result.SetContent(lipgloss.JoinVertical(lipgloss.Top, content...))
+
 	case tea.WindowSizeMsg:
 		m.handleResize(msg)
 		return m, nil
 
 	case tea.KeyMsg:
+
+		if m.showResult {
+			return m, m.handleResult(msg)
+		}
+
 		if m.command.Focused() {
 			return m, m.handleCommand(msg)
 		}
@@ -84,7 +104,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	m.list, cmd = m.list.Update(msg)
-
 	return m, cmd
 }
 
@@ -93,9 +112,14 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 
 	switch {
 	case key.Matches(msg, m.keymap.CommandAccept):
-		panic(m.command.Value())
+		slog.Debug("blur command")
+		m.command.SetValue("")
+		m.command.Blur()
+		m.showResult = true
+		return m.selectItems()
 
 	case key.Matches(msg, m.keymap.CommandCancel):
+		slog.Debug("blur command")
 		m.command.SetValue("")
 		m.command.Blur()
 		return nil
@@ -105,20 +129,66 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 	return cmd
 }
 
+type ItemsSelectedMsg struct {
+	Items []item
+}
+
+func (m model) selectItems() tea.Cmd {
+	return func() tea.Msg {
+		selected := []item{}
+
+		for _, i := range m.list.Items() {
+			n, ok := i.(item)
+
+			if !ok {
+				continue
+			}
+			if n.selected {
+				selected = append(selected, n)
+			}
+		}
+
+		return ItemsSelectedMsg{Items: selected}
+	}
+}
+
+func (m *model) handleResult(msg tea.KeyMsg) tea.Cmd {
+	var cmd tea.Cmd
+
+	switch {
+
+	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
+		m.help.ShowAll = !m.help.ShowAll
+		// TODO: why is this not showing the full help?
+		slog.Debug("toggle help", "showAll", m.help.ShowAll)
+
+	case key.Matches(msg, m.list.KeyMap.Quit):
+		m.showResult = false
+		return nil
+	}
+
+	m.result, cmd = m.result.Update(msg)
+	return cmd
+}
+
 func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 	slog.Debug("browsing", "key", msg.String())
 
 	switch {
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
 		m.help.ShowAll = !m.help.ShowAll
+		slog.Debug("toggle help", "showAll", m.help.ShowAll)
 
 	case key.Matches(msg, m.keymap.Toggle):
 		if i, ok := m.list.SelectedItem().(item); ok {
 			i.selected = !i.selected
+			slog.Debug("toggle selected", "item", i.notification.Subject.Title, "selected", i.selected)
+
 			return m.list.SetItem(m.list.GlobalIndex(), i)
 		}
 
 	case key.Matches(msg, m.keymap.Test):
+		slog.Debug("focus command")
 		m.command.Focus()
 	}
 
