@@ -3,6 +3,7 @@ package normal2
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/nobe4/gh-not/internal/config"
 )
 
@@ -50,5 +51,21 @@ func (m *model) initKeymap(keymap config.Keymap) {
 		CloseFullHelp:        keymap.Binding("normal", "toggle help"),
 		Quit:                 keymap.Binding("normal", "quit"),
 		ForceQuit:            keymap.Binding("normal", "force quit"),
+	}
+}
+
+type ViewportKeymap struct {
+	viewport.KeyMap
+}
+
+func (k ViewportKeymap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Up, k.Down}
+}
+
+func (k ViewportKeymap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down},
+		{k.HalfPageUp, k.HalfPageDown},
+		{k.PageDown, k.PageUp},
 	}
 }

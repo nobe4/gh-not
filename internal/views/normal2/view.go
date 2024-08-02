@@ -107,6 +107,7 @@ func (m model) View() string {
 			lipgloss.Left,
 			"default", m.help.View(m.keymap),
 			"list and filter", m.list.Help.View(m.list),
+			"\ncommand", m.help.View(ViewportKeymap{m.result.KeyMap}),
 		)
 	}
 
