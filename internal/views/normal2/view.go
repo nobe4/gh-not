@@ -3,6 +3,7 @@ package normal2
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -47,6 +48,7 @@ func (m *model) initView() {
 	m.list.SetShowTitle(false)
 	m.list.SetShowFilter(false)
 	m.list.SetShowHelp(false)
+	m.list.SetDelegate(itemDelegate{})
 	m.list.SetShowPagination(false)
 
 	m.list.Paginator.Type = paginator.Arabic
@@ -80,7 +82,25 @@ func (m *model) initView() {
 	m.help.Styles = m.list.Help.Styles
 }
 
+func (m *model) handleResize(msg tea.WindowSizeMsg) {
+	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
+
+	m.list.SetHeight(min(msg.Height, m.maxHeigth))
+	m.list.SetWidth(msg.Width)
+
+	m.result.Height = min(msg.Height, m.maxHeigth)
+	m.result.Width = msg.Width
+
+	if !m.ready {
+		m.ready = true
+	}
+}
+
 func (m model) View() string {
+	if !m.ready {
+		return "Initializing..."
+	}
+
 	if m.help.ShowAll {
 		return lipgloss.JoinVertical(
 			lipgloss.Left,
@@ -111,4 +131,11 @@ func (m model) View() string {
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, sections...)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/actors"
 	"github.com/nobe4/gh-not/internal/config"
@@ -14,11 +15,16 @@ import (
 )
 
 type model struct {
-	list    list.Model
-	keymap  Keymap
+	keymap Keymap
+	actors actors.ActorsMap
+
 	help    help.Model
+	list    list.Model
 	command textinput.Model
-	actors  actors.ActorsMap
+	result  viewport.Model
+
+	ready     bool
+	maxHeigth int
 }
 
 func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.Keymap, view config.View) error {
@@ -29,11 +35,14 @@ func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.
 	}
 
 	m := model{
-		list:    list.New(items, itemDelegate{}, 0, view.Height),
-		command: textinput.New(),
-		actors:  actors,
+		list:      list.New(items, itemDelegate{}, 0, 0),
+		command:   textinput.New(),
+		actors:    actors,
+		result:    viewport.New(0, 0),
+		maxHeigth: view.Height,
 	}
 
+	m.list.SetItems(items)
 	m.initView()
 	m.initKeymap(keymap)
 
@@ -59,7 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
-		m.list.SetWidth(msg.Width)
+		m.handleResize(msg)
 		return m, nil
 
 	case tea.KeyMsg:
