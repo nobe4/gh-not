@@ -1,7 +1,9 @@
 package normal2
 
 import (
+	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -22,7 +24,9 @@ type model struct {
 	help    help.Model
 	list    list.Model
 	command textinput.Model
-	result  viewport.Model
+
+	result        viewport.Model
+	resultStrings []string
 
 	ready        bool
 	showResult   bool
@@ -70,21 +74,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
-	case ItemsSelectedMsg:
-		slog.Debug("items selected", "items", msg.Items)
-		content := []string{}
-		for _, i := range msg.Items {
-			content = append(content, i.notification.String())
-			content = append(content, i.notification.String())
-			content = append(content, i.notification.String())
-			content = append(content, i.notification.String())
-			content = append(content, i.notification.String())
-		}
-		m.result.SetContent(lipgloss.JoinVertical(lipgloss.Top, content...))
-
 	case tea.WindowSizeMsg:
 		m.handleResize(msg)
 		return m, nil
+
+	case ApplyCommandMsg:
+		slog.Debug("apply command", "command", msg.Command)
+		m.resultStrings = []string{}
+		m.processQueue = msg.Items
+		// TODO: the rendering should be done only in one place
+		if len(m.processQueue) == 0 {
+			m.result.SetContent(fmt.Sprintf("done, press %s to continue ...", m.list.KeyMap.Quit.Keys()))
+		} else {
+			m.result.SetContent(fmt.Sprintf("%d more ...", len(m.processQueue)))
+		}
+		return m, m.applyNext()
+
+	case AppliedCommandMsg:
+		slog.Debug("applied command", "message", msg.Message)
+		m.processQueue = m.processQueue[1:]
+
+		m.resultStrings = append(m.resultStrings, msg.Message)
+
+		content := lipgloss.JoinVertical(lipgloss.Top, m.resultStrings...)
+		if len(m.processQueue) == 0 {
+			content = lipgloss.JoinVertical(lipgloss.Top, content, fmt.Sprintf("done, press %s to continue ...", m.list.KeyMap.Quit.Keys()))
+		} else {
+			content = lipgloss.JoinVertical(lipgloss.Top, content, fmt.Sprintf("%d more ...", len(m.processQueue)))
+		}
+
+		m.result.SetContent(content)
+
+		return m, m.applyNext()
 
 	case tea.KeyMsg:
 
@@ -113,10 +134,11 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 	switch {
 	case key.Matches(msg, m.keymap.CommandAccept):
 		slog.Debug("blur command")
+		command := m.command.Value()
 		m.command.SetValue("")
 		m.command.Blur()
 		m.showResult = true
-		return m.selectItems()
+		return m.applyCommand(command)
 
 	case key.Matches(msg, m.keymap.CommandCancel):
 		slog.Debug("blur command")
@@ -129,11 +151,12 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 	return cmd
 }
 
-type ItemsSelectedMsg struct {
-	Items []item
+type ApplyCommandMsg struct {
+	Items   []item
+	Command string
 }
 
-func (m model) selectItems() tea.Cmd {
+func (m model) applyCommand(command string) tea.Cmd {
 	return func() tea.Msg {
 		selected := []item{}
 
@@ -148,10 +171,31 @@ func (m model) selectItems() tea.Cmd {
 			}
 		}
 
-		return ItemsSelectedMsg{Items: selected}
+		return ApplyCommandMsg{Items: selected, Command: command}
 	}
 }
 
+type AppliedCommandMsg struct {
+	Message string
+}
+
+func (m model) applyNext() tea.Cmd {
+	if len(m.processQueue) == 0 {
+		slog.Debug("no more command to apply")
+		return nil
+	}
+
+	return func() tea.Msg {
+		current, tail := m.processQueue[0], m.processQueue[1:]
+		m.processQueue = tail
+
+		slog.Debug("apply next", "notification", current.notification.String())
+
+		time.Sleep(1 * time.Second)
+
+		return AppliedCommandMsg{Message: current.notification.String()}
+	}
+}
 func (m *model) handleResult(msg tea.KeyMsg) tea.Cmd {
 	var cmd tea.Cmd
 

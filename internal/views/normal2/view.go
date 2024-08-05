@@ -70,7 +70,7 @@ func (m *model) initView() {
 	m.command.Prompt = ":"
 	m.command.Cursor.Style = noStyle
 	m.command.PromptStyle = noStyle
-	m.command.Placeholder = "filter"
+	m.command.Placeholder = "command"
 
 	suggestions := []string{}
 	for k := range m.actors {
