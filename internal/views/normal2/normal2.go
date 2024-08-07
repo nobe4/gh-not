@@ -3,7 +3,7 @@ package normal2
 import (
 	"fmt"
 	"log/slog"
-	"time"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -18,8 +18,9 @@ import (
 )
 
 type model struct {
-	keymap Keymap
-	actors actors.ActorsMap
+	keymap       Keymap
+	actors       actors.ActorsMap
+	currentActor actors.Actor
 
 	help    help.Model
 	list    list.Model
@@ -80,8 +81,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ApplyCommandMsg:
 		slog.Debug("apply command", "command", msg.Command)
+		actor, ok := m.actors[msg.Command]
+		if !ok {
+			m.result.SetContent(fmt.Sprintf("Invalid command %s\nPress %s to continue ...", msg.Command, m.list.KeyMap.Quit.Keys()))
+			return m, nil
+		}
+
 		m.resultStrings = []string{}
+		m.currentActor = actor
 		m.processQueue = msg.Items
+
 		// TODO: the rendering should be done only in one place
 		if len(m.processQueue) == 0 {
 			m.result.SetContent(fmt.Sprintf("done, press %s to continue ...", m.list.KeyMap.Quit.Keys()))
@@ -107,8 +116,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, m.applyNext()
 
-	case tea.KeyMsg:
+	case CleanListMsg:
+		items := []list.Item{}
+		for _, e := range m.list.Items() {
+			if i, ok := e.(item); ok {
+				if !i.notification.Meta.Done {
+					items = append(items, e)
+				}
+			}
+		}
+		m.list.SetItems(items)
 
+	case tea.KeyMsg:
 		if m.showResult {
 			return m, m.handleResult(msg)
 		}
@@ -178,24 +197,34 @@ func (m model) applyCommand(command string) tea.Cmd {
 type AppliedCommandMsg struct {
 	Message string
 }
+type CleanListMsg struct {
+	Message string
+}
 
 func (m model) applyNext() tea.Cmd {
-	if len(m.processQueue) == 0 {
-		slog.Debug("no more command to apply")
-		return nil
-	}
-
 	return func() tea.Msg {
+		if len(m.processQueue) == 0 {
+			slog.Debug("no more command to apply")
+			return CleanListMsg{}
+		}
+
 		current, tail := m.processQueue[0], m.processQueue[1:]
 		m.processQueue = tail
 
 		slog.Debug("apply next", "notification", current.notification.String())
 
-		time.Sleep(1 * time.Second)
+		message := ""
+		out := &strings.Builder{}
+		if err := m.currentActor.Run(current.notification, out); err != nil {
+			message = fmt.Sprintf("Error for '%s': %s", current.notification.Subject.Title, err.Error())
+		} else {
+			message = out.String()
+		}
 
-		return AppliedCommandMsg{Message: current.notification.String()}
+		return AppliedCommandMsg{Message: message}
 	}
 }
+
 func (m *model) handleResult(msg tea.KeyMsg) tea.Cmd {
 	var cmd tea.Cmd
 
