@@ -9,7 +9,11 @@ import (
 
 type Keymap struct {
 	Toggle key.Binding
-	Test   key.Binding
+	All    key.Binding
+	None   key.Binding
+	Open   key.Binding
+
+	CommandMode key.Binding
 
 	CommandAccept key.Binding
 	CommandCancel key.Binding
@@ -21,16 +25,21 @@ func (k Keymap) ShortHelp() []key.Binding {
 
 func (k Keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Toggle},
-		{k.Test},
+		{k.Toggle, k.All, k.None},
+		{k.CommandMode, k.Open},
 		{k.CommandAccept, k.CommandCancel},
 	}
 }
 
 func (m *model) initKeymap(keymap config.Keymap) {
 	m.keymap = Keymap{
-		Toggle:        keymap.Binding("normal", "toggle selected"),
-		Test:          key.NewBinding(key.WithKeys(":")),
+		Toggle: keymap.Binding("normal", "toggle selected"),
+		All:    keymap.Binding("normal", "select all"),
+		None:   keymap.Binding("normal", "select none"),
+
+		Open: keymap.Binding("normal", "open in browser"),
+
+		CommandMode:   keymap.Binding("normal", "command mode"),
 		CommandCancel: key.NewBinding(key.WithKeys("esc")),
 		CommandAccept: key.NewBinding(key.WithKeys("enter")),
 	}

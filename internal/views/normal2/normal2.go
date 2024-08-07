@@ -3,6 +3,7 @@ package normal2
 import (
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -260,7 +261,33 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 			return m.list.SetItem(m.list.GlobalIndex(), i)
 		}
 
-	case key.Matches(msg, m.keymap.Test):
+	case key.Matches(msg, m.keymap.All):
+		items := []list.Item{}
+		for _, e := range m.list.Items() {
+			if i, ok := e.(item); ok {
+				i.selected = true
+				items = append(items, i)
+			}
+		}
+		m.list.SetItems(items)
+
+	case key.Matches(msg, m.keymap.None):
+		items := []list.Item{}
+		for _, e := range m.list.Items() {
+			if i, ok := e.(item); ok {
+				i.selected = false
+				items = append(items, i)
+			}
+		}
+		m.list.SetItems(items)
+
+	case key.Matches(msg, m.keymap.Open):
+		current, ok := m.list.SelectedItem().(item)
+		if ok {
+			m.actors["open"].Run(current.notification, os.Stderr)
+		}
+
+	case key.Matches(msg, m.keymap.CommandMode):
 		slog.Debug("focus command")
 		m.command.Focus()
 	}
