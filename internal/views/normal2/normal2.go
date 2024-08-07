@@ -62,13 +62,6 @@ func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.
 	return nil
 }
 
-type item struct {
-	notification *notifications.Notification
-	selected     bool
-}
-
-func (i item) FilterValue() string { return i.notification.String() }
-
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -106,6 +99,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.resultStrings = append(m.resultStrings, msg.Message)
 
+		// TODO: the rendering should be done only in one place
 		content := lipgloss.JoinVertical(lipgloss.Top, m.resultStrings...)
 		if len(m.processQueue) == 0 {
 			content = lipgloss.JoinVertical(lipgloss.Top, content, fmt.Sprintf("done, press %s to continue ...", m.list.KeyMap.Quit.Keys()))
@@ -118,6 +112,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.applyNext()
 
 	case CleanListMsg:
+		// TODO: move into a method
 		items := []list.Item{}
 		for _, e := range m.list.Items() {
 			if i, ok := e.(item); ok {
@@ -153,6 +148,7 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 
 	switch {
 	case key.Matches(msg, m.keymap.CommandAccept):
+		// TODO: move into a method
 		slog.Debug("blur command")
 		command := m.command.Value()
 		m.command.SetValue("")
@@ -161,6 +157,7 @@ func (m *model) handleCommand(msg tea.KeyMsg) tea.Cmd {
 		return m.applyCommand(command)
 
 	case key.Matches(msg, m.keymap.CommandCancel):
+		// TODO: move into a method
 		slog.Debug("blur command")
 		m.command.SetValue("")
 		m.command.Blur()
@@ -262,6 +259,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 		}
 
 	case key.Matches(msg, m.keymap.All):
+		// TODO: move into a method
 		items := []list.Item{}
 		for _, e := range m.list.Items() {
 			if i, ok := e.(item); ok {
@@ -272,6 +270,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 		m.list.SetItems(items)
 
 	case key.Matches(msg, m.keymap.None):
+		// TODO: move into a method
 		items := []list.Item{}
 		for _, e := range m.list.Items() {
 			if i, ok := e.(item); ok {
@@ -282,6 +281,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) tea.Cmd {
 		m.list.SetItems(items)
 
 	case key.Matches(msg, m.keymap.Open):
+		// TODO: move into a method
 		current, ok := m.list.SelectedItem().(item)
 		if ok {
 			m.actors["open"].Run(current.notification, os.Stderr)

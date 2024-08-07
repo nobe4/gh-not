@@ -1,10 +1,7 @@
 package normal2
 
 import (
-	"fmt"
-	"io"
 	"log/slog"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/paginator"
@@ -13,35 +10,8 @@ import (
 )
 
 var (
-	noStyle       = lipgloss.NewStyle()
-	quitTextStyle = noStyle.MarginBottom(1)
+	noStyle = lipgloss.NewStyle()
 )
-
-type itemDelegate struct{}
-
-func (d itemDelegate) Height() int                             { return 1 }
-func (d itemDelegate) Spacing() int                            { return 0 }
-func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	n, ok := listItem.(item)
-	if !ok {
-		return
-	}
-
-	selected := " "
-	if n.selected {
-		selected = "x"
-	}
-	cursor := " "
-
-	str := n.notification.String()
-	if index == m.Index() {
-		cursor = ">"
-		str = strings.ReplaceAll(str, " ", "⋅")
-	}
-
-	fmt.Fprintf(w, "%s%s%s", selected, cursor, str)
-}
 
 func (m *model) initView() {
 	m.list.SetShowStatusBar(false)
