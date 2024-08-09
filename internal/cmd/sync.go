@@ -27,7 +27,9 @@ var (
 Use this command when you want to make sure that your notification list is up to
 date with your ruleset.
 
-E.g.:
+See synchronisation logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal/notifications#Sync.
+`,
+		Example: `
   gh-not sync
   gh-not sync --force-strategy=noop,enrich
   gh-not sync --refresh-strategy=prevent
