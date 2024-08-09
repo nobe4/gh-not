@@ -4,16 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/logger"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/nobe4/gh-not/internal/notifications"
+	"github.com/nobe4/gh-not/internal/repl"
 	"github.com/nobe4/gh-not/internal/version"
-	"github.com/nobe4/gh-not/internal/views/normal"
-	"github.com/nobe4/gh-not/internal/views/normal2"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +21,6 @@ var (
 	ruleFlag       string
 	filterFlag     string
 	replFlag       bool
-	replFlag2      bool // FIXME: remove once transition is done
 	jsonFlag       bool
 	allFlag        bool
 
@@ -66,7 +63,6 @@ func init() {
 	rootCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output the selected notifications as JSON")
 
 	rootCmd.Flags().BoolVarP(&replFlag, "repl", "", false, "Start a REPL with the notifications list")
-	rootCmd.Flags().BoolVarP(&replFlag2, "repl2", "", false, "REMOVE ME ONCE TRANSITION IS DONE")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -165,10 +161,6 @@ func display(notifications notifications.Notifications) error {
 		return displayRepl(notifications)
 	}
 
-	if replFlag2 {
-		return displayRepl2(notifications)
-	}
-
 	displayTable(notifications)
 
 	return nil
@@ -208,9 +200,7 @@ func displayRepl(n notifications.Notifications) error {
 	}
 	defer f.Close()
 
-	model := normal.New(manager.Actors, n, config.Data.Keymap, config.Data.View)
-	p := tea.NewProgram(model)
-	if _, err := p.Run(); err != nil {
+	if err := repl.Init(n, manager.Actors, config.Data.Keymap, config.Data.View); err != nil {
 		return err
 	}
 
@@ -220,24 +210,4 @@ func displayRepl(n notifications.Notifications) error {
 	}
 
 	return nil
-}
-
-func displayRepl2(n notifications.Notifications) error {
-	caller, err := github.New()
-	if err != nil {
-		slog.Error("Failed to create an API REST client", "err", err)
-		return err
-	}
-	manager.SetCaller(caller)
-
-	// Launching bubbletea will occupy STDOUT and STDERR, so we need to redirect
-	// the logs to a file.
-	f, err := logger.InitWithFile(verbosityFlag, "/tmp/gh-not-debug.log")
-	if err != nil {
-		slog.Error("Failed to init the logger", "err", err)
-		return err
-	}
-	defer f.Close()
-
-	return normal2.Init(n, manager.Actors, config.Data.Keymap, config.Data.View)
 }

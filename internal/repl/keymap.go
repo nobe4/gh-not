@@ -1,4 +1,4 @@
-package normal2
+package repl
 
 import (
 	"github.com/charmbracelet/bubbles/key"
