@@ -29,12 +29,8 @@ var Defaults = map[string]any{
 	"keymap.normal.toggle help":     []string{"?"},
 	"keymap.normal.quit":            []string{"q", "esc"},
 	"keymap.normal.force quit":      []string{"ctrl+c"},
-
-	"keymap.filter.confirm":       []string{"enter"},
-	"keymap.filter.cancel":        []string{"esc"},
-	"keymap.filter.accept filter": []string{"enter"},
-	"keymap.filter.cancel filter": []string{"esc"},
-
-	"keymap.command.confirm": []string{"enter"},
-	"keymap.command.cancel":  []string{"esc"},
+	"keymap.filter.accept":          []string{"enter"},
+	"keymap.filter.cancel":          []string{"esc"},
+	"keymap.command.confirm":        []string{"enter"},
+	"keymap.command.cancel":         []string{"esc"},
 }
