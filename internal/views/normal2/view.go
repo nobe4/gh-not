@@ -1,6 +1,7 @@
 package normal2
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -53,7 +54,7 @@ func (m *model) initView() {
 	m.help.Styles = m.list.Help.Styles
 }
 
-func (m *model) handleResize(msg tea.WindowSizeMsg) {
+func (m *model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
 
 	m.list.SetHeight(min(msg.Height, m.maxHeigth))
@@ -64,6 +65,33 @@ func (m *model) handleResize(msg tea.WindowSizeMsg) {
 
 	if !m.ready {
 		m.ready = true
+	}
+
+	return m, nil
+}
+
+type ResultUpdateMsg struct {
+	content string
+}
+
+func (m model) renderResult(err error) tea.Cmd {
+	return func() tea.Msg {
+		slog.Debug("renderResult")
+
+		lines := []string{}
+
+		if err != nil {
+			lines = append(lines, err.Error())
+		} else {
+			lines = append(lines, m.resultStrings...)
+			if len(m.processQueue) > 0 {
+				lines = append(lines, fmt.Sprintf("%d more ...", len(m.processQueue)))
+			}
+		}
+
+		lines = append(lines, fmt.Sprintf("press %s to continue ...", m.list.KeyMap.Quit.Keys()))
+
+		return ResultUpdateMsg{lipgloss.JoinVertical(lipgloss.Top, lines...)}
 	}
 }
 
@@ -86,6 +114,7 @@ func (m model) View() string {
 
 	if m.showResult {
 		content = m.result.View()
+		slog.Debug("showResult")
 
 		if !m.result.AtTop() {
 			statusLine = m.help.Styles.ShortDesc.Render("↑ to scroll up ")
