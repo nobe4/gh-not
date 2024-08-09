@@ -16,15 +16,12 @@ type ApplyCommandMsg struct {
 
 func (m model) applyCommand(command string) tea.Cmd {
 	return func() tea.Msg {
+		slog.Debug("applyCommand", "command", command)
+
 		selected := []item{}
 
 		for _, i := range m.list.Items() {
-			n, ok := i.(item)
-
-			if !ok {
-				continue
-			}
-			if n.selected {
+			if n, ok := i.(item); ok && n.selected {
 				selected = append(selected, n)
 			}
 		}
@@ -35,6 +32,7 @@ func (m model) applyCommand(command string) tea.Cmd {
 
 func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	slog.Debug("apply command", "command", msg.Command)
+
 	actor, ok := m.actors[msg.Command]
 	if !ok {
 		return m, m.renderResult(fmt.Errorf("Invalid command %s", msg.Command))
@@ -56,7 +54,6 @@ func (msg AppliedCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	m.processQueue = m.processQueue[1:]
 
 	m.resultStrings = append(m.resultStrings, msg.Message)
-	time.Sleep(time.Second)
 
 	return m, tea.Sequence(m.renderResult(nil), m.applyNext())
 }
