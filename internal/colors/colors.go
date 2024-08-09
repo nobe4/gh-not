@@ -1,16 +1,16 @@
 package colors
 
 import (
-	"github.com/fatih/color"
+	"github.com/charmbracelet/lipgloss"
 )
 
-func Colorize(c color.Attribute, s string) string {
-	return color.New(c).SprintFunc()(s)
+func Colorize(c string, s string) string {
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(c)).Render(s)
 }
 
-func Red(s string) string     { return Colorize(color.FgRed, s) }
-func Magenta(s string) string { return Colorize(color.FgMagenta, s) }
-func Blue(s string) string    { return Colorize(color.FgBlue, s) }
-func Cyan(s string) string    { return Colorize(color.FgCyan, s) }
-func Green(s string) string   { return Colorize(color.FgGreen, s) }
-func Yellow(s string) string  { return Colorize(color.FgYellow, s) }
+func Red(s string) string     { return Colorize("1", s) }
+func Magenta(s string) string { return Colorize("5", s) }
+func Blue(s string) string    { return Colorize("4", s) }
+func Cyan(s string) string    { return Colorize("6", s) }
+func Green(s string) string   { return Colorize("2", s) }
+func Yellow(s string) string  { return Colorize("3", s) }
