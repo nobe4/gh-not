@@ -50,8 +50,6 @@ func (m *model) initView() {
 
 	m.command.SetSuggestions(suggestions)
 	m.command.ShowSuggestions = true
-
-	m.help.Styles = m.list.Help.Styles
 }
 
 func (m *model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
@@ -95,18 +93,22 @@ func (m model) renderResult(err error) tea.Cmd {
 	}
 }
 
+func (m model) viewFullHelp() string {
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		"default", m.list.Help.FullHelpView(m.keymap.FullHelp()),
+		"\nlist and filter", m.list.Help.FullHelpView(m.list.FullHelp()),
+		"\nresults", m.list.Help.FullHelpView(ViewportKeymap{m.result.KeyMap}.FullHelp()),
+	)
+}
+
 func (m model) View() string {
 	if !m.ready {
 		return "Initializing..."
 	}
 
-	if m.help.ShowAll {
-		return lipgloss.JoinVertical(
-			lipgloss.Left,
-			"default", m.help.View(m.keymap),
-			"list and filter", m.list.Help.View(m.list),
-			"\ncommand", m.help.View(ViewportKeymap{m.result.KeyMap}),
-		)
+	if m.showHelp {
+		return m.viewFullHelp()
 	}
 
 	content := ""
@@ -117,13 +119,13 @@ func (m model) View() string {
 		slog.Debug("showResult")
 
 		if !m.result.AtTop() {
-			statusLine = m.help.Styles.ShortDesc.Render("↑ to scroll up ")
+			statusLine = m.list.Help.Styles.ShortDesc.Render("↑ to scroll up ")
 		}
 		if !m.result.AtBottom() {
-			statusLine += m.help.Styles.ShortDesc.Render("↓ to scroll down ")
+			statusLine += m.list.Help.Styles.ShortDesc.Render("↓ to scroll down ")
 		}
 
-		statusLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+		statusLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
 	} else {
 		statusLine = m.list.Paginator.View() + " "
 
@@ -133,7 +135,7 @@ func (m model) View() string {
 			if m.list.FilterState() == list.Filtering {
 				statusLine += m.list.FilterInput.View()
 			} else {
-				statusLine += m.help.Styles.ShortDesc.Render("? to toggle help")
+				statusLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
 			}
 		}
 

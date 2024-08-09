@@ -60,9 +60,8 @@ func (m *model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
-		m.help.ShowAll = !m.help.ShowAll
-		// TODO: why is this not showing the full help?
-		slog.Debug("toggle help", "showAll", m.help.ShowAll)
+		m.showHelp = !m.showHelp
+		slog.Debug("toggle help", "showAll", m.showHelp)
 
 	case key.Matches(msg, m.list.KeyMap.Quit):
 		m.showResult = false
@@ -79,8 +78,8 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	switch {
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
-		m.help.ShowAll = !m.help.ShowAll
-		slog.Debug("toggle help", "showAll", m.help.ShowAll)
+		m.showHelp = !m.showHelp
+		slog.Debug("toggle help", "showAll", m.showHelp)
 
 	case key.Matches(msg, m.keymap.Toggle):
 		if i, ok := m.list.SelectedItem().(item); ok {

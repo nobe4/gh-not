@@ -3,7 +3,6 @@ package normal2
 import (
 	"log/slog"
 
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -18,9 +17,9 @@ type model struct {
 	actors       actors.ActorsMap
 	currentActor actors.Actor
 
-	help    help.Model
-	list    list.Model
-	command textinput.Model
+	showHelp bool
+	list     list.Model
+	command  textinput.Model
 
 	result        viewport.Model
 	resultStrings []string
