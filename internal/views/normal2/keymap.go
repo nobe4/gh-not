@@ -67,10 +67,6 @@ type ViewportKeymap struct {
 	viewport.KeyMap
 }
 
-func (k ViewportKeymap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down}
-}
-
 func (k ViewportKeymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down},
