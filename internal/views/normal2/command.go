@@ -8,6 +8,26 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+func (m model) acceptCommand() (tea.Model, tea.Cmd) {
+	command := m.command.Value()
+	slog.Debug("acceptCommand", "command", command)
+
+	m.command.SetValue("")
+	m.command.Blur()
+	m.showResult = true
+
+	return m, m.applyCommand(command)
+}
+
+func (m model) cancelCommand() (tea.Model, tea.Cmd) {
+	slog.Debug("cancelCommand")
+
+	m.command.SetValue("")
+	m.command.Blur()
+
+	return m, nil
+}
+
 type ApplyCommandMsg struct {
 	Items   []item
 	Command string
