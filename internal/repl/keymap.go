@@ -34,8 +34,8 @@ func (m *model) initKeymap(keymap config.Keymap) {
 		None:          keymap.Binding("normal", "select none"),
 		Open:          keymap.Binding("normal", "open in browser"),
 		CommandMode:   keymap.Binding("normal", "command mode"),
-		CommandCancel: key.NewBinding(key.WithKeys("esc")),
-		CommandAccept: key.NewBinding(key.WithKeys("enter")),
+		CommandAccept: keymap.Binding("command", "command accept"),
+		CommandCancel: keymap.Binding("command", "command cancel"),
 	}
 
 	m.list.KeyMap = list.KeyMap{
@@ -46,13 +46,13 @@ func (m *model) initKeymap(keymap config.Keymap) {
 		GoToStart:            keymap.Binding("normal", "go to start"),
 		GoToEnd:              keymap.Binding("normal", "go to end"),
 		Filter:               keymap.Binding("normal", "filter mode"),
-		ClearFilter:          keymap.Binding("filter", "cancel"),
-		CancelWhileFiltering: keymap.Binding("filter", "cancel"),
-		AcceptWhileFiltering: keymap.Binding("filter", "accept"),
 		ShowFullHelp:         keymap.Binding("normal", "toggle help"),
 		CloseFullHelp:        keymap.Binding("normal", "toggle help"),
 		Quit:                 keymap.Binding("normal", "quit"),
 		ForceQuit:            keymap.Binding("normal", "force quit"),
+		ClearFilter:          keymap.Binding("filter", "filter cancel"),
+		CancelWhileFiltering: keymap.Binding("filter", "filter cancel"),
+		AcceptWhileFiltering: keymap.Binding("filter", "filter accept"),
 	}
 
 	m.result.KeyMap = viewport.KeyMap{
