@@ -2,21 +2,28 @@ package notifications
 
 import "log/slog"
 
-// Sync merges the local and remote notifications.
-//
-// It applies the following rules:
-// | remote \ local | Missing   | Exist     | Done      |
-// | ---            | ---       | ---       | ---       |
-// | Exist          | (1)Insert | (2)Update | (2)Update |
-// | Missing        | (3)Keep   | (3)Keep   | (4)Drop   |
-//
-//  1. Insert: Add the notification ass is.
-//  2. Update: Update the local notification with the remote data, keep the Meta
-//     unchanged.
-//  3. Keep: Keep the local notification unchanged.
-//  4. Drop: Remove the notification from the local list.
-//
-// TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`
+/*
+Sync merges the local and remote notifications.
+
+It applies the following rules:
+
+	| remote \ local | Missing   | Exist     | Done      |
+	| ---            | ---       | ---       | ---       |
+	| Exist          | (1)Insert | (2)Update | (2)Update |
+	| Missing        | (3)Keep   | (3)Keep   | (4)Drop   |
+
+	1. Insert: Add the notification ass is.
+	2. Update: Update the local notification with the remote data, keep the Meta
+	   unchanged.
+	3. Keep: Keep the local notification unchanged.
+	4. Drop: Remove the notification from the local list.
+
+Notes on 'Update': Updating the notification will also reset the `Meta.Done`
+state if the notification on the API is newer than the cached one.
+TODO: https://github.com/nobe4/gh-not/issues/126
+
+TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`
+*/
 func Sync(local, remote Notifications) Notifications {
 	remoteMap := remote.Map()
 	localMap := local.Map()

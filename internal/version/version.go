@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	tag    = "dev" // set via ldflags
-	commit = "123abc"
-	date   = "now"
+	tag    = "UNSET_TAG" // set via ldflags
+	commit = "UNSET_COMMIT"
+	date   = "UNSET_DATE"
 )
 
 const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
