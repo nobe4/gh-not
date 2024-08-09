@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -51,6 +50,7 @@ type AppliedCommandMsg struct {
 
 func (msg AppliedCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	slog.Debug("applied command", "message", msg.Message)
+
 	m.processQueue = m.processQueue[1:]
 
 	m.resultStrings = append(m.resultStrings, msg.Message)
