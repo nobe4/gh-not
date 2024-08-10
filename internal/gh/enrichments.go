@@ -23,7 +23,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 		return err
 	}
 
-	slog.Debug("enriching", "notifications", n)
+	slog.Debug("enriching", "id", n.Id)
 
 	n.Author = extra.User
 	n.Subject.State = extra.State
