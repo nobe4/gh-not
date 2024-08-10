@@ -7,20 +7,19 @@ Sync merges the local and remote notifications.
 
 It applies the following rules:
 
-	| remote \ local | Missing   | Exist     | Done      |
-	| ---            | ---       | ---       | ---       |
-	| Exist          | (1)Insert | (2)Update | (2)Update |
-	| Missing        | (3)Keep   | (3)Keep   | (4)Drop   |
+	| remote \ local | Missing    | Exist      | Done       |
+	| ---            | ---        | ---        | ---        |
+	| Exist          | (1) Insert | (2) Update | (2) Update |
+	| Missing        | (3) Keep   | (3) Keep   | (4) Drop   |
 
-	1. Insert: Add the notification ass is.
-	2. Update: Update the local notification with the remote data, keep the Meta
-	   unchanged.
-	3. Keep: Keep the local notification unchanged.
-	4. Drop: Remove the notification from the local list.
+	(1) Insert: Add the notification ass is.
+	(2) Update: Update the local notification with the remote data, keep the Meta
+	    unchanged.
+	(3) Keep: Keep the local notification unchanged.
+	(4) Drop: Remove the notification from the local list.
 
-Notes on 'Update': Updating the notification will also reset the `Meta.Done`
-state if the notification on the API is newer than the cached one.
-TODO: https://github.com/nobe4/gh-not/issues/126
+Notes on (2) Update: Updating the notification will also reset the `Meta.Done`
+state if the remote notification is newer than the local one.
 
 TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`
 */
@@ -33,8 +32,8 @@ func Sync(local, remote Notifications) Notifications {
 	// Add any new notifications to the list
 	for remoteId, remote := range remoteMap {
 		if _, ok := localMap[remoteId]; !ok {
-			// (1)Insert
-			slog.Debug("sync", "action", "insert", "notification", remote)
+			// (1) Insert
+			slog.Debug("sync", "action", "insert", "id", remote.Id)
 
 			remote.Meta.RemoteExists = true
 			n = append(n, remote)
@@ -47,20 +46,25 @@ func Sync(local, remote Notifications) Notifications {
 		local.Meta.RemoteExists = remoteExist
 
 		if remoteExist {
-			// (2)Update
-			slog.Debug("sync", "action", "update", "notification", remote)
+			// (2) Update
+			slog.Debug("sync", "action", "update", "id", remote.Id)
+
+			if local.Meta.Done && remote.UpdatedAt.After(local.UpdatedAt) {
+				slog.Debug("sync", "action", "reseting done", "id", local.Id)
+				local.Meta.Done = false
+			}
 
 			remote.Meta = local.Meta
 			n = append(n, remote)
 		} else {
 			if local.Meta.Done {
-				// (4)Drop
-				slog.Debug("sync", "action", "drop", "notification", local)
+				// (4) Drop
+				slog.Debug("sync", "action", "drop", "id", local.Id)
 				continue
 			}
 
-			// (3)Keep
-			slog.Debug("sync", "action", "keep", "notification", local)
+			// (3) Keep
+			slog.Debug("sync", "action", "keep", "id", local.Id)
 			n = append(n, local)
 		}
 	}

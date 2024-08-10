@@ -1,7 +1,6 @@
 package notifications
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -86,7 +85,7 @@ func TestSync(t *testing.T) {
 		})
 	}
 
-	t.Run("update remoteExist", func(t *testing.T) {
+	t.Run("update Meta.RemoteExist", func(t *testing.T) {
 		got := Sync(
 			Notifications{
 				&Notification{Id: "0", UpdatedAt: time.Unix(0, 2), Meta: Meta{RemoteExists: false}},
@@ -98,10 +97,6 @@ func TestSync(t *testing.T) {
 			},
 		)
 
-		fmt.Printf("%#v\n", got[0])
-		fmt.Printf("%#v\n", got[1])
-		fmt.Printf("%#v\n", got[2])
-
 		if !got[0].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be true but got false")
 		}
@@ -110,6 +105,48 @@ func TestSync(t *testing.T) {
 		}
 		if !got[2].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be true but got false")
+		}
+	})
+
+	t.Run("update Meta.Done", func(t *testing.T) {
+		tests := []struct {
+			name         string
+			local        *Notification
+			remote       *Notification
+			expectedDone bool
+		}{
+			{
+				name:         "Not done && Not updated",
+				local:        &Notification{UpdatedAt: time.Unix(0, 0), Meta: Meta{Done: false}},
+				remote:       &Notification{UpdatedAt: time.Unix(0, 0)},
+				expectedDone: false,
+			},
+			{
+				name:         "Not done && updated",
+				local:        &Notification{UpdatedAt: time.Unix(0, 0), Meta: Meta{Done: false}},
+				remote:       &Notification{UpdatedAt: time.Unix(0, 1)},
+				expectedDone: false,
+			},
+			{
+				name:         "Done && Not updated",
+				local:        &Notification{UpdatedAt: time.Unix(0, 0), Meta: Meta{Done: true}},
+				remote:       &Notification{UpdatedAt: time.Unix(0, 0)},
+				expectedDone: true,
+			},
+			{
+				name:         "Done && updated",
+				local:        &Notification{UpdatedAt: time.Unix(0, 0), Meta: Meta{Done: true}},
+				remote:       &Notification{UpdatedAt: time.Unix(0, 1)},
+				expectedDone: false,
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				got := Sync(Notifications{test.local}, Notifications{test.remote})
+				if got[0].Meta.Done != test.expectedDone {
+					t.Fatalf("expected Done to be %v but got %v", test.expectedDone, got[0].Meta.Done)
+				}
+			})
 		}
 	})
 }
