@@ -7,10 +7,10 @@ Sync merges the local and remote notifications.
 
 It applies the following rules:
 
-	| remote \ local | Missing    | Exist      | Done       |
-	| ---            | ---        | ---        | ---        |
-	| Exist          | (1) Insert | (2) Update | (2) Update |
-	| Missing        | (3) Keep   | (3) Keep   | (4) Drop   |
+	| remote \ local | Missing    | Exist      | Done       | Hidden   |
+	| ---            | ---        | ---        | ---        | ---      |
+	| Exist          | (1) Insert | (2) Update | (2) Update | (3) Keep |
+	| Missing        | (3) Keep   | (3) Keep   | (4) Drop   | (4) Drop |
 
 	(1) Insert: Add the notification ass is.
 	(2) Update: Update the local notification with the remote data, keep the Meta
@@ -46,6 +46,13 @@ func Sync(local, remote Notifications) Notifications {
 		local.Meta.RemoteExists = remoteExist
 
 		if remoteExist {
+			// (3) Keep
+			if local.Meta.Hidden {
+				slog.Debug("sync", "action", "keeping hidden", "id", local.Id)
+				n = append(n, local)
+				continue
+			}
+
 			// (2) Update
 			slog.Debug("sync", "action", "update", "id", remote.Id)
 
@@ -57,7 +64,7 @@ func Sync(local, remote Notifications) Notifications {
 			remote.Meta = local.Meta
 			n = append(n, remote)
 		} else {
-			if local.Meta.Done {
+			if local.Meta.Done || local.Meta.Hidden {
 				// (4) Drop
 				slog.Debug("sync", "action", "drop", "id", local.Id)
 				continue
