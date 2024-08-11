@@ -65,7 +65,7 @@ func TestSync(t *testing.T) {
 		{
 			name:     "hidden notification present in remote",
 			local:    Notifications{n0Hidden, n1Done},
-			remote:   Notifications{n0, n1},
+			remote:   Notifications{n0Updated, n1},
 			expected: Notifications{n0Hidden, n1Done},
 		},
 		{
