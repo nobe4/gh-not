@@ -1,3 +1,6 @@
+/*
+Package pass implements an [actions.Runner] that does nothing.
+*/
 package pass
 
 import (

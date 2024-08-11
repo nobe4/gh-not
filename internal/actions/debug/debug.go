@@ -1,3 +1,6 @@
+/*
+Package debug implements an [actions.Runner] that prints a notification with a DEBUG prefix.
+*/
 package debug
 
 import (

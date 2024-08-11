@@ -1,3 +1,6 @@
+/*
+Package open implements an [actions.Runner] that opens a notification in the browser.
+*/
 package open
 
 import (
