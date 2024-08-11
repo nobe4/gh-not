@@ -18,7 +18,7 @@ func TestSync(t *testing.T) {
 		remote   Notifications
 		expected Notifications
 	}{
-		// (1)Insert
+		// (1) Insert
 		{
 			name:     "one new notification",
 			remote:   Notifications{n0},
@@ -30,7 +30,7 @@ func TestSync(t *testing.T) {
 			expected: Notifications{n0, n1},
 		},
 
-		// (3)Noop
+		// (3) Keep
 		{
 			name: "no notifications",
 		},
@@ -45,21 +45,27 @@ func TestSync(t *testing.T) {
 			remote:   Notifications{n1},
 			expected: Notifications{n0, n1},
 		},
-
-		// (4)Drop
 		{
-			name:     "cleanup notifications",
-			local:    Notifications{n0Hidden, n1Done},
+			name:     "keep hidden notification",
+			local:    Notifications{n0Hidden},
+			remote:   Notifications{n0},
 			expected: Notifications{n0Hidden},
 		},
 
-		// Testing (2)Update latest so previous tests are not impacted my
+		// (4) Drop
+		{
+			name:     "cleanup notifications",
+			local:    Notifications{n0Hidden, n1Done},
+			expected: Notifications{},
+		},
+
+		// Testing (2) Update latest so previous tests are not impacted my
 		// modified notifications.
-		// (2)Update
+		// (2) Update
 		{
 			name:     "hidden notification present in remote",
 			local:    Notifications{n0Hidden, n1Done},
-			remote:   Notifications{n0, n1},
+			remote:   Notifications{n0Updated, n1},
 			expected: Notifications{n0Hidden, n1Done},
 		},
 		{
