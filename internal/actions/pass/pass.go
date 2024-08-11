@@ -6,8 +6,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type Actor struct{}
+type Runner struct{}
 
-func (_ *Actor) Run(n *notifications.Notification, _ io.Writer) error {
+func (_ *Runner) Run(n *notifications.Notification, _ io.Writer) error {
 	return nil
 }

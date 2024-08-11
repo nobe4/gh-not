@@ -44,7 +44,7 @@ func (m *model) initView() {
 	m.command.Placeholder = "command"
 
 	suggestions := []string{}
-	for k := range m.actors {
+	for k := range m.actions {
 		suggestions = append(suggestions, k)
 	}
 

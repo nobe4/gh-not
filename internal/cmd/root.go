@@ -200,7 +200,7 @@ func displayRepl(n notifications.Notifications) error {
 	}
 	defer f.Close()
 
-	if err := repl.Init(n, manager.Actors, config.Data.Keymap, config.Data.View); err != nil {
+	if err := repl.Init(n, manager.Actions, config.Data.Keymap, config.Data.View); err != nil {
 		return err
 	}
 

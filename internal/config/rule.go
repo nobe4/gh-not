@@ -36,7 +36,7 @@ type Rule struct {
 	Filters []string `mapstructure:"filters"`
 
 	// Action is the action to take on the filtered notifications.
-	// See github.com/nobe4/internal/actors for list of available actions.
+	// See github.com/nobe4/internal/actions for list of available actions.
 	Action string `mapstructure:"action"`
 }
 

@@ -9,9 +9,9 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type Actor struct{}
+type Runner struct{}
 
-func (_ *Actor) Run(n *notifications.Notification, w io.Writer) error {
+func (_ *Runner) Run(n *notifications.Notification, w io.Writer) error {
 	slog.Debug("marking notification as hidden", "notification", n.Id)
 
 	n.Meta.Hidden = true

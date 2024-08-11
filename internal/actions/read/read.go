@@ -10,13 +10,13 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-// Actor that marks a notification as read.
+// Runner that marks a notification as read.
 // Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-read
-type Actor struct {
+type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
 	err := a.Client.API.Do(http.MethodPatch, n.URL, nil, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible

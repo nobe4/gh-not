@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/config"
@@ -18,7 +18,7 @@ type Manager struct {
 	cache         cache.ExpiringReadWriter
 	config        *config.Data
 	client        *gh.Client
-	Actors        actors.ActorsMap
+	Actions       actions.ActionsMap
 
 	RefreshStrategy RefreshStrategy
 	ForceStrategy   ForceStrategy
@@ -35,7 +35,7 @@ func New(config *config.Data) *Manager {
 
 func (m *Manager) SetCaller(caller api.Caller) {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
-	m.Actors = actors.Map(m.client)
+	m.Actions = actions.Map(m.client)
 }
 
 func (m *Manager) Load() error {
@@ -99,7 +99,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
-		actor, ok := m.Actors[rule.Action]
+		runner, ok := m.Actions[rule.Action]
 		if !ok {
 			slog.Error("unknown action", "action", rule.Action)
 			continue
@@ -123,7 +123,7 @@ func (m *Manager) Apply() error {
 				continue
 			}
 
-			if err := actor.Run(notification, os.Stdout); err != nil {
+			if err := runner.Run(notification, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
 			}
 			fmt.Fprintln(os.Stdout, "")

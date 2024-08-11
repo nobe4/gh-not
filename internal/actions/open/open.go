@@ -9,11 +9,11 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type Actor struct {
+type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
 	slog.Debug("open notification in browser", "notification", n)
 
 	browser := browser.New("", w, w)
