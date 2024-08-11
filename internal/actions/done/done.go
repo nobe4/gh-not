@@ -11,13 +11,13 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-// Actor that marks a notification as done.
+// Runner that marks a notification as done.
 // Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-done
-type Actor struct {
+type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Actor) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
 	slog.Debug("marking notification as done", "notification", n)
 
 	n.Meta.Done = true

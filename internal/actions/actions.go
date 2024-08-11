@@ -14,20 +14,20 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type ActionsMap map[string]Actor
+type ActionsMap map[string]Runner
 
 func Map(client *gh.Client) ActionsMap {
-	return map[string]Actor{
-		"pass":  &pass.Actor{},
-		"debug": &debug.Actor{},
-		"print": &print.Actor{},
-		"hide":  &hide.Actor{},
-		"read":  &read.Actor{Client: client},
-		"done":  &done.Actor{Client: client},
-		"open":  &open.Actor{Client: client},
+	return map[string]Runner{
+		"pass":  &pass.Runner{},
+		"debug": &debug.Runner{},
+		"print": &print.Runner{},
+		"hide":  &hide.Runner{},
+		"read":  &read.Runner{Client: client},
+		"done":  &done.Runner{Client: client},
+		"open":  &open.Runner{Client: client},
 	}
 }
 
-type Actor interface {
+type Runner interface {
 	Run(*notifications.Notification, io.Writer) error
 }

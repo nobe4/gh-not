@@ -52,13 +52,13 @@ func (m model) applyCommand(command string) tea.Cmd {
 func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	slog.Debug("apply command", "command", msg.Command)
 
-	actor, ok := m.actions[msg.Command]
+	runner, ok := m.actions[msg.Command]
 	if !ok {
 		return m, m.renderResult(fmt.Errorf("Invalid command %s", msg.Command))
 	}
 
 	m.resultStrings = []string{}
-	m.currentActor = actor
+	m.currentRunner = runner
 	m.processQueue = msg.Items
 
 	return m, tea.Sequence(m.renderResult(nil), m.applyNext())
@@ -92,7 +92,7 @@ func (m model) applyNext() tea.Cmd {
 
 		message := ""
 		out := &strings.Builder{}
-		if err := m.currentActor.Run(current.notification, out); err != nil {
+		if err := m.currentRunner.Run(current.notification, out); err != nil {
 			message = fmt.Sprintf("Error for '%s': %s", current.notification.Subject.Title, err.Error())
 		} else {
 			message = out.String()

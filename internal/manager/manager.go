@@ -99,7 +99,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
-		actor, ok := m.Actions[rule.Action]
+		runner, ok := m.Actions[rule.Action]
 		if !ok {
 			slog.Error("unknown action", "action", rule.Action)
 			continue
@@ -123,7 +123,7 @@ func (m *Manager) Apply() error {
 				continue
 			}
 
-			if err := actor.Run(notification, os.Stdout); err != nil {
+			if err := runner.Run(notification, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
 			}
 			fmt.Fprintln(os.Stdout, "")
