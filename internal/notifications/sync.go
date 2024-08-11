@@ -10,7 +10,7 @@ It applies the following rules:
 	| remote \ local | Missing    | Exist      | Done       | Hidden   |
 	| ---            | ---        | ---        | ---        | ---      |
 	| Exist          | (1) Insert | (2) Update | (2) Update | (3) Keep |
-	| Missing        | (3) Keep   | (3) Keep   | (4) Drop   | (4) Drop |
+	| Missing        |            | (3) Keep   | (4) Drop   | (4) Drop |
 
 	(1) Insert: Add the notification ass is.
 	(2) Update: Update the local notification with the remote data, keep the Meta
