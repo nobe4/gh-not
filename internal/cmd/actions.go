@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:generate go run ../../cmd/gen-doc/gen-doc.go
-
 //go:embed actions-help.txt
 var longHelp string
 
