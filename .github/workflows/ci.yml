@@ -20,7 +20,9 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Build
-        run: go build -v ./cmd/gh-not
+        run: |
+          go generate ./...
+          go build -v ./cmd/gh-not
 
   test:
     runs-on: ubuntu-latest
