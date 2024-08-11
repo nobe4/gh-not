@@ -7,15 +7,15 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/nobe4/gh-not/internal/actors"
+	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 type model struct {
 	keymap       Keymap
-	actors       actors.ActorsMap
-	currentActor actors.Actor
+	actions      actions.ActionsMap
+	currentActor actions.Actor
 
 	showHelp bool
 	list     list.Model
@@ -30,7 +30,7 @@ type model struct {
 	maxHeigth    int
 }
 
-func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.Keymap, view config.View) error {
+func Init(n notifications.Notifications, actions actions.ActionsMap, keymap config.Keymap, view config.View) error {
 	items := []list.Item{}
 
 	for _, notification := range n {
@@ -40,7 +40,7 @@ func Init(n notifications.Notifications, actors actors.ActorsMap, keymap config.
 	m := model{
 		list:      list.New(items, itemDelegate{}, 0, 0),
 		command:   textinput.New(),
-		actors:    actors,
+		actions:   actions,
 		result:    viewport.New(0, 0),
 		maxHeigth: view.Height,
 	}

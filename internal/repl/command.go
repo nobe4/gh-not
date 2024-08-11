@@ -52,7 +52,7 @@ func (m model) applyCommand(command string) tea.Cmd {
 func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	slog.Debug("apply command", "command", msg.Command)
 
-	actor, ok := m.actors[msg.Command]
+	actor, ok := m.actions[msg.Command]
 	if !ok {
 		return m, m.renderResult(fmt.Errorf("Invalid command %s", msg.Command))
 	}

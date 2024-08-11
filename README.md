@@ -68,7 +68,7 @@ rule contains three fields:
 
 - `action`: the action to perform on the notification
 
-    The current list of action is found in [`actors.go`](./internal/actors/actors.go).
+    The current list of action is found in [`actions.go`](./internal/actions/actions.go).
 
 - `filters`: a list of [`jq` filters](https://jqlang.github.io/jq/manual/#basic-filters)[^gojq]
     to filter notifications with.

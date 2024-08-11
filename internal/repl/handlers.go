@@ -98,7 +98,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keymap.Open):
 		current, ok := m.list.SelectedItem().(item)
 		if ok {
-			m.actors["open"].Run(current.notification, os.Stderr)
+			m.actions["open"].Run(current.notification, os.Stderr)
 		}
 
 	case key.Matches(msg, m.keymap.CommandMode):

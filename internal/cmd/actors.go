@@ -3,11 +3,11 @@ package cmd
 import "github.com/spf13/cobra"
 
 var (
-	actorsCmd = &cobra.Command{
-		Use:   "actors",
-		Short: "Show information about the actors",
+	actionsCmd = &cobra.Command{
+		Use:   "actions",
+		Short: "Show information about the actions",
 		Long: `
-'gh-not' has multiple actors that perform different actions:
+'gh-not' has multiple actions that perform different actions:
 
 open: Open the notification in a web browser.
 
@@ -26,5 +26,5 @@ TODO: remove debug/print/pass
 )
 
 func init() {
-	rootCmd.AddCommand(actorsCmd)
+	rootCmd.AddCommand(actionsCmd)
 }
