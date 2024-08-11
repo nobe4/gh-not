@@ -29,7 +29,11 @@ var prettyState = map[string]string{
 }
 
 func (n Notification) String() string {
-	return n.rendered
+	if n.rendered != "" {
+		return n.rendered
+	}
+
+	return fmt.Sprintf("[%s] %s at %s: %s", n.Id, n.Author.Login, n.UpdatedAt, n.Subject.Title)
 }
 
 func (n Notification) prettyRead() string {
