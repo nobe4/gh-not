@@ -1,30 +1,102 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"errors"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
 
 var (
 	actionsCmd = &cobra.Command{
 		Use:   "actions",
 		Short: "Show information about the actions",
-		Long: `
-'gh-not' has multiple actions that perform different actions:
-
-open: Open the notification in a web browser.
-
-hide: Mark the notification as hidden in the cache.
-      It won't show the notification again.
-
-done: Mark the notification as done in the cache and on the API.
-      It hides the notification until an update happens.
-
-read: Mark the notification as read in the cache and on the API.
-      It hides the notification until an update happens.
-
-TODO: remove debug/print/pass
-`,
+		Long:  "'gh-not' has multiple actions that perform different actions:\n\n",
 	}
 )
 
 func init() {
 	rootCmd.AddCommand(actionsCmd)
+
+	longHelp, err := generateHelp()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	actionsCmd.Long += longHelp
+}
+
+func format(content string) (string, error) {
+	parts := strings.Split(content, "/*")
+	if len(parts) < 2 {
+		return "", errors.New("no header found")
+	}
+
+	parts = strings.Split(parts[1], "*/")
+	if len(parts) < 2 {
+		return "", errors.New("no header end found")
+	}
+
+	header := strings.Trim(parts[0], "\n")
+	parts = strings.SplitN(header, "\n", 2)
+
+	re := regexp.MustCompile(`Package (\w+) implements an \[actions.Runner\] that (.*)\.`)
+	matches := re.FindStringSubmatch(parts[0])
+
+	if len(matches) < 3 {
+		return "", fmt.Errorf("header does not match the expected format")
+	}
+
+	outParts := []string{
+		fmt.Sprintf("%s: %s", matches[1], matches[2]),
+	}
+
+	if len(parts) == 2 {
+		tail := strings.Trim(parts[1], "\n")
+		tail = indent(tail)
+		outParts = append(outParts, tail)
+	}
+
+	return strings.Join(outParts, "\n"), nil
+}
+
+func generateHelp() (string, error) {
+	parts := []string{}
+
+	err := filepath.Walk("internal/actions/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() ||
+			filepath.Ext(path) != ".go" ||
+			filepath.Base(path) == "actions.go" {
+			return nil
+		}
+
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("could not read %s: %w", path, err)
+		}
+
+		out, err := format(string(raw))
+		if err != nil {
+			return fmt.Errorf("could not get headers from %s: %w", path, err)
+		}
+
+		parts = append(parts, out)
+
+		return nil
+	})
+
+	return strings.Join(parts, "\n\n"), err
+}
+
+func indent(s string) string {
+	return "  " + strings.ReplaceAll(s, "\n", "\n  ")
 }

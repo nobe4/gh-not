@@ -1,3 +1,6 @@
+/*
+Package print implements an [actions.Runner] that prints a notification.
+*/
 package print
 
 import (

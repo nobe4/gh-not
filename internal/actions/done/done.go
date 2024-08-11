@@ -1,3 +1,9 @@
+/*
+Package done implements an [actions.Runner] that marks a notification as done.
+It updates Meta.Done and marks the notification's thread as done on GitHub.
+The notification will be hidden until the thread is updated.
+Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-done
+*/
 package done
 
 import (
@@ -11,8 +17,6 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-// Runner that marks a notification as done.
-// Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-done
 type Runner struct {
 	Client *gh.Client
 }

@@ -1,3 +1,8 @@
+/*
+Package read implements an [actions.Runner] that marks a notification as read.
+It updates Unread and marks the notification's thread as read on GitHub.
+Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-read
+*/
 package read
 
 import (
@@ -10,8 +15,6 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-// Runner that marks a notification as read.
-// Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-read
 type Runner struct {
 	Client *gh.Client
 }
