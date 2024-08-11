@@ -14,14 +14,6 @@ type Mock struct {
 	index int
 }
 
-type Call struct {
-	Verb     string
-	Endpoint string
-	Data     any
-	Error    error
-	Response *http.Response
-}
-
 type MockError struct {
 	verb     string
 	endpoint string
@@ -51,7 +43,7 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	return call, nil
 }
 
-func (m *Mock) Request(verb, endpoint string, body io.Reader) (*http.Response, error) {
+func (m *Mock) Request(verb, endpoint string, _ io.Reader) (*http.Response, error) {
 	call, err := m.call(verb, endpoint)
 	if err != nil {
 		return nil, err

@@ -93,6 +93,7 @@ func nextPageLink(h *http.Header) string {
 }
 
 func (c *Client) request(verb, endpoint string, body io.Reader) ([]*notifications.Notification, string, error) {
+	slog.Debug("request", "verb", verb, "endpoint", endpoint)
 	response, err := c.API.Request(verb, endpoint, body)
 	if err != nil {
 		return nil, "", err
