@@ -18,10 +18,6 @@ func New(path string) *API {
 	return &API{path: path}
 }
 
-func (a *API) Do(verb string, url string, _ io.Reader, _ interface{}) error {
-	return nil
-}
-
 func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, error) {
 	if verb == "GET" && url == gh.DefaultEndpoint {
 		return a.readFile()

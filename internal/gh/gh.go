@@ -25,14 +25,14 @@ var (
 )
 
 type Client struct {
-	API      api.Caller
+	API      api.Requestor
 	cache    cache.ExpiringReadWriter
 	maxRetry int
 	maxPage  int
 	endpoint string
 }
 
-func NewClient(api api.Caller, cache cache.ExpiringReadWriter, config config.Endpoint) *Client {
+func NewClient(api api.Requestor, cache cache.ExpiringReadWriter, config config.Endpoint) *Client {
 	endpoint := DefaultEndpoint
 	if config.All {
 		endpoint += "?all=true"

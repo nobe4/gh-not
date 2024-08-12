@@ -32,7 +32,7 @@ func (e *MockError) Error() string {
 	return fmt.Sprintf("mock error: %s %s: %s", e.verb, e.endpoint, e.message)
 }
 
-func New(c []Call) api.Caller {
+func New(c []Call) api.Requestor {
 	return &Mock{Calls: c}
 }
 
@@ -49,16 +49,6 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	m.index++
 
 	return call, nil
-}
-
-func (m *Mock) Do(verb, endpoint string, body io.Reader, out interface{}) error {
-	call, err := m.call(verb, endpoint)
-	if err != nil {
-		return err
-	}
-
-	out = call.Data
-	return call.Error
 }
 
 func (m *Mock) Request(verb, endpoint string, body io.Reader) (*http.Response, error) {

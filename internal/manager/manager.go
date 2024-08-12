@@ -33,7 +33,7 @@ func New(config *config.Data) *Manager {
 	return m
 }
 
-func (m *Manager) SetCaller(caller api.Caller) {
+func (m *Manager) SetCaller(caller api.Requestor) {
 	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
 	m.Actions = actions.Map(m.client)
 }

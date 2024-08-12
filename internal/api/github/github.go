@@ -5,6 +5,6 @@ import (
 	"github.com/nobe4/gh-not/internal/api"
 )
 
-func New() (api.Caller, error) {
+func New() (api.Requestor, error) {
 	return gh.DefaultRESTClient()
 }

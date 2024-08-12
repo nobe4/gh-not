@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-type Caller interface {
-	Do(string, string, io.Reader, interface{}) error
+type Requestor interface {
 	Request(string, string, io.Reader) (*http.Response, error)
 }

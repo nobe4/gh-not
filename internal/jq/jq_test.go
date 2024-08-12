@@ -28,7 +28,7 @@ func TestFilter(t *testing.T) {
 		filter    string
 		n         notifications.Notifications
 		want      []string
-		assertErr func(t *testing.T, err error)
+		assertErr func(*testing.T, error)
 	}{
 		{
 			name:   "empty filter",

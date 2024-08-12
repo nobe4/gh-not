@@ -1,6 +1,8 @@
 package gh
 
 import (
+	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -18,8 +20,20 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 		return nil
 	}
 
+	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
 	extra := Extra{}
-	if err := c.API.Do(http.MethodGet, n.Subject.URL, nil, &extra); err != nil {
+	err = json.Unmarshal(body, &extra)
+	if err != nil {
 		return err
 	}
 
