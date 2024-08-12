@@ -26,7 +26,7 @@ func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
 
 	n.Meta.Done = true
 
-	err := a.Client.API.Do(http.MethodDelete, n.URL, nil, nil)
+	_, err := a.Client.API.Request(http.MethodDelete, n.URL, nil)
 	if err != nil {
 		return err
 	}

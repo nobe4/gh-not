@@ -469,27 +469,56 @@ func TestPaginate(t *testing.T) {
 	}
 }
 
-func TestNotifications(t *testing.T) {
+func TestEnrich(t *testing.T) {
 	tests := []struct {
 		name         string
 		calls        mock.Call
 		notification *notifications.Notification
-		error        error
+		assertError  func(*testing.T, error)
 	}{
 
 		{
 			name: "no notification",
 		},
 		{
-			name:         "one notification",
-			calls:        mock.Call{Endpoint: mockSubjectUrl(0)},
+			name: "one notification",
+			calls: mock.Call{
+				Endpoint: mockSubjectUrl(0),
+				Response: &http.Response{
+					Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
+				},
+			},
 			notification: mockNotification(0),
 		},
 		{
 			name:         "fail to enrich",
 			calls:        mock.Call{Error: sampleError},
 			notification: mockNotification(0),
-			error:        sampleError,
+			assertError: func(t *testing.T, err error) {
+				if err != sampleError {
+					t.Errorf("expected to fail with %#v but got %#v", sampleError, err)
+				}
+			},
+		},
+		{
+			name: "fail to unmarshal",
+			calls: mock.Call{
+				Endpoint: mockSubjectUrl(0),
+				Response: &http.Response{
+					Body: io.NopCloser(strings.NewReader(`not json`)),
+				},
+			},
+			notification: mockNotification(0),
+			assertError: func(t *testing.T, err error) {
+				if err == nil {
+					t.Fatalf("expected error but got nil")
+				}
+
+				expected := &json.SyntaxError{}
+				if !errors.As(err, &expected) {
+					t.Errorf("expected to fail with %#v but got %#v", expected, err)
+				}
+			},
 		},
 	}
 
@@ -500,12 +529,9 @@ func TestNotifications(t *testing.T) {
 			err := client.Enrich(test.notification)
 
 			// TODO: make this test check for the author/subject
-			if test.error != nil {
-				if !errors.Is(err, test.error) {
-					t.Errorf("want %#v, got %#v", test.error, err)
-				}
+			if test.assertError != nil {
+				test.assertError(t, err)
 			}
-
 		})
 	}
 }

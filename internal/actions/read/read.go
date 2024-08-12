@@ -20,7 +20,7 @@ type Runner struct {
 }
 
 func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
-	err := a.Client.API.Do(http.MethodPatch, n.URL, nil, nil)
+	_, err := a.Client.API.Request(http.MethodPatch, n.URL, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
 	// to catch this case.

@@ -49,7 +49,7 @@ func init() {
 }
 
 func runSync(cmd *cobra.Command, args []string) error {
-	var caller api.Caller
+	var caller api.Requestor
 	var err error
 
 	if notificationDumpPath != "" {
