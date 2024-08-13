@@ -21,17 +21,19 @@ type config struct {
 	RefreshStrategy manager.RefreshStrategy
 }
 
-func setup(t *testing.T, conf config) (*manager.Manager, notifications.Notifications) {
+func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifications.Notifications) {
 	logger.Init(5)
 
 	configPath := fmt.Sprintf("./%s/config.yaml", conf.Id)
 	callsPath := fmt.Sprintf("./%s/calls.json", conf.Id)
 	wantPath := fmt.Sprintf("./%s/want.json", conf.Id)
+	cachePath := fmt.Sprintf("./%s/cache.json", conf.Id)
 
 	c, err := configPkg.New(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
+	c.Data.Cache.Path = cachePath
 
 	m := manager.New(c.Data)
 
@@ -41,7 +43,8 @@ func setup(t *testing.T, conf config) (*manager.Manager, notifications.Notificat
 	m.RefreshStrategy = conf.RefreshStrategy
 
 	calls, err := apiMock.LoadCallsFromFile(callsPath)
-	m.SetCaller(apiMock.New(calls))
+	caller := &apiMock.Mock{Calls: calls}
+	m.SetCaller(caller)
 
 	if err := m.Load(); err != nil {
 		t.Fatal(err)
@@ -60,7 +63,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, notifications.Notificat
 		t.Fatal(err)
 	}
 
-	return m, want
+	return m, caller, want
 }
 
 func TestIntegration(t *testing.T) {
@@ -74,7 +77,7 @@ func TestIntegration(t *testing.T) {
 		}
 
 		t.Run(dir.Name(), func(t *testing.T) {
-			m, want := setup(t, config{
+			m, c, want := setup(t, config{
 				Id:              dir.Name(),
 				RefreshStrategy: manager.ForceRefresh,
 			})
@@ -83,6 +86,10 @@ func TestIntegration(t *testing.T) {
 
 			if !want.Equal(got) {
 				t.Fatalf("mismatch notifications\nwant %s\ngot  %s", want.Debug(), got.Debug())
+			}
+
+			if err := c.Done(); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
