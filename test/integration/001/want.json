@@ -8,5 +8,15 @@
     "meta": {
       "remote_exists": true
     }
+  },
+  {
+    "id": "2",
+    "subject": {
+      "url": "enrichment#2",
+      "state": "closed"
+    },
+    "meta": {
+      "remote_exists": true
+    }
   }
 ]

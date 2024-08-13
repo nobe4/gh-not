@@ -25,8 +25,9 @@ type RawCall struct {
 }
 
 type RawResponse struct {
-	StatusCode int `json:"status_code"`
-	Body       any `json:"body"`
+	Headers    map[string][]string `json:"headers"`
+	StatusCode int                 `json:"status_code"`
+	Body       any                 `json:"body"`
 }
 
 func LoadCallsFromFile(path string) ([]Call, error) {
@@ -54,6 +55,7 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 			Data:     call.Data,
 			Error:    call.Error,
 			Response: &http.Response{
+				Header:     http.Header(call.RawResponse.Headers),
 				StatusCode: call.RawResponse.StatusCode,
 				Body:       io.NopCloser(strings.NewReader(string(body))),
 			},
