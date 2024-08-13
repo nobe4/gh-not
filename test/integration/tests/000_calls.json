@@ -17,8 +17,11 @@
   {
     "verb": "GET",
     "endpoint": "enrichment#1",
-    "data": {
-      "state": "open"
+    "response": {
+      "status_code": 200,
+      "body": {
+        "state": "open"
+      }
     }
   }
 ]

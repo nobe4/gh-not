@@ -3,6 +3,7 @@ package mock
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/nobe4/gh-not/internal/api"
@@ -39,6 +40,7 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	}
 
 	m.index++
+	slog.Debug("mock call", "verb", verb, "endpoint", endpoint, "call", call)
 
 	return call, nil
 }
