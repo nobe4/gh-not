@@ -29,14 +29,26 @@ func New(c []Call) api.Requestor {
 	return &Mock{Calls: c}
 }
 
+func (m *Mock) Done() error {
+	if m.index < len(m.Calls) {
+		return &MockError{"", "", fmt.Sprintf("%d calls remaining", len(m.Calls)-m.index)}
+	}
+
+	return nil
+}
+
 func (m *Mock) call(verb, endpoint string) (Call, error) {
 	if m.index >= len(m.Calls) {
-		return Call{}, &MockError{verb, endpoint, "no more calls"}
+		return Call{}, &MockError{verb, endpoint, "unexpected call: no more calls"}
 	}
 
 	call := m.Calls[m.index]
 	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
-		return Call{}, &MockError{verb, endpoint, "unexpected call"}
+		return Call{}, &MockError{
+			verb,
+			endpoint,
+			fmt.Sprintf("unexpected call: mismatch, expected %s %s", call.Verb, call.Endpoint),
+		}
 	}
 
 	m.index++
