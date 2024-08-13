@@ -17,11 +17,11 @@ type Call struct {
 }
 
 type RawCall struct {
-	Verb        string      `json:"verb"`
-	Endpoint    string      `json:"endpoint"`
-	Data        any         `json:"data"`
-	Error       error       `json:"error"`
-	RawResponse RawResponse `json:"response"`
+	Verb     string      `json:"verb"`
+	Endpoint string      `json:"endpoint"`
+	Data     any         `json:"data"`
+	Error    error       `json:"error"`
+	Response RawResponse `json:"response"`
 }
 
 type RawResponse struct {
@@ -44,7 +44,7 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 
 	calls := make([]Call, len(rawCalls))
 	for i, call := range rawCalls {
-		body, err := json.Marshal(call.RawResponse.Body)
+		body, err := json.Marshal(call.Response.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -55,8 +55,8 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 			Data:     call.Data,
 			Error:    call.Error,
 			Response: &http.Response{
-				Header:     http.Header(call.RawResponse.Headers),
-				StatusCode: call.RawResponse.StatusCode,
+				Header:     http.Header(call.Response.Headers),
+				StatusCode: call.Response.StatusCode,
 				Body:       io.NopCloser(strings.NewReader(string(body))),
 			},
 		}
