@@ -85,7 +85,7 @@ func TestIntegration(t *testing.T) {
 			got := m.Notifications
 
 			if !want.Equal(got) {
-				t.Fatalf("mismatch notifications\nwant %s\ngot  %s", want.Debug(), got.Debug())
+				t.Fatalf("mismatch notifications\nwant:\n%s\n\ngot:\n%s", want.Debug(), got.Debug())
 			}
 
 			if err := c.Done(); err != nil {
