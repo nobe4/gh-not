@@ -7,7 +7,6 @@ package notifications
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 	"time"

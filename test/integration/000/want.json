@@ -1,12 +1,1 @@
-[
-  {
-    "id": "1",
-    "subject": {
-      "url": "enrichment#1",
-      "state": "open"
-    },
-    "meta": {
-      "remote_exists": true
-    }
-  }
-]
+[]

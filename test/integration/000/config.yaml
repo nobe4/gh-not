@@ -1,6 +1,0 @@
-cache:
-  path: ./000_cache.json
-
-endpoint:
-  max_page: 1
-  max_retry: 1
