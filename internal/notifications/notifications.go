@@ -83,10 +83,6 @@ func (n Notifications) Equal(others Notifications) bool {
 
 	for i, n := range n {
 		if !n.Equal(others[i]) {
-			slog.Warn("notification mismatch",
-				"notification", fmt.Sprintf("%#v", n),
-				"other", fmt.Sprintf("%#v", others[i]),
-			)
 			return false
 		}
 	}
