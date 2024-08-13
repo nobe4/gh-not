@@ -4,6 +4,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/nobe4/gh-not.svg)](https://pkg.go.dev/github.com/nobe4/gh-not)
 [![CI](https://github.com/nobe4/gh-not/actions/workflows/ci.yml/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/nobe4/gh-not/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/github-code-scanning/codeql)
 
 > [!IMPORTANT]
 > Under heavy development, expect nothing.

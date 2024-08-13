@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-find . -name '*.go' | \
+find . -not -path './.git/*' -not -path './dist/*' | \
     entr -c \
     bash -c '
         go test -cover -coverprofile=coverage ./... &&

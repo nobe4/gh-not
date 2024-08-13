@@ -20,6 +20,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 		return nil
 	}
 
+	slog.Debug("enriching", "url", n.Subject.URL)
 	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
 	if err != nil {
 		return err

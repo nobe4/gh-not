@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -72,6 +73,56 @@ type Repository struct {
 type User struct {
 	Login string `json:"login"`
 	Type  string `json:"type"`
+}
+
+func (n Notifications) Equal(others Notifications) bool {
+	if len(n) != len(others) {
+		return false
+	}
+
+	for i, n := range n {
+		if !n.Equal(others[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (n Notification) Equal(other *Notification) bool {
+	return n.Id == other.Id &&
+		n.Unread == other.Unread &&
+		n.Reason == other.Reason &&
+		n.UpdatedAt.Equal(other.UpdatedAt) &&
+		n.URL == other.URL &&
+		n.Repository.Name == other.Repository.Name &&
+		n.Repository.FullName == other.Repository.FullName &&
+		n.Repository.Private == other.Repository.Private &&
+		n.Repository.Fork == other.Repository.Fork &&
+		n.Repository.Owner.Login == other.Repository.Owner.Login &&
+		n.Repository.Owner.Type == other.Repository.Owner.Type &&
+		n.Subject.Title == other.Subject.Title &&
+		n.Subject.URL == other.Subject.URL &&
+		n.Subject.Type == other.Subject.Type &&
+		n.Subject.State == other.Subject.State &&
+		n.Subject.HtmlUrl == other.Subject.HtmlUrl &&
+		n.Author.Login == other.Author.Login &&
+		n.Author.Type == other.Author.Type &&
+		n.Meta.Hidden == other.Meta.Hidden &&
+		n.Meta.Done == other.Meta.Done &&
+		n.Meta.RemoteExists == other.Meta.RemoteExists
+}
+
+func (n Notifications) Debug() string {
+	out := []string{}
+	for _, n := range n {
+		out = append(out, n.Debug())
+	}
+	return strings.Join(out, "\n")
+}
+
+func (n Notification) Debug() string {
+	return fmt.Sprintf("%#v", n)
 }
 
 func (n Notifications) Map() NotificationMap {
