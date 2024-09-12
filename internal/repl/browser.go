@@ -7,7 +7,7 @@ import (
 
 func (m model) selectAll(selected bool) (tea.Model, tea.Cmd) {
 	items := []list.Item{}
-	for _, e := range m.list.Items() {
+	for _, e := range m.list.VisibleItems() {
 		if i, ok := e.(item); ok {
 			i.selected = selected
 			items = append(items, i)
