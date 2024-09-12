@@ -13,6 +13,7 @@ type ExpiringReadWriter interface {
 	Read(any) error
 	Write(any) error
 	Expired() bool
+	RefreshedAt() time.Time
 }
 
 type FileCache struct {
@@ -55,15 +56,18 @@ func (c *FileCache) Write(in any) error {
 }
 
 func (c *FileCache) Expired() bool {
+	return time.Now().After(c.RefreshedAt().Add(c.ttl))
+}
+
+func (c *FileCache) RefreshedAt() time.Time {
 	info, err := os.Stat(c.path)
 
 	if err != nil {
-		// We could return the error here, but we will get it again when we try
-		// to read/write the cache, so we can ignore it.
-		return true
+		// Returning a valid time.Time that's the 0 epoch allows to not return
+		// an error but still process the Expiration date logic correctly.
+		slog.Warn("Could not read file info", "file", c.path, "error", err)
+		return time.Date(0, 0, 0, 0, 0, 0, 0, nil)
 	}
 
-	expiration := info.ModTime().Add(c.ttl)
-
-	return time.Now().After(expiration)
+	return info.ModTime()
 }

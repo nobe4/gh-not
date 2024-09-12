@@ -15,7 +15,7 @@ import (
 
 type Manager struct {
 	Notifications notifications.Notifications
-	cache         cache.ExpiringReadWriter
+	Cache         cache.ExpiringReadWriter
 	config        *config.Data
 	client        *gh.Client
 	Actions       actions.ActionsMap
@@ -28,19 +28,19 @@ func New(config *config.Data) *Manager {
 	m := &Manager{}
 
 	m.config = config
-	m.cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
+	m.Cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
 
 	return m
 }
 
 func (m *Manager) SetCaller(caller api.Requestor) {
-	m.client = gh.NewClient(caller, m.cache, m.config.Endpoint)
+	m.client = gh.NewClient(caller, m.Cache, m.config.Endpoint)
 	m.Actions = actions.Map(m.client)
 }
 
 func (m *Manager) Load() error {
-	if err := m.cache.Read(&m.Notifications); err != nil {
-		slog.Warn("cannot read the cache: %#v\n", err)
+	if err := m.Cache.Read(&m.Notifications); err != nil {
+		slog.Warn("cannot read the cache", "error", err)
 	}
 
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
@@ -49,7 +49,7 @@ func (m *Manager) Load() error {
 }
 
 func (m *Manager) Refresh() error {
-	if m.RefreshStrategy.ShouldRefresh(m.cache.Expired()) {
+	if m.RefreshStrategy.ShouldRefresh(m.Cache.Expired()) {
 		return m.refreshNotifications()
 	}
 
@@ -78,7 +78,7 @@ func (m *Manager) refreshNotifications() error {
 }
 
 func (m *Manager) Save() error {
-	return m.cache.Write(m.Notifications.Compact())
+	return m.Cache.Write(m.Notifications.Compact())
 }
 
 func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {

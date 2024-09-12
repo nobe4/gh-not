@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
+	"github.com/cli/go-gh/v2/pkg/text"
 	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/jq"
@@ -168,8 +170,13 @@ func display(notifications notifications.Notifications) error {
 
 func displayTable(n notifications.Notifications) {
 	fmt.Println(n)
-	fmt.Printf("Found %d notifications\n", len(n))
-	// TODO: add a notice if the notifications could be refreshed
+	fmt.Printf("Found %d notifications %s\n",
+		len(n),
+		text.RelativeTimeAgo(
+			time.Now(),
+			manager.Cache.RefreshedAt(),
+		),
+	)
 }
 
 func displayJson(notifications notifications.Notifications) error {
