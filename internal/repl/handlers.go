@@ -93,7 +93,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.selectAll(true)
 
 	case key.Matches(msg, m.keymap.None):
-		return m.selectAll(true)
+		return m.selectAll(false)
 
 	case key.Matches(msg, m.keymap.Open):
 		current, ok := m.list.SelectedItem().(item)
