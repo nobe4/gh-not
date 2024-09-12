@@ -96,7 +96,8 @@ func (m model) renderResult(err error) tea.Cmd {
 func (m model) viewFullHelp() string {
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
-		"default", m.list.Help.FullHelpView(m.keymap.FullHelp()),
+		"status line", m.list.Help.Styles.FullDesc.Render("pagination  total/visible/selected prompt"),
+		"\ndefault", m.list.Help.FullHelpView(m.keymap.FullHelp()),
 		"\nlist and filter", m.list.Help.FullHelpView(m.list.FullHelp()),
 		"\nresults", m.list.Help.FullHelpView(ViewportKeymap{m.result.KeyMap}.FullHelp()),
 	)
@@ -128,9 +129,18 @@ func (m model) View() string {
 		statusLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
 	} else {
 		statusLine = m.list.Paginator.View() + " "
+		selected := 0
+		for _, e := range m.list.Items() {
+			if i, ok := e.(item); ok {
+				if i.selected {
+					selected++
+				}
+			}
+		}
+		statusLine += fmt.Sprintf("%d/%d/%d ", len(m.list.Items()), len(m.list.VisibleItems()), selected)
 
 		if m.command.Focused() {
-			statusLine = m.command.View()
+			statusLine += m.command.View()
 		} else {
 			if m.list.FilterState() == list.Filtering {
 				statusLine += m.list.FilterInput.View()
