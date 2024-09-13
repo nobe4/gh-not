@@ -85,6 +85,10 @@ func (n Notification) Visible() bool {
 // Render the notifications in a human readable format.
 // If possible, render a table, otherwise render a simple string.
 func (n Notifications) Render() error {
+	if len(n) == 0 {
+		return nil
+	}
+
 	// Default to a simple string
 	for _, n := range n {
 		n.rendered = fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
