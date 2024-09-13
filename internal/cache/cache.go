@@ -66,7 +66,7 @@ func (c *FileCache) RefreshedAt() time.Time {
 		// Returning a valid time.Time that's the 0 epoch allows to not return
 		// an error but still process the Expiration date logic correctly.
 		slog.Warn("Could not read file info", "file", c.path, "error", err)
-		return time.Date(0, 0, 0, 0, 0, 0, 0, nil)
+		return time.Unix(0, 0)
 	}
 
 	return info.ModTime()
