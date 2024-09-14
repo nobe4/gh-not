@@ -8,6 +8,10 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+func TestExample(t *testing.T) {
+	t.Fatal("TEST")
+}
+
 func notificationsEqual(a notifications.Notifications, ids []string) bool {
 	if len(a) != len(ids) {
 		return false
