@@ -24,55 +24,56 @@ state if the remote notification is newer than the local one.
 TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`
 */
 func Sync(local, remote Notifications) Notifications {
+    // TODO: do we need to have the whole map?
 	remoteMap := remote.Map()
 	localMap := local.Map()
 
 	n := Notifications{}
 
 	// Add any new notifications to the list
-	for remoteId, remote := range remoteMap {
-		if _, ok := localMap[remoteId]; !ok {
+	for i := range remote {
+		if _, ok := localMap[remote[i].Id]; !ok {
 			// (1) Insert
-			slog.Debug("sync", "action", "insert", "id", remote.Id)
+			slog.Debug("sync", "action", "insert", "id", remote[i].Id)
 
-			remote.Meta.RemoteExists = true
-			n = append(n, remote)
+			remote[i].Meta.RemoteExists = true
+			n = append(n, remote[i])
 		}
 	}
 
-	for localId, local := range localMap {
-		remote, remoteExist := remoteMap[localId]
+	for i := range local {
+		remote, remoteExist := remoteMap[local[i].Id]
 
-		local.Meta.RemoteExists = remoteExist
+		local[i].Meta.RemoteExists = remoteExist
 
 		if remoteExist {
 			// (3) Keep
-			if local.Meta.Hidden {
-				slog.Debug("sync", "action", "keeping hidden", "id", local.Id)
-				n = append(n, local)
+			if local[i].Meta.Hidden {
+				slog.Debug("sync", "action", "keeping hidden", "id", local[i].Id)
+				n = append(n, local[i])
 				continue
 			}
 
 			// (2) Update
 			slog.Debug("sync", "action", "update", "id", remote.Id)
 
-			if local.Meta.Done && remote.UpdatedAt.After(local.UpdatedAt) {
-				slog.Debug("sync", "action", "reseting done", "id", local.Id)
-				local.Meta.Done = false
+			if local[i].Meta.Done && remote.UpdatedAt.After(local[i].UpdatedAt) {
+				slog.Debug("sync", "action", "reseting done", "id", local[i].Id)
+				local[i].Meta.Done = false
 			}
 
-			remote.Meta = local.Meta
+			remote.Meta = local[i].Meta
 			n = append(n, remote)
 		} else {
-			if local.Meta.Done || local.Meta.Hidden {
+			if local[i].Meta.Done || local[i].Meta.Hidden {
 				// (4) Drop
-				slog.Debug("sync", "action", "drop", "id", local.Id)
+				slog.Debug("sync", "action", "drop", "id", local[i].Id)
 				continue
 			}
 
 			// (3) Keep
-			slog.Debug("sync", "action", "keep", "id", local.Id)
-			n = append(n, local)
+			slog.Debug("sync", "action", "keep", "id", local[i].Id)
+			n = append(n, local[i])
 		}
 	}
 
