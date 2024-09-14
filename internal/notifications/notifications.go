@@ -27,7 +27,8 @@ type Notification struct {
 	Subject    Subject    `json:"subject"`
 
 	// Enriched API fields
-	Author User `json:"author"`
+	Author          User `json:"author"`
+	LatestCommentor User `json:"latest_commentor"`
 
 	// gh-not specific fields
 	// Those fields are not part of the GitHub API and will persist between
@@ -53,9 +54,10 @@ type Meta struct {
 
 type Subject struct {
 	// Standard API fields
-	Title string `json:"title"`
-	URL   string `json:"url"`
-	Type  string `json:"type"`
+	Title            string `json:"title"`
+	URL              string `json:"url"`
+	Type             string `json:"type"`
+	LatestCommentUrl string `json:"latest_comment_url"`
 
 	// Enriched API fields
 	State   string `json:"state"`
@@ -110,6 +112,8 @@ func (n Notification) Equal(other *Notification) bool {
 		n.Subject.HtmlUrl == other.Subject.HtmlUrl &&
 		n.Author.Login == other.Author.Login &&
 		n.Author.Type == other.Author.Type &&
+		n.LatestCommentor.Login == other.LatestCommentor.Login &&
+		n.LatestCommentor.Type == other.LatestCommentor.Type &&
 		n.Meta.Hidden == other.Meta.Hidden &&
 		n.Meta.Done == other.Meta.Done &&
 		n.Meta.RemoteExists == other.Meta.RemoteExists

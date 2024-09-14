@@ -5,8 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/nobe4/gh-not/internal/api"
 )
 
 type Mock struct {
@@ -23,10 +21,6 @@ type MockError struct {
 
 func (e *MockError) Error() string {
 	return fmt.Sprintf("mock error for call [%s %s]: %s", e.verb, e.endpoint, e.message)
-}
-
-func New(c []Call) api.Requestor {
-	return &Mock{Calls: c}
 }
 
 func (m *Mock) Done() error {

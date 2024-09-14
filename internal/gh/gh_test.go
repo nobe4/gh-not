@@ -30,11 +30,16 @@ func mockSubjectUrl(id int) string {
 	return "https://subject.url/" + strconv.Itoa(id)
 }
 
+func mockLatestCommentUrl(id int) string {
+	return "https://latest.comment.url/" + strconv.Itoa(id)
+}
+
 func mockNotification(id int) *notifications.Notification {
 	return &notifications.Notification{
 		Id: strconv.Itoa(id),
 		Subject: notifications.Subject{
-			URL: mockSubjectUrl(id),
+			URL:              mockSubjectUrl(id),
+			LatestCommentUrl: mockLatestCommentUrl(id),
 		},
 	}
 }
@@ -87,13 +92,14 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 	return true
 }
 
-func mockClient(c []mock.Call) *Client {
+func mockClient(c []mock.Call) (*Client, *mock.Mock) {
+	mock := &mock.Mock{Calls: c}
 	return &Client{
-		API:      mock.New(c),
+		API:      mock,
 		endpoint: endpoint,
 		maxRetry: 100,
 		maxPage:  100,
-	}
+	}, mock
 }
 
 func TestIsRetryable(t *testing.T) {
@@ -247,7 +253,7 @@ func TestNextPageLink(t *testing.T) {
 func TestRequest(t *testing.T) {
 	t.Run("errors", func(t *testing.T) {
 		expectedError := errors.New("error")
-		client := mockClient([]mock.Call{{Error: expectedError}})
+		client, api := mockClient([]mock.Call{{Error: expectedError}})
 
 		_, _, err := client.request(verb, endpoint, nil)
 		if err == nil {
@@ -257,6 +263,10 @@ func TestRequest(t *testing.T) {
 		if err != expectedError {
 			t.Errorf("expected %#v, got %#v", expectedError, err)
 		}
+
+		if err := api.Done(); err != nil {
+			t.Fatal(err)
+		}
 	})
 
 	t.Run("calls parse", func(t *testing.T) {
@@ -264,7 +274,7 @@ func TestRequest(t *testing.T) {
 			Body:   io.NopCloser(strings.NewReader(`[{"id":"0"}]`)),
 			Header: http.Header{"Link": []string{`<https://next.page>; rel="next"`}},
 		}
-		client := mockClient([]mock.Call{{Response: response}})
+		client, api := mockClient([]mock.Call{{Response: response}})
 
 		notifications, next, err := client.request(verb, endpoint, nil)
 		if err != nil {
@@ -281,6 +291,10 @@ func TestRequest(t *testing.T) {
 
 		if notifications[0].Id != "0" {
 			t.Errorf("expected notification id 0, got %s", notifications[0].Id)
+		}
+
+		if err := api.Done(); err != nil {
+			t.Fatal(err)
 		}
 	})
 }
@@ -338,7 +352,7 @@ func TestRetry(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := mockClient(test.calls)
+			client, api := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 
 			notifications, _, err := client.retry(verb, endpoint, nil)
@@ -349,6 +363,9 @@ func TestRetry(t *testing.T) {
 
 			if !notificationsEqual(notifications, test.notifications) {
 				t.Errorf("want %#v, got %#v", test.notifications, notifications)
+			}
+			if err := api.Done(); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
@@ -389,7 +406,6 @@ func TestPaginate(t *testing.T) {
 			calls: []mock.Call{
 				{Error: retriableError},
 				{Error: retriableError},
-				{Error: retriableError},
 			},
 			error: retryError,
 		},
@@ -416,7 +432,6 @@ func TestPaginate(t *testing.T) {
 			maxPage: 1,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
-				{Error: sampleError},
 			},
 			notifications: mockNotifications([]int{0}),
 		},
@@ -444,7 +459,6 @@ func TestPaginate(t *testing.T) {
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
 				{Response: mockNotificationsResponse(t, []int{1}, true)},
-				{Response: mockNotificationsResponse(t, []int{2}, true)},
 			},
 			notifications: mockNotifications([]int{0, 1}),
 		},
@@ -452,7 +466,7 @@ func TestPaginate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := mockClient(test.calls)
+			client, api := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 			client.maxPage = test.maxPage
 
@@ -465,6 +479,9 @@ func TestPaginate(t *testing.T) {
 			if !notificationsEqual(notifications, test.notifications) {
 				t.Errorf("want %#v, got %#v", test.notifications, notifications)
 			}
+			if err := api.Done(); err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }
@@ -472,7 +489,7 @@ func TestPaginate(t *testing.T) {
 func TestEnrich(t *testing.T) {
 	tests := []struct {
 		name         string
-		calls        mock.Call
+		calls        []mock.Call
 		notification *notifications.Notification
 		assertError  func(*testing.T, error)
 	}{
@@ -482,17 +499,25 @@ func TestEnrich(t *testing.T) {
 		},
 		{
 			name: "one notification",
-			calls: mock.Call{
-				Endpoint: mockSubjectUrl(0),
-				Response: &http.Response{
-					Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
+			calls: []mock.Call{
+				{
+					Endpoint: mockSubjectUrl(0),
+					Response: &http.Response{
+						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
+					},
+				},
+				{
+					Endpoint: mockLatestCommentUrl(0),
+					Response: &http.Response{
+						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"}}`)),
+					},
 				},
 			},
 			notification: mockNotification(0),
 		},
 		{
 			name:         "fail to enrich",
-			calls:        mock.Call{Error: sampleError},
+			calls:        []mock.Call{{Error: sampleError}},
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
 				if err != sampleError {
@@ -502,10 +527,12 @@ func TestEnrich(t *testing.T) {
 		},
 		{
 			name: "fail to unmarshal",
-			calls: mock.Call{
-				Endpoint: mockSubjectUrl(0),
-				Response: &http.Response{
-					Body: io.NopCloser(strings.NewReader(`not json`)),
+			calls: []mock.Call{
+				{
+					Endpoint: mockSubjectUrl(0),
+					Response: &http.Response{
+						Body: io.NopCloser(strings.NewReader(`not json`)),
+					},
 				},
 			},
 			notification: mockNotification(0),
@@ -524,13 +551,19 @@ func TestEnrich(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := mockClient([]mock.Call{test.calls})
+			client, api := mockClient(test.calls)
 
 			err := client.Enrich(test.notification)
 
 			// TODO: make this test check for the author/subject
 			if test.assertError != nil {
 				test.assertError(t, err)
+			} else if err != nil {
+				t.Errorf("expected no error but got %#v", err)
+			}
+
+			if err := api.Done(); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
