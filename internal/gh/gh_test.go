@@ -30,11 +30,16 @@ func mockSubjectUrl(id int) string {
 	return "https://subject.url/" + strconv.Itoa(id)
 }
 
+func mockLatestCommentUrl(id int) string {
+	return "https://latest.comment.url/" + strconv.Itoa(id)
+}
+
 func mockNotification(id int) *notifications.Notification {
 	return &notifications.Notification{
 		Id: strconv.Itoa(id),
 		Subject: notifications.Subject{
-			URL: mockSubjectUrl(id),
+			URL:              mockSubjectUrl(id),
+			LatestCommentUrl: mockLatestCommentUrl(id),
 		},
 	}
 }
@@ -501,6 +506,12 @@ func TestEnrich(t *testing.T) {
 						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
 					},
 				},
+				{
+					Endpoint: mockLatestCommentUrl(0),
+					Response: &http.Response{
+						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"}}`)),
+					},
+				},
 			},
 			notification: mockNotification(0),
 		},
@@ -547,7 +558,10 @@ func TestEnrich(t *testing.T) {
 			// TODO: make this test check for the author/subject
 			if test.assertError != nil {
 				test.assertError(t, err)
+			} else if err != nil {
+				t.Errorf("expected no error but got %#v", err)
 			}
+
 			if err := api.Done(); err != nil {
 				t.Fatal(err)
 			}
