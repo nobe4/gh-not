@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: |
           go generate ./...
-          go build -v ./cmd/gh-not
+          go build -v -race ./cmd/gh-not
 
   test:
     runs-on: ubuntu-latest
@@ -36,7 +36,9 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Test
-        run: go test -v -cover ./... | column -t -s'	'
+        run: |
+          go generate ./...
+          go test -race -cover ./...
 
   lint:
     runs-on: ubuntu-latest
