@@ -22,7 +22,7 @@ type MockError struct {
 }
 
 func (e *MockError) Error() string {
-	return fmt.Sprintf("mock error: %s %s: %s", e.verb, e.endpoint, e.message)
+	return fmt.Sprintf("mock error for call [%s %s]: %s", e.verb, e.endpoint, e.message)
 }
 
 func New(c []Call) api.Requestor {
@@ -47,7 +47,7 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 		return Call{}, &MockError{
 			verb,
 			endpoint,
-			fmt.Sprintf("unexpected call: mismatch, expected %s %s", call.Verb, call.Endpoint),
+			fmt.Sprintf("unexpected call: mismatch, expected [%s %s]", call.Verb, call.Endpoint),
 		}
 	}
 

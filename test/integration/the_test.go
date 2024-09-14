@@ -3,6 +3,7 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -23,6 +24,7 @@ type config struct {
 
 func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifications.Notifications) {
 	logger.Init(5)
+	slog.Info("---- Starting test ----", "test", t.Name())
 
 	configPath := fmt.Sprintf("./%s/config.yaml", conf.Id)
 	callsPath := fmt.Sprintf("./%s/calls.json", conf.Id)
@@ -46,11 +48,20 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	caller := &apiMock.Mock{Calls: calls}
 	m.SetCaller(caller)
 
-	if err := m.Load(); err != nil {
+	if err = m.Load(); err != nil {
 		t.Fatal(err)
 	}
-	if err := m.Refresh(); err != nil {
+
+	for _, n := range m.Notifications {
+		slog.Info("Loaded notification", "id", n.Id)
+	}
+
+	if err = m.Refresh(); err != nil {
 		t.Fatal(err)
+	}
+
+	for _, n := range m.Notifications {
+		slog.Info("Refresh notification", "id", n.Id)
 	}
 
 	want := notifications.Notifications{}

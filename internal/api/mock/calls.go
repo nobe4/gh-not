@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/cli/go-gh/v2/pkg/api"
 )
 
 type Call struct {
@@ -20,7 +22,7 @@ type RawCall struct {
 	Verb     string      `json:"verb"`
 	Endpoint string      `json:"endpoint"`
 	Data     any         `json:"data"`
-	Error    error       `json:"error"`
+	Error    RawError    `json:"error"`
 	Response RawResponse `json:"response"`
 }
 
@@ -28,6 +30,10 @@ type RawResponse struct {
 	Headers    map[string][]string `json:"headers"`
 	StatusCode int                 `json:"status_code"`
 	Body       any                 `json:"body"`
+}
+
+type RawError struct {
+	StatusCode int `json:"status_code"`
 }
 
 func LoadCallsFromFile(path string) ([]Call, error) {
@@ -43,23 +49,28 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 	}
 
 	calls := make([]Call, len(rawCalls))
-	for i, call := range rawCalls {
-		body, err := json.Marshal(call.Response.Body)
+	for i, rawCall := range rawCalls {
+		body, err := json.Marshal(rawCall.Response.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		calls[i] = Call{
-			Verb:     call.Verb,
-			Endpoint: call.Endpoint,
-			Data:     call.Data,
-			Error:    call.Error,
+		call := Call{
+			Verb:     rawCall.Verb,
+			Endpoint: rawCall.Endpoint,
+			Data:     rawCall.Data,
 			Response: &http.Response{
-				Header:     http.Header(call.Response.Headers),
-				StatusCode: call.Response.StatusCode,
+				Header:     http.Header(rawCall.Response.Headers),
+				StatusCode: rawCall.Response.StatusCode,
 				Body:       io.NopCloser(strings.NewReader(string(body))),
 			},
 		}
+
+		if rawCall.Error.StatusCode != 0 {
+			call.Error = &api.HTTPError{StatusCode: rawCall.Error.StatusCode}
+		}
+
+		calls[i] = call
 	}
 
 	return calls, nil

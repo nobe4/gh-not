@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1 exists",
+    "subject": {
+      "url": "enrichment#1",
+      "state": "open"
+    },
+    "meta": {
+      "remote_exists": true,
+      "done": false,
+      "hidden": false
+    }
+  },
+  {
+    "id": "1 missing",
+    "subject": {
+      "url": "enrichment#1",
+      "state": "open"
+    },
+    "meta": {
+      "remote_exists": false,
+      "done": false,
+      "hidden": false
+    }
+  },
+  {
+    "id": "2 exists",
+    "subject": {
+      "url": "enrichment#2",
+      "state": ""
+    },
+    "meta": {
+      "remote_exists": true,
+      "done": true,
+      "hidden": false
+    }
+  },
+  {
+    "id": "3 exists",
+    "subject": {
+      "url": "enrichment#3",
+      "state": "open"
+    },
+    "meta": {
+      "remote_exists": true,
+      "done": false,
+      "hidden": true
+    }
+  }
+]
