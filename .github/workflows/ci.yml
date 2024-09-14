@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: |
           go generate ./...
-          go build -v ./cmd/gh-not
+          go build -v -race ./cmd/gh-not
 
   test:
     runs-on: ubuntu-latest
