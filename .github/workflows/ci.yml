@@ -37,8 +37,8 @@ jobs:
 
       - name: Test
         run: |
-          set -o pipefail
-          go test -v -cover ./... | column -t -s'	'
+          go generate ./...
+          go test -race -cover ./...
 
   lint:
     runs-on: ubuntu-latest
