@@ -112,7 +112,11 @@ func (n Notifications) Render() error {
 		printer.AddField(n.Repository.FullName)
 		printer.AddField(n.Author.Login)
 		printer.AddField(n.Subject.Title)
-		printer.AddField(text.RelativeTimeAgo(time.Now(), n.UpdatedAt))
+		relativeTime := text.RelativeTimeAgo(time.Now(), n.UpdatedAt)
+		if n.LatestCommentor.Login != "" {
+			relativeTime += " by " + n.LatestCommentor.Login
+		}
+		printer.AddField(relativeTime)
 		printer.EndRow()
 	}
 
