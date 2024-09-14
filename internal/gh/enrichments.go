@@ -20,7 +20,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 		return nil
 	}
 
-	slog.Debug("enriching", "url", n.Subject.URL)
+	slog.Debug("enriching", "id", n.Id, "url", n.Subject.URL)
 	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
 	if err != nil {
 		return err
@@ -37,8 +37,6 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	if err != nil {
 		return err
 	}
-
-	slog.Debug("enriching", "id", n.Id)
 
 	n.Author = extra.User
 	n.Subject.State = extra.State
