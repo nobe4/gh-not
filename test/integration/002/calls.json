@@ -1,0 +1,39 @@
+[
+  {
+    "verb": "GET",
+    "endpoint": "https://api.github.com/notifications?all=true",
+    "response": {
+      "status_code": 200,
+      "headers": {},
+      "body": [
+        { "id": "1 exists", "subject": { "url": "enrichment#1" } },
+        { "id": "2 exists", "subject": { "url": "enrichment#2" } },
+        { "id": "3 exists", "subject": { "url": "enrichment#3" } }
+      ]
+    }
+  },
+  {
+    "verb": "GET",
+    "endpoint": "enrichment#1",
+    "response": {
+      "status_code": 200,
+      "body": { "state": "open" }
+    }
+  },
+  {
+    "verb": "GET",
+    "endpoint": "enrichment#1",
+    "response": {
+      "status_code": 200,
+      "body": { "state": "open" }
+    }
+  },
+  {
+    "verb": "GET",
+    "endpoint": "enrichment#3",
+    "response": {
+      "status_code": 200,
+      "body": { "state": "open" }
+    }
+  }
+]
