@@ -36,7 +36,9 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Test
-        run: go test -v -cover ./... | column -t -s'	'
+        run: |
+          set -o pipefail
+          go test -v -cover ./... | column -t -s'	'
 
   lint:
     runs-on: ubuntu-latest
