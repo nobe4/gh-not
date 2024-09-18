@@ -4,8 +4,8 @@ import "testing"
 
 func TestRetryError(t *testing.T) {
 	e := RetryError{
-		verb:     "verb",
-		endpoint: "endpoint",
+		verb: "verb",
+		url:  "endpoint",
 	}
 	want := "retry exceeded for verb endpoint"
 	got := e.Error()

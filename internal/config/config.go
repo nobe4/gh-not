@@ -50,6 +50,11 @@ type Endpoint struct {
 	// This will cap the `?page=X` parameter in the GitHub API.
 	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
 	MaxPage int `mapstructure:"max_page"`
+
+	// The number of notifications to fetch per page.
+	// This maps to `?per_page=X` in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	PerPage int `mapstructure:"per_page"`
 }
 
 // Cache is the configuration for the cache file.

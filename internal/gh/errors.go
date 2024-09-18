@@ -9,10 +9,10 @@ import (
 var decodeError error = errors.New("decode error")
 
 type RetryError struct {
-	verb     string
-	endpoint string
+	verb string
+	url  string
 }
 
 func (e RetryError) Error() string {
-	return fmt.Sprintf("retry exceeded for %s %s", e.verb, e.endpoint)
+	return fmt.Sprintf("retry exceeded for %s %s", e.verb, e.url)
 }

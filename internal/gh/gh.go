@@ -4,9 +4,11 @@ package gh
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
@@ -16,12 +18,14 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-const (
-	DefaultEndpoint = "https://api.github.com/notifications"
-)
-
 var (
 	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
+
+	DefaultUrl = url.URL{
+		Scheme: "https",
+		Host:   "api.github.com",
+		Path:   "/notifications",
+	}
 )
 
 type Client struct {
@@ -29,21 +33,27 @@ type Client struct {
 	cache    cache.ExpiringReadWriter
 	maxRetry int
 	maxPage  int
-	endpoint string
+	url      string
 }
 
 func NewClient(api api.Requestor, cache cache.ExpiringReadWriter, config config.Endpoint) *Client {
-	endpoint := DefaultEndpoint
+	url := DefaultUrl
+
+	query := url.Query()
 	if config.All {
-		endpoint += "?all=true"
+		query.Set("all", "true")
 	}
+	if config.PerPage > 0 && config.PerPage != 100 {
+		query.Set("per_page", fmt.Sprintf("%d", config.PerPage))
+	}
+	url.RawQuery = query.Encode()
 
 	return &Client{
 		API:      api,
 		cache:    cache,
 		maxRetry: config.MaxRetry,
 		maxPage:  config.MaxPage,
-		endpoint: endpoint,
+		url:      url.String(),
 	}
 }
 
@@ -127,7 +137,7 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	var err error
 
 	pageLeft := c.maxPage
-	endpoint := c.endpoint
+	endpoint := c.url
 
 	for endpoint != "" && pageLeft > 0 {
 		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)

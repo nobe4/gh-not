@@ -37,11 +37,11 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	}
 
 	call := m.Calls[m.index]
-	if (call.Verb != "" && call.Verb != verb) || (call.Endpoint != "" && call.Endpoint != endpoint) {
+	if (call.Verb != "" && call.Verb != verb) || (call.Url != "" && call.Url != endpoint) {
 		return Call{}, &MockError{
 			verb,
 			endpoint,
-			fmt.Sprintf("unexpected call: mismatch, expected [%s %s]", call.Verb, call.Endpoint),
+			fmt.Sprintf("unexpected call: mismatch, expected [%s %s]", call.Verb, call.Url),
 		}
 	}
 
