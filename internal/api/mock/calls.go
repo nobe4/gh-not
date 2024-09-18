@@ -12,7 +12,7 @@ import (
 
 type Call struct {
 	Verb     string
-	Endpoint string
+	Url      string
 	Data     any
 	Error    error
 	Response *http.Response
@@ -20,7 +20,7 @@ type Call struct {
 
 type RawCall struct {
 	Verb     string      `json:"verb"`
-	Endpoint string      `json:"endpoint"`
+	Url      string      `json:"endpoint"`
 	Data     any         `json:"data"`
 	Error    RawError    `json:"error"`
 	Response RawResponse `json:"response"`
@@ -56,9 +56,9 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 		}
 
 		call := Call{
-			Verb:     rawCall.Verb,
-			Endpoint: rawCall.Endpoint,
-			Data:     rawCall.Data,
+			Verb: rawCall.Verb,
+			Url:  rawCall.Url,
+			Data: rawCall.Data,
 			Response: &http.Response{
 				Header:     http.Header(rawCall.Response.Headers),
 				StatusCode: rawCall.Response.StatusCode,

@@ -12,6 +12,7 @@ import (
 
 	"github.com/cli/go-gh/v2/pkg/api"
 	"github.com/nobe4/gh-not/internal/api/mock"
+	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -96,7 +97,7 @@ func mockClient(c []mock.Call) (*Client, *mock.Mock) {
 	mock := &mock.Mock{Calls: c}
 	return &Client{
 		API:      mock,
-		endpoint: endpoint,
+		url:      endpoint,
 		maxRetry: 100,
 		maxPage:  100,
 	}, mock
@@ -144,6 +145,57 @@ func TestIsRetryable(t *testing.T) {
 			got := isRetryable(test.err)
 			if got != test.want {
 				t.Errorf("expected %#v, got %#v", test.want, got)
+			}
+		})
+	}
+}
+
+func TestNewClient(t *testing.T) {
+	tests := []struct {
+		name    string
+		all     bool
+		perPage int
+		wantUrl string
+	}{
+		{
+			name:    "default",
+			all:     false,
+			perPage: 0,
+			wantUrl: "https://api.github.com/notifications",
+		},
+		{
+			name:    "all",
+			all:     true,
+			perPage: 0,
+			wantUrl: "https://api.github.com/notifications?all=true",
+		},
+		{
+			name:    "10 per page",
+			all:     false,
+			perPage: 10,
+			wantUrl: "https://api.github.com/notifications?per_page=10",
+		},
+		{
+			name:    "all and 10 per page",
+			all:     true,
+			perPage: 10,
+			wantUrl: "https://api.github.com/notifications?all=true&per_page=10",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			config := &config.Endpoint{
+				All:      test.all,
+				PerPage:  test.perPage,
+				MaxRetry: 1,
+				MaxPage:  1,
+			}
+			client := NewClient(nil, nil, *config)
+
+			// only testing the result URL, the rest is stored verbatim.
+			if client.url != test.wantUrl {
+				t.Errorf("expected %s, got %s", test.wantUrl, client.url)
 			}
 		})
 	}
@@ -501,15 +553,15 @@ func TestEnrich(t *testing.T) {
 			name: "one notification",
 			calls: []mock.Call{
 				{
-					Endpoint: mockSubjectUrl(0),
+					Url: mockSubjectUrl(0),
 					Response: &http.Response{
 						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
 					},
 				},
 				{
-					Endpoint: mockLatestCommentUrl(0),
+					Url: mockLatestCommentUrl(0),
 					Response: &http.Response{
-						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"}}`)),
+						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
 					},
 				},
 			},
@@ -529,7 +581,7 @@ func TestEnrich(t *testing.T) {
 			name: "fail to unmarshal",
 			calls: []mock.Call{
 				{
-					Endpoint: mockSubjectUrl(0),
+					Url: mockSubjectUrl(0),
 					Response: &http.Response{
 						Body: io.NopCloser(strings.NewReader(`not json`)),
 					},

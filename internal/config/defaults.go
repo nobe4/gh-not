@@ -9,6 +9,7 @@ var Defaults = map[string]any{
 	"endpoint.all":       true,
 	"endpoint.max_retry": 10,
 	"endpoint.max_page":  5,
+	"endpoint.per_page":  100,
 
 	"view.height": 40,
 
