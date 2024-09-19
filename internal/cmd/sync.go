@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
+	"github.com/cli/go-gh/v2/pkg/text"
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
@@ -89,7 +91,15 @@ func runSync(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("Loaded %d, refreshed %d, visible %d\n", loadedNotifications, refreshedNotifications, visibleNotifications)
+	fmt.Printf("Loaded %d, refreshed %d, visible %d at %s\n",
+		loadedNotifications,
+		refreshedNotifications,
+		visibleNotifications,
+		text.RelativeTimeAgo(
+			time.Now(),
+			manager.Cache.RefreshedAt(),
+		),
+	)
 
 	return nil
 }
