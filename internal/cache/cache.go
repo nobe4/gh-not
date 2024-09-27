@@ -21,6 +21,10 @@ type FileCache struct {
 	ttl  time.Duration
 }
 
+type CacheWrap struct {
+	Data any `json:"data"`
+}
+
 func NewFileCache(ttlInHours int, path string) *FileCache {
 	return &FileCache{
 		path: path,
@@ -39,11 +43,36 @@ func (c *FileCache) Read(out any) error {
 		return err
 	}
 
-	return json.Unmarshal(content, out)
+	wrap := &CacheWrap{Data: out}
+
+	err = json.Unmarshal(content, wrap)
+	if err == nil {
+		return nil
+	}
+
+	var jsonErr *json.UnmarshalTypeError
+	if errors.As(err, &jsonErr) {
+		return c.deprecatedRead(content, out)
+	}
+
+	return err
+}
+
+func (c *FileCache) deprecatedRead(content []byte, out any) error {
+	slog.Warn("Cache is in an deprecated format. Attempting to read from the old format.")
+
+	if err := json.Unmarshal(content, out); err != nil {
+		return err
+	}
+
+	// TODO: here infer the other information in the CacheWrap
+	return nil
 }
 
 func (c *FileCache) Write(in any) error {
-	marshalled, err := json.Marshal(in)
+	wrap := &CacheWrap{Data: in}
+
+	marshalled, err := json.Marshal(wrap)
 	if err != nil {
 		return err
 	}
