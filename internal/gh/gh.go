@@ -30,13 +30,13 @@ var (
 
 type Client struct {
 	API      api.Requestor
-	cache    cache.ExpiringReadWriter
+	cache    cache.RefreshReadWriter
 	maxRetry int
 	maxPage  int
 	url      string
 }
 
-func NewClient(api api.Requestor, cache cache.ExpiringReadWriter, config config.Endpoint) *Client {
+func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.Endpoint) *Client {
 	url := DefaultUrl
 
 	query := url.Query()
