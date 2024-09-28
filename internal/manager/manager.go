@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/api"
@@ -73,6 +74,8 @@ func (m *Manager) refreshNotifications() error {
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
 	m.Notifications = m.Notifications.Uniq()
 	m.Notifications, err = m.Enrich(m.Notifications)
+
+	m.Cache.SetRefreshedAt(time.Now())
 
 	return err
 }
