@@ -14,15 +14,18 @@ type ExpiringReadWriter interface {
 	Write(any) error
 	Expired() bool
 	RefreshedAt() time.Time
+	SetRefreshedAt(time.Time)
 }
 
 type FileCache struct {
 	path string
 	ttl  time.Duration
+	wrap *CacheWrap
 }
 
 type CacheWrap struct {
-	Data any `json:"data"`
+	Data        any       `json:"data"`
+	RefreshedAt time.Time `json:"refreshed_at"`
 }
 
 func NewFileCache(ttlInHours int, path string) *FileCache {
@@ -43,36 +46,49 @@ func (c *FileCache) Read(out any) error {
 		return err
 	}
 
-	wrap := &CacheWrap{Data: out}
+	c.wrap = &CacheWrap{Data: out}
 
-	err = json.Unmarshal(content, wrap)
+	err = json.Unmarshal(content, c.wrap)
 	if err == nil {
 		return nil
 	}
 
 	var jsonErr *json.UnmarshalTypeError
 	if errors.As(err, &jsonErr) {
-		return c.deprecatedRead(content, out)
+		return c.deprecatedRead(content)
 	}
 
 	return err
 }
 
-func (c *FileCache) deprecatedRead(content []byte, out any) error {
+func (c *FileCache) RefreshedAt() time.Time {
+	return c.wrap.RefreshedAt
+}
+
+func (c *FileCache) SetRefreshedAt(t time.Time) {
+	c.wrap.RefreshedAt = t
+}
+
+func (c *FileCache) Expired() bool {
+	return time.Now().After(c.RefreshedAt().Add(c.ttl))
+}
+
+func (c *FileCache) deprecatedRead(content []byte) error {
 	slog.Warn("Cache is in an deprecated format. Attempting to read from the old format.")
 
-	if err := json.Unmarshal(content, out); err != nil {
+	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
 		return err
 	}
 
-	// TODO: here infer the other information in the CacheWrap
+	c.wrap.RefreshedAt = time.Unix(0, 0)
+
 	return nil
 }
 
 func (c *FileCache) Write(in any) error {
-	wrap := &CacheWrap{Data: in}
+	c.wrap.Data = in
 
-	marshalled, err := json.Marshal(wrap)
+	marshalled, err := json.Marshal(c.wrap)
 	if err != nil {
 		return err
 	}
@@ -82,21 +98,4 @@ func (c *FileCache) Write(in any) error {
 	}
 
 	return os.WriteFile(c.path, marshalled, 0644)
-}
-
-func (c *FileCache) Expired() bool {
-	return time.Now().After(c.RefreshedAt().Add(c.ttl))
-}
-
-func (c *FileCache) RefreshedAt() time.Time {
-	info, err := os.Stat(c.path)
-
-	if err != nil {
-		// Returning a valid time.Time that's the 0 epoch allows to not return
-		// an error but still process the Expiration date logic correctly.
-		slog.Warn("Could not read file info", "file", c.path, "error", err)
-		return time.Unix(0, 0)
-	}
-
-	return info.ModTime()
 }
