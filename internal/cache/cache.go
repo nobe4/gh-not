@@ -1,3 +1,10 @@
+/*
+Package cache provides a simple file-based cache implementation that fullfills
+the RefreshReadWriter interface.
+
+It writes and reads the cache to a file in JSON format, along with the last
+refresh time.
+*/
 package cache
 
 import (
@@ -9,17 +16,15 @@ import (
 	"time"
 )
 
-type ExpiringReadWriter interface {
+type RefreshReadWriter interface {
 	Read(any) error
 	Write(any) error
-	Expired() bool
+	Refresh(time.Time)
 	RefreshedAt() time.Time
-	SetRefreshedAt(time.Time)
 }
 
 type FileCache struct {
 	path string
-	ttl  time.Duration
 	wrap *CacheWrap
 }
 
@@ -28,11 +33,8 @@ type CacheWrap struct {
 	RefreshedAt time.Time `json:"refreshed_at"`
 }
 
-func NewFileCache(ttlInHours int, path string) *FileCache {
-	return &FileCache{
-		path: path,
-		ttl:  time.Duration(ttlInHours) * time.Hour,
-	}
+func NewFileCache(path string) *FileCache {
+	return &FileCache{path: path}
 }
 
 func (c *FileCache) Read(out any) error {
@@ -61,20 +63,16 @@ func (c *FileCache) Read(out any) error {
 	return err
 }
 
+func (c *FileCache) Refresh(t time.Time) {
+	c.wrap.RefreshedAt = t
+}
+
 func (c *FileCache) RefreshedAt() time.Time {
 	return c.wrap.RefreshedAt
 }
 
-func (c *FileCache) SetRefreshedAt(t time.Time) {
-	c.wrap.RefreshedAt = t
-}
-
-func (c *FileCache) Expired() bool {
-	return time.Now().After(c.RefreshedAt().Add(c.ttl))
-}
-
 func (c *FileCache) deprecatedRead(content []byte) error {
-	slog.Warn("Cache is in an deprecated format. Attempting to read from the old format.")
+	slog.Warn("Cache is in an format deprecated in v0.5.0. Attempting to read from the old format.")
 
 	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
 		return err

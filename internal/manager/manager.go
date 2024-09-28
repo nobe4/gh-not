@@ -16,7 +16,7 @@ import (
 
 type Manager struct {
 	Notifications notifications.Notifications
-	Cache         cache.ExpiringReadWriter
+	Cache         cache.RefreshReadWriter
 	config        *config.Data
 	client        *gh.Client
 	Actions       actions.ActionsMap
@@ -29,7 +29,7 @@ func New(config *config.Data) *Manager {
 	m := &Manager{}
 
 	m.config = config
-	m.Cache = cache.NewFileCache(m.config.Cache.TTLInHours, m.config.Cache.Path)
+	m.Cache = cache.NewFileCache(m.config.Cache.Path)
 
 	return m
 }
@@ -50,7 +50,9 @@ func (m *Manager) Load() error {
 }
 
 func (m *Manager) Refresh() error {
-	if m.RefreshStrategy.ShouldRefresh(m.Cache.Expired()) {
+	expired := time.Now().After(m.Cache.RefreshedAt().Add(time.Duration(m.config.Cache.TTLInHours) * time.Hour))
+
+	if m.RefreshStrategy.ShouldRefresh(expired) {
 		return m.refreshNotifications()
 	}
 
@@ -75,7 +77,7 @@ func (m *Manager) refreshNotifications() error {
 	m.Notifications = m.Notifications.Uniq()
 	m.Notifications, err = m.Enrich(m.Notifications)
 
-	m.Cache.SetRefreshedAt(time.Now())
+	m.Cache.Refresh(time.Now())
 
 	return err
 }
