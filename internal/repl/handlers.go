@@ -31,17 +31,17 @@ type CleanListMsg struct{}
 func (_ CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 	items := []list.Item{}
 	for _, e := range m.list.Items() {
-		if i, ok := e.(item); ok {
-			if i.notification.Meta.Done {
-				continue
-			}
+		i, ok := e.(item)
 
-			if i.notification.Meta.Hidden {
-				continue
-			}
-
-			items = append(items, e)
+		if !ok {
+			continue
 		}
+
+		if !i.notification.Visible() {
+			continue
+		}
+
+		items = append(items, e)
 	}
 
 	return m, tea.Sequence(
