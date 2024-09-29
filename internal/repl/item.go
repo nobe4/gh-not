@@ -11,6 +11,9 @@ import (
 )
 
 type item struct {
+	// It's not possible to rely on bubbles/list's model to get the global index
+	// of an item, so we have to manage it manually.
+	index        int
 	notification *notifications.Notification
 	selected     bool
 }

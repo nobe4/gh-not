@@ -38,7 +38,11 @@ func (_ CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, m.list.SetItems(items)
+	return m, tea.Sequence(
+		// SetItems is needed here because the list might have less items now.
+		m.list.SetItems(items),
+		m.setIndexes(),
+	)
 }
 
 func (m *model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -86,7 +90,7 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			i.selected = !i.selected
 			slog.Debug("toggle selected", "item", i.notification.Subject.Title, "selected", i.selected)
 
-			return m, m.list.SetItem(m.list.GlobalIndex(), i)
+			return m, m.list.SetItem(i.index, i)
 		}
 
 	case key.Matches(msg, m.keymap.All):
@@ -109,6 +113,19 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
+}
+
+func (m model) setIndexes() tea.Cmd {
+	cmds := []tea.Cmd{}
+
+	for index, e := range m.list.Items() {
+		if i, ok := e.(item); ok {
+			i.index = index
+			cmds = append(cmds, m.list.SetItem(index, i))
+		}
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (m *model) handleFiltering(msg tea.KeyMsg) (tea.Model, tea.Cmd) {

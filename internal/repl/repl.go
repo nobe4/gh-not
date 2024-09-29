@@ -56,7 +56,9 @@ func Init(n notifications.Notifications, actions actions.ActionsMap, keymap conf
 	return nil
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m model) Init() tea.Cmd {
+	return m.setIndexes()
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	slog.Debug("update", "msg", msg)
