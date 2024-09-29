@@ -41,8 +41,8 @@ options:
 gh-not --help
 gh-not config --init
 gh-not sync
-gh-not list --filter '.author.login | contains("4")'
-gh-not repl
+gh-not --filter '.author.login | contains("4")'
+gh-not --repl
 ...
 ```
 
