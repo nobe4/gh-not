@@ -1,17 +1,18 @@
 package repl
 
 import (
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m model) selectAll(selected bool) (tea.Model, tea.Cmd) {
-	items := []list.Item{}
+	cmds := []tea.Cmd{}
+
 	for _, e := range m.list.VisibleItems() {
 		if i, ok := e.(item); ok {
 			i.selected = selected
-			items = append(items, i)
+			cmds = append(cmds, m.list.SetItem(i.index, i))
 		}
 	}
-	return m, m.list.SetItems(items)
+
+	return m, tea.Sequence(cmds...)
 }

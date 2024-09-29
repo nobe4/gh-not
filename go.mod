@@ -14,9 +14,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-// Needed until https://github.com/charmbracelet/bubbles/pull/574 is merged
-replace github.com/charmbracelet/bubbles v0.18.0 => github.com/nobe4/bubbles v0.18.1
-
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
