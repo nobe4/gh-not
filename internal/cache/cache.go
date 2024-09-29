@@ -68,6 +68,10 @@ func (c *FileCache) Refresh(t time.Time) {
 }
 
 func (c *FileCache) RefreshedAt() time.Time {
+	if c.wrap == nil {
+		return time.Unix(0, 0)
+	}
+
 	return c.wrap.RefreshedAt
 }
 
