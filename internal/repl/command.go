@@ -9,7 +9,8 @@ import (
 )
 
 func (m model) acceptCommand() (tea.Model, tea.Cmd) {
-	command := m.command.Value()
+	command := m.command.CurrentSuggestion()
+
 	slog.Debug("acceptCommand", "command", command)
 
 	m.command.SetValue("")
