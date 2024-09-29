@@ -32,9 +32,15 @@ func (_ CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 	items := []list.Item{}
 	for _, e := range m.list.Items() {
 		if i, ok := e.(item); ok {
-			if !i.notification.Meta.Done {
-				items = append(items, e)
+			if i.notification.Meta.Done {
+				continue
 			}
+
+			if i.notification.Meta.Hidden {
+				continue
+			}
+
+			items = append(items, e)
 		}
 	}
 
