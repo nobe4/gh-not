@@ -34,7 +34,10 @@ type CacheWrap struct {
 }
 
 func NewFileCache(path string) *FileCache {
-	return &FileCache{path: path}
+	return &FileCache{
+		path: path,
+		wrap: &CacheWrap{RefreshedAt: time.Unix(0, 0)},
+	}
 }
 
 func (c *FileCache) Read(out any) error {
@@ -48,7 +51,7 @@ func (c *FileCache) Read(out any) error {
 		return err
 	}
 
-	c.wrap = &CacheWrap{Data: out}
+	c.wrap.Data = out
 
 	err = json.Unmarshal(content, c.wrap)
 	if err == nil {
@@ -68,10 +71,6 @@ func (c *FileCache) Refresh(t time.Time) {
 }
 
 func (c *FileCache) RefreshedAt() time.Time {
-	if c.wrap == nil {
-		return time.Unix(0, 0)
-	}
-
 	return c.wrap.RefreshedAt
 }
 
