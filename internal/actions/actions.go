@@ -29,5 +29,5 @@ func Map(client *gh.Client) ActionsMap {
 }
 
 type Runner interface {
-	Run(*notifications.Notification, io.Writer) error
+	Run(*notifications.Notification, []string, io.Writer) error
 }
