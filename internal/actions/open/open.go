@@ -18,7 +18,7 @@ type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	slog.Debug("open notification in browser", "notification", n)
 
 	browser := browser.New("", w, w)

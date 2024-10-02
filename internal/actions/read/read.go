@@ -19,7 +19,7 @@ type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	_, err := a.Client.API.Request(http.MethodPatch, n.URL, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible

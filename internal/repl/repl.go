@@ -13,9 +13,9 @@ import (
 )
 
 type model struct {
-	keymap        Keymap
-	actions       actions.ActionsMap
-	currentRunner actions.Runner
+	keymap     Keymap
+	actions    actions.ActionsMap
+	currentRun Run
 
 	showHelp bool
 	list     list.Model

@@ -11,6 +11,6 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, _ io.Writer) error {
+func (_ *Runner) Run(n *notifications.Notification, _ []string, _ io.Writer) error {
 	return nil
 }

@@ -21,7 +21,7 @@ type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Runner) Run(n *notifications.Notification, w io.Writer) error {
+func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	slog.Debug("marking notification as done", "notification", n)
 
 	n.Meta.Done = true

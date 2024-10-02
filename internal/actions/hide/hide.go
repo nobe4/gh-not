@@ -15,7 +15,7 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, w io.Writer) error {
+func (_ *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	slog.Debug("marking notification as hidden", "notification", n.Id)
 
 	n.Meta.Hidden = true

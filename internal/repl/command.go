@@ -6,18 +6,45 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/nobe4/gh-not/internal/actions"
 )
 
-func (m model) acceptCommand() (tea.Model, tea.Cmd) {
-	command := m.command.CurrentSuggestion()
+type Run struct {
+	Runner actions.Runner
+	Args   []string
+}
 
-	slog.Debug("acceptCommand", "command", command)
+func (m model) commandAndArgs(value, suggestion string) (string, []string) {
+	if value == suggestion {
+		return value, nil
+	}
+
+	values := strings.Split(value, " ")
+	command, args := values[0], values[1:]
+
+	// Manually get the new suggestion
+	m.command.SetValue(command)
+	// Workaround until https://github.com/charmbracelet/bubbles/pull/630 is
+	// merged.
+	m.command.SetSuggestions(m.command.AvailableSuggestions())
+	command = m.command.CurrentSuggestion()
+
+	return command, args
+}
+
+func (m model) acceptCommand() (tea.Model, tea.Cmd) {
+	command, args := m.commandAndArgs(
+		m.command.Value(),
+		m.command.CurrentSuggestion(),
+	)
+
+	slog.Debug("acceptCommand", "command", command, "args", args)
 
 	m.command.SetValue("")
 	m.command.Blur()
 	m.showResult = true
 
-	return m, m.applyCommand(command)
+	return m, m.applyCommand(command, args)
 }
 
 func (m model) cancelCommand() (tea.Model, tea.Cmd) {
@@ -32,9 +59,10 @@ func (m model) cancelCommand() (tea.Model, tea.Cmd) {
 type ApplyCommandMsg struct {
 	Items   []item
 	Command string
+	Args    []string
 }
 
-func (m model) applyCommand(command string) tea.Cmd {
+func (m model) applyCommand(command string, args []string) tea.Cmd {
 	return func() tea.Msg {
 		slog.Debug("applyCommand", "command", command)
 
@@ -46,7 +74,7 @@ func (m model) applyCommand(command string) tea.Cmd {
 			}
 		}
 
-		return ApplyCommandMsg{Items: selected, Command: command}
+		return ApplyCommandMsg{Items: selected, Command: command, Args: args}
 	}
 }
 
@@ -59,7 +87,10 @@ func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 	}
 
 	m.resultStrings = []string{}
-	m.currentRunner = runner
+	m.currentRun = Run{
+		Runner: runner,
+		Args:   msg.Args,
+	}
 	m.processQueue = msg.Items
 
 	return m, tea.Sequence(m.renderResult(nil), m.applyNext())
@@ -93,7 +124,7 @@ func (m model) applyNext() tea.Cmd {
 
 		message := ""
 		out := &strings.Builder{}
-		if err := m.currentRunner.Run(current.notification, out); err != nil {
+		if err := m.currentRun.Runner.Run(current.notification, m.currentRun.Args, out); err != nil {
 			message = fmt.Sprintf("Error for '%s': %s", current.notification.Subject.Title, err.Error())
 		} else {
 			message = out.String()
