@@ -6,6 +6,16 @@ It only works when the notifications has an issue or pull request for subject.
 
 It takes as arguments the usernames to assign.
 
+Usage in the config:
+
+	rules:
+	  - action: assign
+	    args: ["user0", "user1"]
+
+Usage in the REPL:
+
+	:assign user0 user1
+
 Refs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#add-assignees-to-an-issue
 */
 package assign
