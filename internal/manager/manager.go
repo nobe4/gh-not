@@ -128,7 +128,7 @@ func (m *Manager) Apply() error {
 				continue
 			}
 
-			if err := runner.Run(notification, nil, os.Stdout); err != nil {
+			if err := runner.Run(notification, rule.Args, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
 			}
 			fmt.Fprintln(os.Stdout, "")

@@ -38,6 +38,9 @@ type Rule struct {
 	// Action is the action to take on the filtered notifications.
 	// See github.com/nobe4/internal/actions for list of available actions.
 	Action string `mapstructure:"action"`
+
+	// Args is the arguments to pass to the Action.
+	Args []string `mapstructure:"args"`
 }
 
 // Test tests the rule for correctness.
