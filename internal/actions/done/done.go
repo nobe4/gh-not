@@ -1,5 +1,6 @@
 /*
 Package done implements an [actions.Runner] that marks a notification as done.
+
 It updates Meta.Done and marks the notification's thread as done on GitHub.
 The notification will be hidden until the thread is updated.
 Ref: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#mark-a-thread-as-done
