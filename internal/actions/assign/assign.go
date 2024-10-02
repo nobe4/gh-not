@@ -75,7 +75,7 @@ func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Wri
 }
 
 func issueURL(url string) (string, bool) {
-	re := regexp.MustCompile(`^(https://api.github.com/repos/.+/.+/)(issues|pulls)(/\d+)$`)
+	re := regexp.MustCompile(`^(https://api\.github\.com/repos/.+/.+/)(issues|pulls)(/\d+)$`)
 	matches := re.FindStringSubmatch(url)
 
 	if len(matches) == 0 {
