@@ -1,5 +1,6 @@
 /*
 Package hide implements an [actions.Runner] that hides a notification.
+
 It hides the notifications completely.
 */
 package hide

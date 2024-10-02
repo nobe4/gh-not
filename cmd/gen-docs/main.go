@@ -22,6 +22,7 @@ func main() {
 
 		if info.IsDir() ||
 			filepath.Ext(path) != ".go" ||
+			strings.HasSuffix(path, "_test.go") ||
 			filepath.Base(path) == "actions.go" {
 			return nil
 		}
@@ -64,9 +65,9 @@ func format(content string) (string, error) {
 	}
 
 	header := strings.Trim(parts[0], "\n")
-	parts = strings.SplitN(header, "\n", 2)
+	parts = strings.SplitN(header, "\n\n", 2)
 
-	re := regexp.MustCompile(`Package (\w+) implements an \[actions.Runner\] that (.*)\.`)
+	re := regexp.MustCompile(`Package (\w+) implements an \[actions.Runner\] that (.*\n?.*)\.`)
 	matches := re.FindStringSubmatch(parts[0])
 
 	if len(matches) < 3 {
@@ -83,7 +84,7 @@ func format(content string) (string, error) {
 		outParts = append(outParts, tail)
 	}
 
-	return strings.Join(outParts, "\n"), nil
+	return strings.Join(outParts, "\n\n"), nil
 }
 
 func indent(s string) string {
