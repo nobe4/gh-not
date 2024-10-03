@@ -4,6 +4,7 @@ Package open implements an [actions.Runner] that opens a notification in the bro
 package open
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -22,6 +23,10 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 	slog.Debug("open notification in browser", "notification", n)
 
 	browser := browser.New("", w, w)
+
+	if n.Subject.HtmlUrl == "" {
+		return errors.New("no URL to open")
+	}
 
 	err := browser.Browse(n.Subject.HtmlUrl)
 	fmt.Fprint(w, colors.Blue("OPEN ")+n.Subject.URL)
