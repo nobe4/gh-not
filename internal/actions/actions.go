@@ -7,6 +7,7 @@ import (
 	"github.com/nobe4/gh-not/internal/actions/debug"
 	"github.com/nobe4/gh-not/internal/actions/done"
 	"github.com/nobe4/gh-not/internal/actions/hide"
+	"github.com/nobe4/gh-not/internal/actions/json"
 	"github.com/nobe4/gh-not/internal/actions/open"
 	"github.com/nobe4/gh-not/internal/actions/pass"
 	"github.com/nobe4/gh-not/internal/actions/print"
@@ -27,6 +28,7 @@ func Map(client *gh.Client) ActionsMap {
 		"done":   &done.Runner{Client: client},
 		"open":   &open.Runner{Client: client},
 		"assign": &assign.Runner{Client: client},
+		"json":   &json.Runner{},
 	}
 }
 
