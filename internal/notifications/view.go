@@ -20,6 +20,7 @@ var prettyRead = map[bool]string{
 var prettyTypes = map[string]string{
 	"Issue":       colors.Blue("IS"),
 	"PullRequest": colors.Cyan("PR"),
+	"Discussion":  colors.Green("DS"),
 }
 
 var prettyState = map[string]string{
