@@ -49,7 +49,6 @@ func (_ *Runner) Run(n *notifications.Notification, tags []string, w io.Writer) 
 			tagsToRemove = append(tagsToRemove, tag[1:])
 		default:
 			tagsToAdd = append(tagsToAdd, tag)
-
 		}
 	}
 
