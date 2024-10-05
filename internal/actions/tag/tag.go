@@ -28,7 +28,6 @@ import (
 	"io"
 	"log/slog"
 	"slices"
-	"strings"
 
 	"github.com/nobe4/gh-not/internal/colors"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -43,12 +42,14 @@ func (_ *Runner) Run(n *notifications.Notification, tags []string, w io.Writer) 
 	tagsToRemove := []string{}
 
 	for _, tag := range tags {
-		if strings.HasPrefix(tag, "+") {
+		switch tag[0] {
+		case '+':
 			tagsToAdd = append(tagsToAdd, tag[1:])
-		} else if strings.HasPrefix(tag, "-") {
+		case '-':
 			tagsToRemove = append(tagsToRemove, tag[1:])
-		} else {
+		default:
 			tagsToAdd = append(tagsToAdd, tag)
+
 		}
 	}
 
