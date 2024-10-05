@@ -50,6 +50,10 @@ type Meta struct {
 	// RemoteExists is used to track if the notification is still present in the
 	// remote list (i.e. the API).
 	RemoteExists bool `json:"remote_exists"`
+
+	// Tags is a list of tags that can be used to filter notifications.
+	// They can be added/removed with the `tag` action.
+	Tags []string `json:"tags"`
 }
 
 type Subject struct {
