@@ -52,9 +52,7 @@ func (_ *Runner) Run(n *notifications.Notification, tags []string, w io.Writer) 
 		}
 	}
 
-	for _, tag := range tagsToAdd {
-		n.Meta.Tags = append(n.Meta.Tags, tag)
-	}
+	n.Meta.Tags = append(n.Meta.Tags, tagsToAdd...)
 
 	newTags := []string{}
 	for _, tag := range n.Meta.Tags {
