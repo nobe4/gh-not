@@ -22,6 +22,8 @@ var (
 	configPathFlag string
 	ruleFlag       string
 	filterFlag     string
+	tagFlag        string
+	tagsFlag       bool
 	replFlag       bool
 	jsonFlag       bool
 	allFlag        bool
@@ -37,6 +39,7 @@ var (
   gh-not --verbosity 2
   gh-not --config /path/to/config.yaml
   gh-not --filter '(.repository.full_name | contains("nobe4")) or (.subject.title | contains("CI"))'
+  gh-not --tag tag0
   gh-not --json --all --rule 'ignore CI'
   gh-not --repl  // will log in the file /tmp/gh-not-debug.log
 `,
@@ -56,15 +59,18 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&verbosityFlag, "verbosity", "v", 1, "Change logger verbosity")
 	rootCmd.PersistentFlags().StringVarP(&configPathFlag, "config", "c", "", "Path to the YAML config file")
 
-	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications.")
-
+	// Filter
+	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications, even the hidden/done ones.")
 	rootCmd.Flags().StringVarP(&ruleFlag, "rule", "r", "", "Filter based on a rule name")
 	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
-	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter")
+	rootCmd.Flags().StringVarP(&tagFlag, "tag", "t", "", "Filter from a single tag")
+	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter", "tag")
 
+	// Display
 	rootCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output the selected notifications as JSON")
-
+	rootCmd.Flags().BoolVarP(&tagsFlag, "tags", "", false, "Show the list of tags with associated notification count")
 	rootCmd.Flags().BoolVarP(&replFlag, "repl", "", false, "Start a REPL with the notifications list")
+	rootCmd.MarkFlagsMutuallyExclusive("json", "repl", "tags")
 }
 
 func setupGlobals(cmd *cobra.Command, args []string) error {
@@ -119,23 +125,22 @@ func load() notifications.Notifications {
 }
 
 func filter(notifications notifications.Notifications) (notifications.Notifications, error) {
+	var err error
+
 	if filterFlag != "" {
-		notificationsList, err := jq.Filter(filterFlag, notifications)
-		if err != nil {
+		if notifications, err = jq.Filter(filterFlag, notifications); err != nil {
 			return nil, err
 		}
-		notifications = notificationsList
 	}
 
 	if ruleFlag != "" {
 		found := false
 
-		var err error
 		for _, rule := range config.Data.Rules {
 			if rule.Name == ruleFlag {
 				found = true
-				notifications, err = rule.Filter(notifications)
-				if err != nil {
+
+				if notifications, err = rule.Filter(notifications); err != nil {
 					return nil, err
 				}
 			}
@@ -147,10 +152,22 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 		}
 	}
 
+	if tagFlag != "" {
+		filter := fmt.Sprintf(`select(.meta.tags | index("%s"))`, tagFlag)
+
+		if notifications, err = jq.Filter(filter, notifications); err != nil {
+			return nil, err
+		}
+	}
+
 	return notifications, nil
 }
 
 func display(notifications notifications.Notifications) error {
+	if tagsFlag {
+		return displayTags(notifications)
+	}
+
 	if jsonFlag {
 		return displayJson(notifications)
 	}
@@ -186,6 +203,14 @@ func displayJson(notifications notifications.Notifications) error {
 	}
 
 	fmt.Printf("%s\n", marshaled)
+
+	return nil
+}
+
+func displayTags(n notifications.Notifications) error {
+	for tag, count := range n.TagsMap() {
+		fmt.Printf("%s: %d\n", tag, count)
+	}
 
 	return nil
 }

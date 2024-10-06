@@ -79,6 +79,16 @@ func (n Notifications) Visible() Notifications {
 	return visible
 }
 
+func (n Notifications) TagsMap() map[string]int {
+	tags := map[string]int{}
+	for _, n := range n {
+		for _, t := range n.Meta.Tags {
+			tags[t]++
+		}
+	}
+	return tags
+}
+
 func (n Notification) Visible() bool {
 	return !n.Meta.Done && !n.Meta.Hidden
 }

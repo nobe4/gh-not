@@ -10,7 +10,7 @@ Usage in the config:
 
 	rules:
 	  - action: assign
-	    args: ["user0", "user1"]
+	    args: [user0, user1]
 
 Usage in the REPL:
 
