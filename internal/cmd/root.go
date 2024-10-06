@@ -125,23 +125,22 @@ func load() notifications.Notifications {
 }
 
 func filter(notifications notifications.Notifications) (notifications.Notifications, error) {
+	var err error
+
 	if filterFlag != "" {
-		notificationsList, err := jq.Filter(filterFlag, notifications)
-		if err != nil {
+		if notifications, err = jq.Filter(filterFlag, notifications); err != nil {
 			return nil, err
 		}
-		notifications = notificationsList
 	}
 
 	if ruleFlag != "" {
 		found := false
 
-		var err error
 		for _, rule := range config.Data.Rules {
 			if rule.Name == ruleFlag {
 				found = true
-				notifications, err = rule.Filter(notifications)
-				if err != nil {
+
+				if notifications, err = rule.Filter(notifications); err != nil {
 					return nil, err
 				}
 			}
@@ -155,11 +154,10 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 
 	if tagFlag != "" {
 		filter := fmt.Sprintf(`select(.meta.tags | index("%s"))`, tagFlag)
-		notificationsList, err := jq.Filter(filter, notifications)
-		if err != nil {
+
+		if notifications, err = jq.Filter(filter, notifications); err != nil {
 			return nil, err
 		}
-		notifications = notificationsList
 	}
 
 	return notifications, nil
