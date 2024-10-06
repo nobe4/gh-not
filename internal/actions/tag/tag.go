@@ -15,7 +15,7 @@ Usage in the config:
 
 	rules:
 	  - action: tag
-	    args: ["+tag0", "-tag1"]
+	    args: [+tag0, -tag1]
 
 Usage in the REPL:
 
