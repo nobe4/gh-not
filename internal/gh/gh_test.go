@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
@@ -22,9 +23,10 @@ const (
 )
 
 var (
-	retriableError = &api.HTTPError{StatusCode: 502}
-	sampleError    = errors.New("error")
-	retryError     = RetryError{verb, endpoint}
+	httpError   = &api.HTTPError{StatusCode: 502}
+	urlError    = &url.Error{}
+	sampleError = errors.New("error")
+	retryError  = RetryError{verb, endpoint}
 )
 
 func mockSubjectUrl(id int) string {
@@ -116,7 +118,7 @@ func TestIsRetryable(t *testing.T) {
 		},
 		{
 			name: "http 502",
-			err:  retriableError,
+			err:  httpError,
 			want: true,
 		},
 		{
@@ -374,7 +376,7 @@ func TestRetry(t *testing.T) {
 		{
 			name: "retry, fails with an error",
 			calls: []mock.Call{
-				{Error: retriableError},
+				{Error: httpError},
 				{Error: sampleError},
 			},
 			error:    sampleError,
@@ -383,9 +385,9 @@ func TestRetry(t *testing.T) {
 		{
 			name: "retry, fails with too many retries",
 			calls: []mock.Call{
-				{Error: retriableError},
-				{Error: retriableError},
-				{Error: retriableError},
+				{Error: httpError},
+				{Error: urlError},
+				{Error: httpError},
 			},
 			error:    retryError,
 			maxRetry: 2,
@@ -393,8 +395,8 @@ func TestRetry(t *testing.T) {
 		{
 			name: "retry, succeeds",
 			calls: []mock.Call{
-				{Error: retriableError},
-				{Error: retriableError},
+				{Error: httpError},
+				{Error: urlError},
 				{Response: mockNotificationsResponse(t, []int{0}, false)},
 			},
 			notifications: mockNotifications([]int{0}),
@@ -446,7 +448,7 @@ func TestPaginate(t *testing.T) {
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: retriableError},
+				{Error: httpError},
 				{Error: sampleError},
 			},
 			error: sampleError,
@@ -456,8 +458,8 @@ func TestPaginate(t *testing.T) {
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: retriableError},
-				{Error: retriableError},
+				{Error: httpError},
+				{Error: httpError},
 			},
 			error: retryError,
 		},
@@ -474,7 +476,7 @@ func TestPaginate(t *testing.T) {
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: retriableError},
+				{Error: httpError},
 				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
 			notifications: mockNotifications([]int{0, 1}),
