@@ -65,9 +65,14 @@ func isRetryable(e error) bool {
 	var httpError *ghapi.HTTPError
 	if errors.As(e, &httpError) {
 		switch httpError.StatusCode {
-		case 404, 502, 504: // unexpected status code
+		case 404, 502, 504: // expected status code
 			return true
 		}
+	}
+
+	var urlError *url.Error
+	if errors.As(e, &urlError) {
+		return true
 	}
 
 	if errors.Is(e, decodeError) {
