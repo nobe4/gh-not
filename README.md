@@ -10,6 +10,8 @@
 > Under heavy development, expect nothing.
 > PRs/issues welcome!
 
+![demo.gif](./docs/demo.gif)
+
 # Install
 
 - Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
