@@ -14,23 +14,18 @@
 
 # Install
 
-- Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
-
-- Install via `gh`:
+- Install via `gh` (preferred method):
     ```shell
     gh extension install nobe4/gh-not
     ```
 
-    Is used with `gh not`, while the others `gh-not`. The documentation uses
-    `gh-not` exclusively.
+    It is then used with `gh not`.
 
-- Install via `go install`:
-    ```shell
-    go install github.com/nobe4/gh-not/cmd/gh-not@latest
-    ```
+- Download a binary from the [release page.](https://github.com/nobe4/gh-not/releases/latest)
 
 - Build from sources
     ```shell
+    go generate ./...
     go build ./cmd/gh-not
     ```
 
