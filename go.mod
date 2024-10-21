@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/cli/go-gh v1.2.1
-	github.com/cli/go-gh/v2 v2.10.0
+	github.com/cli/go-gh/v2 v2.11.0
 	github.com/itchyny/gojq v0.12.16
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
