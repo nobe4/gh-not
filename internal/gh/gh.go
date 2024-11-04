@@ -125,7 +125,7 @@ func (c *Client) retry(verb, endpoint string, body io.Reader) ([]*notifications.
 		}
 
 		if isRetryable(err) {
-			slog.Warn("endpoint failed with retryable error", "endpoint", endpoint, "retry left", i)
+			slog.Warn("endpoint failed with retryable error", "error", err, "endpoint", endpoint, "retry left", i)
 			continue
 		}
 
