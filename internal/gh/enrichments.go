@@ -10,9 +10,12 @@ import (
 )
 
 type ThreadExtra struct {
-	User    notifications.User `json:"user"`
-	State   string             `json:"state"`
-	HtmlUrl string             `json:"html_url"`
+	User           notifications.User   `json:"user"`
+	State          string               `json:"state"`
+	HtmlUrl        string               `json:"html_url"`
+	Assignees      []notifications.User `json:"assignees"`
+	Reviewers      []notifications.User `json:"requested_reviewers"`
+	ReviewersTeams []notifications.Team `json:"requested_teams"`
 }
 
 func (c *Client) Enrich(n *notifications.Notification) error {
@@ -27,6 +30,9 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	n.Author = threadExtra.User
 	n.Subject.State = threadExtra.State
 	n.Subject.HtmlUrl = threadExtra.HtmlUrl
+	n.Assignees = threadExtra.Assignees
+	n.Reviewers = threadExtra.Reviewers
+	n.ReviewersTeams = threadExtra.ReviewersTeams
 
 	LastCommentor, err := c.getLastCommentor(n)
 	if err != nil {
