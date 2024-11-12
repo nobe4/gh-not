@@ -27,8 +27,11 @@ type Notification struct {
 	Subject    Subject    `json:"subject"`
 
 	// Enriched API fields
-	Author          User `json:"author"`
-	LatestCommentor User `json:"latest_commentor"`
+	Author          User   `json:"author"`
+	LatestCommentor User   `json:"latest_commentor"`
+	Assignees       []User `json:"assignees"`
+	Reviewers       []User `json:"requested_reviewers"`
+	ReviewersTeams  []Team `json:"requested_teams"`
 
 	// gh-not specific fields
 	// Those fields are not part of the GitHub API and will persist between
@@ -80,6 +83,11 @@ type Repository struct {
 type User struct {
 	Login string `json:"login"`
 	Type  string `json:"type"`
+}
+
+type Team struct {
+	Name string `json:"name"`
+	Id   uint   `json:"id"`
 }
 
 func (n Notifications) Equal(others Notifications) bool {
