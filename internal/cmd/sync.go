@@ -29,7 +29,7 @@ var (
 Use this command when you want to make sure that your notification list is up to
 date with your ruleset.
 
-See synchronisation logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal/notifications#Sync.
+See synchronization logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal/notifications#Sync.
 `,
 		Example: `
   gh-not sync

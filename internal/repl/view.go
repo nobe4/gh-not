@@ -55,10 +55,10 @@ func (m *model) initView() {
 func (m *model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
 
-	m.list.SetHeight(min(msg.Height, m.maxHeigth))
+	m.list.SetHeight(min(msg.Height, m.maxHeight))
 	m.list.SetWidth(msg.Width)
 
-	m.result.Height = min(msg.Height, m.maxHeigth)
+	m.result.Height = min(msg.Height, m.maxHeight)
 	m.result.Width = msg.Width
 
 	if !m.ready {

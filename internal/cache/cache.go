@@ -1,5 +1,5 @@
 /*
-Package cache provides a simple file-based cache implementation that fullfills
+Package cache provides a simple file-based cache implementation that fulfills
 the RefreshReadWriter interface.
 
 It writes and reads the cache to a file in JSON format, along with the last
