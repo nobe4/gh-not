@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -51,9 +54,31 @@ func runConfig(cmd *cobra.Command, args []string) error {
 func initConfig() error {
 	slog.Debug("creating initial config file", "path", configPathFlag)
 
-	if err := configPkg.Default(configPathFlag).WriteConfig(); err != nil {
-		slog.Error("Failed to save initial config", "err", err)
-		return err
+	defaultConfig := configPkg.Default(configPathFlag)
+
+	if err := defaultConfig.WriteConfig(); err != nil {
+		var errNotFound viper.ConfigFileNotFoundError
+		if errors.As(err, &errNotFound) {
+			// The file was not written, because it doesn't exist
+
+			parentFolder := configPkg.ConfigDir()
+			if configPathFlag != "" {
+				parentFolder = filepath.Dir(configPathFlag)
+			}
+
+			// let's try to create the parent directory
+			errParent := os.MkdirAll(parentFolder, 0o700)
+			if errParent == nil {
+				// We managed to create the folder
+				// let's try to create the file again
+				err = defaultConfig.SafeWriteConfig()
+			}
+		}
+
+		if err != nil {
+			slog.Error("Failed to save initial config", "err", err)
+			return err
+		}
 	}
 	fmt.Printf("Initial config saved to %s\n", configPathFlag)
 
