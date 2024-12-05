@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/spf13/cobra"
@@ -51,11 +52,19 @@ func runConfig(cmd *cobra.Command, args []string) error {
 func initConfig() error {
 	slog.Debug("creating initial config file", "path", configPathFlag)
 
-	if err := configPkg.Default(configPathFlag).WriteConfig(); err != nil {
+	initialConfig, initialPath := configPkg.Default(configPathFlag)
+	initialConfigDir := filepath.Dir(initialPath)
+
+	if err := os.MkdirAll(initialConfigDir, os.ModePerm); err != nil {
+		slog.Error("Failed to create config directory", "path", initialConfigDir, "err", err)
+		return err
+	}
+
+	if err := initialConfig.WriteConfig(); err != nil {
 		slog.Error("Failed to save initial config", "err", err)
 		return err
 	}
-	fmt.Printf("Initial config saved to %s\n", configPathFlag)
+	fmt.Printf("Initial config saved to %s\n", initialPath)
 
 	return nil
 }

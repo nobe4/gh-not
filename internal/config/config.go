@@ -12,6 +12,7 @@ import (
 	"errors"
 	"io/fs"
 	"log/slog"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -72,8 +73,13 @@ type View struct {
 	Height int `mapstructure:"height"`
 }
 
-func Default(path string) *viper.Viper {
+func Default(path string) (*viper.Viper, string) {
 	slog.Debug("loading default configuration")
+	if path == "" {
+		path = filepath.Join(ConfigDir(), "config.yaml")
+		slog.Debug("path is empty, setting default path", "default path", path)
+	}
+
 	v := viper.New()
 
 	for key, value := range Defaults {
@@ -81,23 +87,20 @@ func Default(path string) *viper.Viper {
 	}
 
 	slog.Debug("setting config name and path", "path", path)
-	if path == "" {
-		v.SetConfigName("config")
-		v.SetConfigType("yaml")
-		v.AddConfigPath(ConfigDir())
-	} else {
-		v.SetConfigFile(path)
-	}
 
-	return v
+	v.SetConfigFile(path)
+
+	return v, path
 }
 
 func New(path string) (*Config, error) {
+	v, path := Default(path)
 	slog.Debug("loading configuration", "path", path)
-	c := &Config{viper: Default(path), Path: path}
+	c := &Config{viper: v, Path: path}
 
 	if err := c.viper.ReadInConfig(); err != nil {
-		if errors.Is(err, viper.ConfigFileNotFoundError{}) ||
+		var viperNotFoundError viper.ConfigFileNotFoundError
+		if errors.As(err, &viperNotFoundError) ||
 			errors.Is(err, fs.ErrNotExist) {
 			slog.Warn("Config file not found, using default")
 		} else {
