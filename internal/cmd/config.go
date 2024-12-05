@@ -53,9 +53,10 @@ func initConfig() error {
 	slog.Debug("creating initial config file", "path", configPathFlag)
 
 	initialConfig, initialPath := configPkg.Default(configPathFlag)
+	initialConfigDir := filepath.Dir(initialPath)
 
-	if err := os.MkdirAll(filepath.Dir(initialPath), os.ModePerm); err != nil {
-		slog.Error("Failed to create config directory", "path", configPathFlag, "err", err)
+	if err := os.MkdirAll(initialConfigDir, os.ModePerm); err != nil {
+		slog.Error("Failed to create config directory", "path", initialConfigDir, "err", err)
 		return err
 	}
 
