@@ -97,7 +97,8 @@ func New(path string) (*Config, error) {
 	c := &Config{viper: Default(path), Path: path}
 
 	if err := c.viper.ReadInConfig(); err != nil {
-		if errors.Is(err, viper.ConfigFileNotFoundError{}) ||
+		viperNotFoundError := viper.ConfigFileNotFoundError{}
+		if errors.As(err, &viperNotFoundError) ||
 			errors.Is(err, fs.ErrNotExist) {
 			slog.Warn("Config file not found, using default")
 		} else {
