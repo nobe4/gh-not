@@ -27,7 +27,7 @@ type model struct {
 	ready        bool
 	showResult   bool
 	processQueue []item
-	maxHeigth    int
+	maxHeight    int
 }
 
 func Init(n notifications.Notifications, actions actions.ActionsMap, keymap config.Keymap, view config.View) error {
@@ -42,7 +42,7 @@ func Init(n notifications.Notifications, actions actions.ActionsMap, keymap conf
 		command:   textinput.New(),
 		actions:   actions,
 		result:    viewport.New(0, 0),
-		maxHeigth: view.Height,
+		maxHeight: view.Height,
 	}
 
 	m.list.SetItems(items)

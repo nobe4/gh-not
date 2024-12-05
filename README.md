@@ -71,7 +71,7 @@ rule contains three fields:
 - `filters`: a list of [`jq` filters](https://jqlang.github.io/jq/manual/#basic-filters)[^gojq]
     to filter notifications with.
 
-    Each filter is inserted into the following patter: `.[] | select(%s)`.
+    Each filter is inserted into the following pattern: `.[] | select(%s)`.
 
 
     Each filter in the list is run one after the other, making it similar to
@@ -99,7 +99,7 @@ rule contains three fields:
 # Automatic fetching
 
 To automatically fetch new notifications and apply the rules, it is recommended
-to setup an automated process to run `gh-not sync` regularly.
+to set up an automated process to run `gh-not sync` regularly.
 
 E.g.
 

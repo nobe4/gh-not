@@ -106,7 +106,7 @@ func TestFilterIds(t *testing.T) {
 		},
 		{
 			r: Rule{
-				Name: "parenthesis work also accross filters",
+				Name: "parenthesis work also across filters",
 				Filters: []string{
 					`(.reason == "test" or .id == "2")`,
 					`(.unread == true or .id == "1")`,

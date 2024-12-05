@@ -93,7 +93,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 		}
 
 		if err := m.client.Enrich(n); err != nil {
-			// Enrichement of a single Notifications should not prevent the
+			// Enrichment of a single Notifications should not prevent the
 			// enrichment to continue.
 			// TODO: suggest to re-run the enrichment
 			slog.Warn("failed to enrich notification", "notification", n.Id, "error", err.Error())
