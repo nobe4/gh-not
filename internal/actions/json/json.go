@@ -13,17 +13,17 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
+func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	if n.Meta.Hidden {
 		return nil
 	}
 
-	marshalled, err := json.MarshalIndent(n, "", "  ")
+	marshaled, err := json.MarshalIndent(n, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprint(w, string(marshalled))
+	fmt.Fprint(w, string(marshaled))
 
 	return nil
 }

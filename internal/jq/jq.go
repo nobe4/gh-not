@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/itchyny/gojq"
+
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -45,15 +46,15 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 			return nil, err
 		}
 
-		newId, ok := v.(string)
+		newID, ok := v.(string)
 		if !ok {
 			return nil, fmt.Errorf("invalid filtered id %#v", v)
 		}
 
-		filteredIDs = append(filteredIDs, newId)
+		filteredIDs = append(filteredIDs, newID)
 	}
 
-	return n.FilterFromIds(filteredIDs), nil
+	return n.FilterFromIDs(filteredIDs), nil
 }
 
 func Validate(filter string) error {

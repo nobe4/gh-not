@@ -124,11 +124,11 @@ func New(path string) (*Config, error) {
 }
 
 func (c *Config) Marshal() ([]byte, error) {
-	marshalled, err := yaml.Marshal(c.Data)
+	marshaled, err := yaml.Marshal(c.Data)
 	if err != nil {
 		slog.Error("Failed to marshall config", "err", err)
 		return nil, err
 	}
 
-	return marshalled, nil
+	return marshaled, nil
 }

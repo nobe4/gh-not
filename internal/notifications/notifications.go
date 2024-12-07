@@ -18,7 +18,7 @@ type NotificationMap map[string]*Notification
 
 type Notification struct {
 	// Standard API fields
-	Id         string     `json:"id"`
+	ID         string     `json:"id"`
 	Unread     bool       `json:"unread"`
 	Reason     string     `json:"reason"`
 	UpdatedAt  time.Time  `json:"updated_at"`
@@ -64,11 +64,11 @@ type Subject struct {
 	Title            string `json:"title"`
 	URL              string `json:"url"`
 	Type             string `json:"type"`
-	LatestCommentUrl string `json:"latest_comment_url"`
+	LatestCommentURL string `json:"latest_comment_url"`
 
 	// Enriched API fields
 	State   string `json:"state"`
-	HtmlUrl string `json:"html_url"`
+	HTMLURL string `json:"html_url"`
 }
 
 type Repository struct {
@@ -87,7 +87,7 @@ type User struct {
 
 type Team struct {
 	Name string `json:"name"`
-	Id   uint   `json:"id"`
+	ID   uint   `json:"id"`
 }
 
 func (n Notifications) Equal(others Notifications) bool {
@@ -106,7 +106,7 @@ func (n Notifications) Equal(others Notifications) bool {
 }
 
 func (n Notification) Equal(other *Notification) bool {
-	return n.Id == other.Id &&
+	return n.ID == other.ID &&
 		n.Unread == other.Unread &&
 		n.Reason == other.Reason &&
 		n.UpdatedAt.Equal(other.UpdatedAt) &&
@@ -121,7 +121,7 @@ func (n Notification) Equal(other *Notification) bool {
 		n.Subject.URL == other.Subject.URL &&
 		n.Subject.Type == other.Subject.Type &&
 		n.Subject.State == other.Subject.State &&
-		n.Subject.HtmlUrl == other.Subject.HtmlUrl &&
+		n.Subject.HTMLURL == other.Subject.HTMLURL &&
 		n.Author.Login == other.Author.Login &&
 		n.Author.Type == other.Author.Type &&
 		n.LatestCommentor.Login == other.LatestCommentor.Login &&
@@ -146,7 +146,7 @@ func (n Notification) Debug() string {
 func (n Notifications) Map() NotificationMap {
 	m := NotificationMap{}
 	for _, n := range n {
-		m[n.Id] = n
+		m[n.ID] = n
 	}
 	return m
 }
@@ -162,7 +162,7 @@ func (m NotificationMap) List() Notifications {
 func (n Notifications) IDList() []string {
 	ids := []string{}
 	for _, n := range n {
-		ids = append(ids, n.Id)
+		ids = append(ids, n.ID)
 	}
 	return ids
 }
@@ -187,22 +187,22 @@ func (n Notifications) Sort() {
 
 // TODO: in-place update
 func (n Notifications) Uniq() Notifications {
-	seenIds := map[string]bool{}
+	seenIDs := map[string]bool{}
 	return slices.DeleteFunc(n, func(n *Notification) bool {
-		if _, ok := seenIds[n.Id]; ok {
+		if _, ok := seenIDs[n.ID]; ok {
 			return true
 		}
-		seenIds[n.Id] = true
+		seenIDs[n.ID] = true
 		return false
 	})
 }
 
-func (n Notifications) FilterFromIds(ids []string) Notifications {
+func (n Notifications) FilterFromIDs(ids []string) Notifications {
 	newList := Notifications{}
 
 	for _, id := range ids {
 		for _, n := range n {
-			if n.Id == id {
+			if n.ID == id {
 				newList = append(newList, n)
 			}
 		}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/itchyny/gojq"
+
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -14,7 +15,7 @@ func notificationsEqual(a notifications.Notifications, ids []string) bool {
 	}
 
 	for i := range a {
-		if a[i].Id != ids[i] {
+		if a[i].ID != ids[i] {
 			return false
 		}
 	}
@@ -34,9 +35,9 @@ func TestFilter(t *testing.T) {
 			name:   "empty filter",
 			filter: "",
 			n: notifications.Notifications{
-				&notifications.Notification{Id: "0"},
-				&notifications.Notification{Id: "1"},
-				&notifications.Notification{Id: "2"},
+				&notifications.Notification{ID: "0"},
+				&notifications.Notification{ID: "1"},
+				&notifications.Notification{ID: "2"},
 			},
 			want: []string{"0", "1", "2"},
 		},
@@ -44,6 +45,7 @@ func TestFilter(t *testing.T) {
 			name:   "invalid filter",
 			filter: "!!!",
 			assertErr: func(t *testing.T, err error) {
+				t.Helper()
 				if err == nil {
 					t.Fatalf("expected error but got nil")
 				}
@@ -58,9 +60,9 @@ func TestFilter(t *testing.T) {
 			name:   "filter on specific id",
 			filter: `.id == "1"`,
 			n: notifications.Notifications{
-				&notifications.Notification{Id: "0"},
-				&notifications.Notification{Id: "1"},
-				&notifications.Notification{Id: "2"},
+				&notifications.Notification{ID: "0"},
+				&notifications.Notification{ID: "1"},
+				&notifications.Notification{ID: "2"},
 			},
 			want: []string{"1"},
 		},
@@ -68,9 +70,9 @@ func TestFilter(t *testing.T) {
 			name:   "composite filter: parenthesis define the priority",
 			filter: `(.id == "1" or .id == "2") and (.unread == true)`,
 			n: notifications.Notifications{
-				&notifications.Notification{Id: "0"},
-				&notifications.Notification{Id: "1", Unread: true},
-				&notifications.Notification{Id: "2", Unread: false},
+				&notifications.Notification{ID: "0"},
+				&notifications.Notification{ID: "1", Unread: true},
+				&notifications.Notification{ID: "2", Unread: false},
 			},
 			want: []string{"1"},
 		},
@@ -78,9 +80,9 @@ func TestFilter(t *testing.T) {
 			name:   "composite filter: parenthesis can be added for clarity",
 			filter: `.id == "1" or (.id == "2" and .unread == true)`,
 			n: notifications.Notifications{
-				&notifications.Notification{Id: "0"},
-				&notifications.Notification{Id: "1", Unread: false},
-				&notifications.Notification{Id: "2", Unread: true},
+				&notifications.Notification{ID: "0"},
+				&notifications.Notification{ID: "1", Unread: false},
+				&notifications.Notification{ID: "2", Unread: true},
 			},
 			want: []string{"1", "2"},
 		},
@@ -88,9 +90,9 @@ func TestFilter(t *testing.T) {
 			name:   "composite filter: and is evaluated first",
 			filter: `.id == "1" or .id == "2" and .unread == true`,
 			n: notifications.Notifications{
-				&notifications.Notification{Id: "0"},
-				&notifications.Notification{Id: "1", Unread: false},
-				&notifications.Notification{Id: "2", Unread: true},
+				&notifications.Notification{ID: "0"},
+				&notifications.Notification{ID: "1", Unread: false},
+				&notifications.Notification{ID: "2", Unread: true},
 			},
 			want: []string{"1", "2"},
 		},
@@ -124,6 +126,7 @@ func TestValidate(t *testing.T) {
 			name:   "invalid filter",
 			filter: "!!!",
 			assertErr: func(t *testing.T, err error) {
+				t.Helper()
 				if err == nil {
 					t.Fatalf("expected error but got nil")
 				}

@@ -57,14 +57,14 @@ func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Wri
 		return nil
 	}
 
-	assigneesUrl := url + "/assignees"
+	assigneesURL := url + "/assignees"
 
 	body, err := json.Marshal(Body{Assignees: assignees})
 	if err != nil {
 		return err
 	}
 
-	_, err = a.Client.API.Request(http.MethodPost, assigneesUrl, bytes.NewReader(body))
+	_, err = a.Client.API.Request(http.MethodPost, assigneesURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

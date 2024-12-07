@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 

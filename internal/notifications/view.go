@@ -9,6 +9,7 @@ import (
 	"github.com/cli/go-gh/v2/pkg/tableprinter"
 	"github.com/cli/go-gh/v2/pkg/term"
 	"github.com/cli/go-gh/v2/pkg/text"
+
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
@@ -34,7 +35,7 @@ func (n Notification) String() string {
 		return n.rendered
 	}
 
-	return fmt.Sprintf("[%s] %s at %s: %s", n.Id, n.Author.Login, n.UpdatedAt, n.Subject.Title)
+	return fmt.Sprintf("[%s] %s at %s: %s", n.ID, n.Author.Login, n.UpdatedAt, n.Subject.Title)
 }
 
 func (n Notification) prettyRead() string {

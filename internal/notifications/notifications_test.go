@@ -9,7 +9,7 @@ func TestIDList(t *testing.T) {
 	n := Notifications{}
 	ids := []string{"0", "1", "2"}
 	for _, id := range ids {
-		n = append(n, &Notification{Id: id})
+		n = append(n, &Notification{ID: id})
 	}
 
 	got := n.IDList()
@@ -22,8 +22,8 @@ func TestIDList(t *testing.T) {
 }
 
 func TestCompact(t *testing.T) {
-	n0 := &Notification{Id: "0"}
-	n1 := &Notification{Id: "1"}
+	n0 := &Notification{ID: "0"}
+	n1 := &Notification{ID: "1"}
 	n := Notifications{nil, nil, n0, nil, n1, nil}
 
 	got := n.Compact()
@@ -63,9 +63,9 @@ func TestSort(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
-	n0 := &Notification{Id: "0", UpdatedAt: time.Unix(0, 2)}
-	n1 := &Notification{Id: "1", UpdatedAt: time.Unix(0, 1)}
-	n2 := &Notification{Id: "2", UpdatedAt: time.Unix(0, 0)}
+	n0 := &Notification{ID: "0", UpdatedAt: time.Unix(0, 2)}
+	n1 := &Notification{ID: "1", UpdatedAt: time.Unix(0, 1)}
+	n2 := &Notification{ID: "2", UpdatedAt: time.Unix(0, 0)}
 	n := Notifications{n0, n1, n2}
 
 	got := n.Map()
@@ -87,9 +87,9 @@ func TestMap(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	n0 := &Notification{Id: "0"}
-	n1 := &Notification{Id: "1"}
-	n2 := &Notification{Id: "2"}
+	n0 := &Notification{ID: "0"}
+	n1 := &Notification{ID: "1"}
+	n2 := &Notification{ID: "2"}
 	n := NotificationMap{
 		"0": n0,
 		"1": n1,
@@ -110,9 +110,9 @@ func TestList(t *testing.T) {
 }
 
 func TestUniq(t *testing.T) {
-	n0 := &Notification{Id: "0"}
-	n1 := &Notification{Id: "1"}
-	n2 := &Notification{Id: "2"}
+	n0 := &Notification{ID: "0"}
+	n1 := &Notification{ID: "1"}
+	n2 := &Notification{ID: "2"}
 	n := Notifications{n0, n1, n2, n0, n1, n2}
 
 	got := n.Uniq()
@@ -135,12 +135,12 @@ func TestUniq(t *testing.T) {
 }
 
 func TestFilterFromIds(t *testing.T) {
-	n0 := &Notification{Id: "0"}
-	n1 := &Notification{Id: "1"}
-	n2 := &Notification{Id: "2"}
+	n0 := &Notification{ID: "0"}
+	n1 := &Notification{ID: "1"}
+	n2 := &Notification{ID: "2"}
 	n := Notifications{n0, n1, n2}
 
-	got := n.FilterFromIds([]string{"0", "2"})
+	got := n.FilterFromIDs([]string{"0", "2"})
 
 	if len(got) != 2 {
 		t.Fatalf("expected 2 elements but got %d\n%+v", len(got), got)

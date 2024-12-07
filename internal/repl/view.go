@@ -161,10 +161,3 @@ func (m model) View() string {
 
 	return lipgloss.JoinVertical(lipgloss.Left, sections...)
 }
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

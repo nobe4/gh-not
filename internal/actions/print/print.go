@@ -12,7 +12,7 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
+func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	if !n.Meta.Hidden {
 		fmt.Fprint(w, n.String())
 	}

@@ -12,6 +12,7 @@ import (
 	"regexp"
 
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
+
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
 	"github.com/nobe4/gh-not/internal/config"
@@ -21,7 +22,7 @@ import (
 var (
 	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 
-	DefaultUrl = url.URL{
+	DefaultURL = url.URL{
 		Scheme: "https",
 		Host:   "api.github.com",
 		Path:   "/notifications",
@@ -37,7 +38,7 @@ type Client struct {
 }
 
 func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.Endpoint) *Client {
-	url := DefaultUrl
+	url := DefaultURL
 
 	query := url.Query()
 	if config.All {
@@ -65,7 +66,7 @@ func isRetryable(e error) bool {
 	var httpError *ghapi.HTTPError
 	if errors.As(e, &httpError) {
 		switch httpError.StatusCode {
-		case 404, 502, 504: // expected status code
+		case http.StatusNotFound, http.StatusBadGateway, http.StatusGatewayTimeout: // expected status code
 			return true
 		}
 	}
@@ -75,7 +76,7 @@ func isRetryable(e error) bool {
 		return true
 	}
 
-	if errors.Is(e, decodeError) {
+	if errors.Is(e, errDecode) {
 		return true
 	}
 
@@ -91,7 +92,7 @@ func parse(r *http.Response) ([]*notifications.Notification, string, error) {
 
 		// Returning a generic error makes it retryable.
 		// A valid body can always be decoded, even if it is empty.
-		return nil, "", decodeError
+		return nil, "", errDecode
 	}
 	defer r.Body.Close()
 

@@ -36,15 +36,15 @@ func TestRefreshStrategy(t *testing.T) {
 		for _, test := range tests {
 			t.Run(test.value, func(t *testing.T) {
 				var got RefreshStrategy
-				error := got.Set(test.value)
+				err := got.Set(test.value)
 
 				if test.error {
-					if error == nil {
+					if err == nil {
 						t.Errorf("expected an error but got none")
 					}
 				} else {
-					if error != nil {
-						t.Errorf("expected no error but got %#v", error)
+					if err != nil {
+						t.Errorf("expected no error but got %#v", err)
 					}
 
 					if got != test.want {
@@ -90,15 +90,15 @@ func TestForceStrategy(t *testing.T) {
 		for _, test := range tests {
 			t.Run(test.value, func(t *testing.T) {
 				var got ForceStrategy
-				error := got.Set(test.value)
+				err := got.Set(test.value)
 
 				if test.error {
-					if error == nil {
+					if err == nil {
 						t.Errorf("expected an error but got none")
 					}
 				} else {
-					if error != nil {
-						t.Errorf("expected no error but got %#v", error)
+					if err != nil {
+						t.Errorf("expected no error but got %#v", err)
 					}
 
 					if got != test.want {
