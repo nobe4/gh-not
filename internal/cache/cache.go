@@ -89,7 +89,7 @@ func (c *FileCache) deprecatedRead(content []byte) error {
 func (c *FileCache) Write(in any) error {
 	c.wrap.Data = in
 
-	marshalled, err := json.Marshal(c.wrap)
+	marshaled, err := json.Marshal(c.wrap)
 	if err != nil {
 		return err
 	}
@@ -98,5 +98,5 @@ func (c *FileCache) Write(in any) error {
 		return err
 	}
 
-	return os.WriteFile(c.path, marshalled, 0644)
+	return os.WriteFile(c.path, marshaled, 0644)
 }

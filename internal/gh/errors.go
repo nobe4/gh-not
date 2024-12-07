@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-// decodeError abstracts all decoding error.
-var decodeError error = errors.New("decode error")
+// errDecode abstracts all decoding error.
+var errDecode = errors.New("decode error")
 
 type RetryError struct {
 	verb string

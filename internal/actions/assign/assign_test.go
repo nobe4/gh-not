@@ -48,7 +48,7 @@ func TestRun(t *testing.T) {
 
 		api.Calls = append(api.Calls, mock.Call{
 			Verb:  "POST",
-			Url:   "https://api.github.com/repos/owner/repo/issues/123/assignees",
+			URL:   "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:  `{"assignees":["user"]}`,
 			Error: expectedError,
 		})
@@ -70,7 +70,7 @@ func TestRun(t *testing.T) {
 	t.Run("works for an issue", func(t *testing.T) {
 		api.Calls = append(api.Calls, mock.Call{
 			Verb:     "POST",
-			Url:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
+			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:     `{"assignees":["user"]}`,
 			Response: &http.Response{StatusCode: http.StatusCreated},
 		})
@@ -92,7 +92,7 @@ func TestRun(t *testing.T) {
 	t.Run("works for a pull", func(t *testing.T) {
 		api.Calls = append(api.Calls, mock.Call{
 			Verb:     "POST",
-			Url:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
+			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:     `{"assignees":["user"]}`,
 			Response: &http.Response{StatusCode: http.StatusCreated},
 		})

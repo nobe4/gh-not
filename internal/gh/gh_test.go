@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/cli/go-gh/v2/pkg/api"
+
 	"github.com/nobe4/gh-not/internal/api/mock"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -23,26 +24,26 @@ const (
 )
 
 var (
-	httpError   = &api.HTTPError{StatusCode: 502}
-	urlError    = &url.Error{}
-	sampleError = errors.New("error")
-	retryError  = RetryError{verb, endpoint}
+	errHTTP   = &api.HTTPError{StatusCode: 502}
+	errURL    = &url.Error{}
+	errSample = errors.New("error")
+	errRetry  = RetryError{verb, endpoint}
 )
 
-func mockSubjectUrl(id int) string {
+func mockSubjectURL(id int) string {
 	return "https://subject.url/" + strconv.Itoa(id)
 }
 
-func mockLatestCommentUrl(id int) string {
+func mockLatestCommentURL(id int) string {
 	return "https://latest.comment.url/" + strconv.Itoa(id)
 }
 
 func mockNotification(id int) *notifications.Notification {
 	return &notifications.Notification{
-		Id: strconv.Itoa(id),
+		ID: strconv.Itoa(id),
 		Subject: notifications.Subject{
-			URL:              mockSubjectUrl(id),
-			LatestCommentUrl: mockLatestCommentUrl(id),
+			URL:              mockSubjectURL(id),
+			LatestCommentURL: mockLatestCommentURL(id),
 		},
 	}
 }
@@ -56,6 +57,7 @@ func mockNotifications(ids []int) []*notifications.Notification {
 }
 
 func mockNotificationsResponse(t *testing.T, ids []int, next bool) *http.Response {
+	t.Helper()
 	n := mockNotifications(ids)
 	body, err := json.Marshal(n)
 	if err != nil {
@@ -87,7 +89,7 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 			return false
 		}
 
-		if a[i].Id != b[i].Id {
+		if a[i].ID != b[i].ID {
 			return false
 		}
 	}
@@ -118,7 +120,7 @@ func TestIsRetryable(t *testing.T) {
 		},
 		{
 			name: "http 502",
-			err:  httpError,
+			err:  errHTTP,
 			want: true,
 		},
 		{
@@ -128,7 +130,7 @@ func TestIsRetryable(t *testing.T) {
 		},
 		{
 			name: "DecodeError",
-			err:  decodeError,
+			err:  errDecode,
 			want: true,
 		},
 		{
@@ -138,7 +140,7 @@ func TestIsRetryable(t *testing.T) {
 		},
 		{
 			name: "other error",
-			err:  sampleError,
+			err:  errSample,
 			want: false,
 		},
 	}
@@ -157,31 +159,31 @@ func TestNewClient(t *testing.T) {
 		name    string
 		all     bool
 		perPage int
-		wantUrl string
+		wantURL string
 	}{
 		{
 			name:    "default",
 			all:     false,
 			perPage: 0,
-			wantUrl: "https://api.github.com/notifications",
+			wantURL: "https://api.github.com/notifications",
 		},
 		{
 			name:    "all",
 			all:     true,
 			perPage: 0,
-			wantUrl: "https://api.github.com/notifications?all=true",
+			wantURL: "https://api.github.com/notifications?all=true",
 		},
 		{
 			name:    "10 per page",
 			all:     false,
 			perPage: 10,
-			wantUrl: "https://api.github.com/notifications?per_page=10",
+			wantURL: "https://api.github.com/notifications?per_page=10",
 		},
 		{
 			name:    "all and 10 per page",
 			all:     true,
 			perPage: 10,
-			wantUrl: "https://api.github.com/notifications?all=true&per_page=10",
+			wantURL: "https://api.github.com/notifications?all=true&per_page=10",
 		},
 	}
 
@@ -196,8 +198,8 @@ func TestNewClient(t *testing.T) {
 			client := NewClient(nil, nil, *config)
 
 			// only testing the result URL, the rest is stored verbatim.
-			if client.url != test.wantUrl {
-				t.Errorf("expected %s, got %s", test.wantUrl, client.url)
+			if client.url != test.wantURL {
+				t.Errorf("expected %s, got %s", test.wantURL, client.url)
 			}
 		})
 	}
@@ -343,8 +345,8 @@ func TestRequest(t *testing.T) {
 			t.Errorf("expected 1 notification, got %d", len(notifications))
 		}
 
-		if notifications[0].Id != "0" {
-			t.Errorf("expected notification id 0, got %s", notifications[0].Id)
+		if notifications[0].ID != "0" {
+			t.Errorf("expected notification id 0, got %s", notifications[0].ID)
 		}
 
 		if err := api.Done(); err != nil {
@@ -363,8 +365,8 @@ func TestRetry(t *testing.T) {
 	}{
 		{
 			name:  "no retry, fails with an error",
-			calls: []mock.Call{{Error: sampleError}},
-			error: sampleError,
+			calls: []mock.Call{{Error: errSample}},
+			error: errSample,
 		},
 		{
 			name: "no retry, succeeds",
@@ -376,27 +378,27 @@ func TestRetry(t *testing.T) {
 		{
 			name: "retry, fails with an error",
 			calls: []mock.Call{
-				{Error: httpError},
-				{Error: sampleError},
+				{Error: errHTTP},
+				{Error: errSample},
 			},
-			error:    sampleError,
+			error:    errSample,
 			maxRetry: 1,
 		},
 		{
 			name: "retry, fails with too many retries",
 			calls: []mock.Call{
-				{Error: httpError},
-				{Error: urlError},
-				{Error: httpError},
+				{Error: errHTTP},
+				{Error: errURL},
+				{Error: errHTTP},
 			},
-			error:    retryError,
+			error:    errRetry,
 			maxRetry: 2,
 		},
 		{
 			name: "retry, succeeds",
 			calls: []mock.Call{
-				{Error: httpError},
-				{Error: urlError},
+				{Error: errHTTP},
+				{Error: errURL},
 				{Response: mockNotificationsResponse(t, []int{0}, false)},
 			},
 			notifications: mockNotifications([]int{0}),
@@ -440,28 +442,28 @@ func TestPaginate(t *testing.T) {
 		{
 			name:    "one page, fails with an error",
 			maxPage: 1,
-			calls:   []mock.Call{{Error: sampleError}},
-			error:   sampleError,
+			calls:   []mock.Call{{Error: errSample}},
+			error:   errSample,
 		},
 		{
 			name:     "one page, retries and fails with an error",
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: httpError},
-				{Error: sampleError},
+				{Error: errHTTP},
+				{Error: errSample},
 			},
-			error: sampleError,
+			error: errSample,
 		},
 		{
 			name:     "one page, retries to many times and fails",
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: httpError},
-				{Error: httpError},
+				{Error: errHTTP},
+				{Error: errHTTP},
 			},
-			error: retryError,
+			error: errRetry,
 		},
 		{
 			name:    "one page, succeeds",
@@ -476,7 +478,7 @@ func TestPaginate(t *testing.T) {
 			maxRetry: 1,
 			maxPage:  1,
 			calls: []mock.Call{
-				{Error: httpError},
+				{Error: errHTTP},
 				{Response: mockNotificationsResponse(t, []int{0, 1}, false)},
 			},
 			notifications: mockNotifications([]int{0, 1}),
@@ -494,9 +496,9 @@ func TestPaginate(t *testing.T) {
 			maxPage: 2,
 			calls: []mock.Call{
 				{Response: mockNotificationsResponse(t, []int{0}, true)},
-				{Error: sampleError},
+				{Error: errSample},
 			},
-			error: sampleError,
+			error: errSample,
 		},
 		{
 			name:    "two pages, succeeds",
@@ -555,13 +557,13 @@ func TestEnrich(t *testing.T) {
 			name: "one notification",
 			calls: []mock.Call{
 				{
-					Url: mockSubjectUrl(0),
+					URL: mockSubjectURL(0),
 					Response: &http.Response{
 						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
 					},
 				},
 				{
-					Url: mockLatestCommentUrl(0),
+					URL: mockLatestCommentURL(0),
 					Response: &http.Response{
 						Body: io.NopCloser(strings.NewReader(`{"author":{"login":"author"},"subject":{"title":"subject"}}`)),
 					},
@@ -571,11 +573,12 @@ func TestEnrich(t *testing.T) {
 		},
 		{
 			name:         "fail to enrich",
-			calls:        []mock.Call{{Error: sampleError}},
+			calls:        []mock.Call{{Error: errSample}},
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
-				if err != sampleError {
-					t.Errorf("expected to fail with %#v but got %#v", sampleError, err)
+				t.Helper()
+				if err != errSample {
+					t.Errorf("expected to fail with %#v but got %#v", errSample, err)
 				}
 			},
 		},
@@ -583,7 +586,7 @@ func TestEnrich(t *testing.T) {
 			name: "fail to unmarshal",
 			calls: []mock.Call{
 				{
-					Url: mockSubjectUrl(0),
+					URL: mockSubjectURL(0),
 					Response: &http.Response{
 						Body: io.NopCloser(strings.NewReader(`not json`)),
 					},
@@ -591,6 +594,7 @@ func TestEnrich(t *testing.T) {
 			},
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
+				t.Helper()
 				if err == nil {
 					t.Fatalf("expected error but got nil")
 				}

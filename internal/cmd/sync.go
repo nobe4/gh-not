@@ -6,15 +6,15 @@ import (
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/text"
+	"github.com/spf13/cobra"
+
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
 	managerPkg "github.com/nobe4/gh-not/internal/manager"
-	"github.com/spf13/cobra"
 )
 
 var (
-	noop                 bool
 	notificationDumpPath string
 
 	refreshStrategy managerPkg.RefreshStrategy
@@ -50,7 +50,7 @@ func init() {
 	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
 }
 
-func runSync(cmd *cobra.Command, args []string) error {
+func runSync(_ *cobra.Command, _ []string) error {
 	var caller api.Requestor
 	var err error
 

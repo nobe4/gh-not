@@ -96,7 +96,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 			// Enrichment of a single Notifications should not prevent the
 			// enrichment to continue.
 			// TODO: suggest to re-run the enrichment
-			slog.Warn("failed to enrich notification", "notification", n.Id, "error", err.Error())
+			slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
 		}
 
 		ns[i] = n
@@ -122,7 +122,7 @@ func (m *Manager) Apply() error {
 
 		for _, notification := range selectedNotifications {
 			if notification.Meta.Done && !m.ForceStrategy.Has(ForceApply) {
-				slog.Debug("skipping done notification", "id", notification.Id)
+				slog.Debug("skipping done notification", "id", notification.ID)
 				continue
 			}
 

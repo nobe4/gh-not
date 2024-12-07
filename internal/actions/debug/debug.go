@@ -14,7 +14,7 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, args []string, w io.Writer) error {
+func (*Runner) Run(n *notifications.Notification, args []string, w io.Writer) error {
 	fmt.Fprint(w, colors.Yellow("DEBUG ")+n.String()+" "+strings.Join(args, ", "))
 
 	return nil

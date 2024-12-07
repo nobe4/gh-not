@@ -35,8 +35,8 @@ import (
 
 type Runner struct{}
 
-func (_ *Runner) Run(n *notifications.Notification, tags []string, w io.Writer) error {
-	slog.Debug("tagging notification", "notification", n.Id, "tags", tags)
+func (*Runner) Run(n *notifications.Notification, tags []string, w io.Writer) error {
+	slog.Debug("tagging notification", "notification", n.ID, "tags", tags)
 
 	tagsToAdd := []string{}
 	tagsToRemove := []string{}

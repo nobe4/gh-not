@@ -7,8 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/spf13/cobra"
+
+	configPkg "github.com/nobe4/gh-not/internal/config"
 )
 
 var (
@@ -29,7 +30,7 @@ func init() {
 	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Create the default config file")
 }
 
-func runConfig(cmd *cobra.Command, args []string) error {
+func runConfig(_ *cobra.Command, _ []string) error {
 	if initConfigFlag {
 		if err := initConfig(); err != nil {
 			return err
@@ -40,11 +41,11 @@ func runConfig(cmd *cobra.Command, args []string) error {
 		return editConfig()
 	}
 
-	marshalled, err := config.Marshal()
+	marshaled, err := config.Marshal()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Config sourced from: %s\n\n%s\n", config.Path, marshalled)
+	fmt.Printf("Config sourced from: %s\n\n%s\n", config.Path, marshaled)
 
 	return nil
 }

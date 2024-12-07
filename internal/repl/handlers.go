@@ -28,7 +28,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 type CleanListMsg struct{}
 
-func (_ CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
+func (CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 	items := []list.Item{}
 	for _, e := range m.list.Items() {
 		i, ok := e.(item)
@@ -108,7 +108,10 @@ func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keymap.Open):
 		current, ok := m.list.SelectedItem().(item)
 		if ok {
-			m.actions["open"].Run(current.notification, nil, os.Stderr)
+			err := m.actions["open"].Run(current.notification, nil, os.Stderr)
+			if err != nil {
+				slog.Warn("error opening", "notification", current.notification, "error", err)
+			}
 		}
 
 	case key.Matches(msg, m.keymap.CommandMode):

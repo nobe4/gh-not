@@ -15,7 +15,7 @@ import (
 )
 
 type config struct {
-	Id string
+	ID string
 	// TODO: move those into config so it can be set by default as well as via
 	// CLI
 	ForceStrategy   manager.ForceStrategy
@@ -23,13 +23,14 @@ type config struct {
 }
 
 func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifications.Notifications) {
+	t.Helper()
 	logger.Init(5)
 	slog.Info("---- Starting test ----", "test", t.Name())
 
-	configPath := fmt.Sprintf("./%s/config.yaml", conf.Id)
-	callsPath := fmt.Sprintf("./%s/calls.json", conf.Id)
-	wantPath := fmt.Sprintf("./%s/want.json", conf.Id)
-	cachePath := fmt.Sprintf("./%s/cache.json", conf.Id)
+	configPath := fmt.Sprintf("./%s/config.yaml", conf.ID)
+	callsPath := fmt.Sprintf("./%s/calls.json", conf.ID)
+	wantPath := fmt.Sprintf("./%s/want.json", conf.ID)
+	cachePath := fmt.Sprintf("./%s/cache.json", conf.ID)
 
 	c, err := configPkg.New(configPath)
 	if err != nil {
@@ -45,6 +46,9 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	m.RefreshStrategy = conf.RefreshStrategy
 
 	calls, err := apiMock.LoadCallsFromFile(callsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
 	caller := &apiMock.Mock{Calls: calls}
 	m.SetCaller(caller)
 
@@ -53,7 +57,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	}
 
 	for _, n := range m.Notifications {
-		slog.Info("Loaded notification", "id", n.Id)
+		slog.Info("Loaded notification", "id", n.ID)
 	}
 
 	if err = m.Refresh(); err != nil {
@@ -61,7 +65,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	}
 
 	for _, n := range m.Notifications {
-		slog.Info("Refresh notification", "id", n.Id)
+		slog.Info("Refresh notification", "id", n.ID)
 	}
 
 	want := notifications.Notifications{}
@@ -89,7 +93,7 @@ func TestIntegration(t *testing.T) {
 
 		t.Run(dir.Name(), func(t *testing.T) {
 			m, c, want := setup(t, config{
-				Id:              dir.Name(),
+				ID:              dir.Name(),
 				RefreshStrategy: manager.ForceRefresh,
 			})
 

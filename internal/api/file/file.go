@@ -19,7 +19,7 @@ func New(path string) *API {
 }
 
 func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, error) {
-	if verb == "GET" && url == gh.DefaultUrl.String() {
+	if verb == "GET" && url == gh.DefaultURL.String() {
 		return a.readFile()
 	}
 

@@ -12,7 +12,7 @@ import (
 type ThreadExtra struct {
 	User           notifications.User   `json:"user"`
 	State          string               `json:"state"`
-	HtmlUrl        string               `json:"html_url"`
+	HTMLURL        string               `json:"html_url"`
 	Assignees      []notifications.User `json:"assignees"`
 	Reviewers      []notifications.User `json:"requested_reviewers"`
 	ReviewersTeams []notifications.Team `json:"requested_teams"`
@@ -29,7 +29,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	}
 	n.Author = threadExtra.User
 	n.Subject.State = threadExtra.State
-	n.Subject.HtmlUrl = threadExtra.HtmlUrl
+	n.Subject.HTMLURL = threadExtra.HTMLURL
 	n.Assignees = threadExtra.Assignees
 	n.Reviewers = threadExtra.Reviewers
 	n.ReviewersTeams = threadExtra.ReviewersTeams
@@ -48,7 +48,7 @@ func (c *Client) getThreadExtra(n *notifications.Notification) (ThreadExtra, err
 		return ThreadExtra{}, nil
 	}
 
-	slog.Debug("getting the thread extra", "id", n.Id, "url", n.Subject.URL)
+	slog.Debug("getting the thread extra", "id", n.ID, "url", n.Subject.URL)
 	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
 	if err != nil {
 		return ThreadExtra{}, err
@@ -70,12 +70,12 @@ func (c *Client) getThreadExtra(n *notifications.Notification) (ThreadExtra, err
 }
 
 func (c *Client) getLastCommentor(n *notifications.Notification) (notifications.User, error) {
-	if n.Subject.LatestCommentUrl == "" {
+	if n.Subject.LatestCommentURL == "" {
 		return notifications.User{}, nil
 	}
 
-	slog.Debug("getting the last commentor", "id", n.Id, "url", n.Subject.LatestCommentUrl)
-	resp, err := c.API.Request(http.MethodGet, n.Subject.LatestCommentUrl, nil)
+	slog.Debug("getting the last commentor", "id", n.ID, "url", n.Subject.LatestCommentURL)
+	resp, err := c.API.Request(http.MethodGet, n.Subject.LatestCommentURL, nil)
 	if err != nil {
 		return notifications.User{}, err
 	}

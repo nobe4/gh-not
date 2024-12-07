@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/text"
+	"github.com/spf13/cobra"
+
 	"github.com/nobe4/gh-not/internal/api/github"
 	configPkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/jq"
@@ -14,7 +16,6 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/repl"
 	"github.com/nobe4/gh-not/internal/version"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -73,7 +74,7 @@ func init() {
 	rootCmd.MarkFlagsMutuallyExclusive("json", "repl", "tags")
 }
 
-func setupGlobals(cmd *cobra.Command, args []string) error {
+func setupGlobals(_ *cobra.Command, _ []string) error {
 	logger.Init(verbosityFlag)
 
 	var err error
@@ -88,7 +89,7 @@ func setupGlobals(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runRoot(cmd *cobra.Command, args []string) error {
+func runRoot(_ *cobra.Command, _ []string) error {
 	if err := manager.Load(); err != nil {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
@@ -146,7 +147,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 			}
 		}
 
-		if found == false {
+		if !found {
 			slog.Error("Rule not found", "rule", ruleFlag)
 			return nil, fmt.Errorf("Rule '%s' not found", ruleFlag)
 		}
@@ -169,7 +170,7 @@ func display(notifications notifications.Notifications) error {
 	}
 
 	if jsonFlag {
-		return displayJson(notifications)
+		return displayJSON(notifications)
 	}
 
 	if err := notifications.Render(); err != nil {
@@ -196,7 +197,7 @@ func displayTable(n notifications.Notifications) {
 	)
 }
 
-func displayJson(notifications notifications.Notifications) error {
+func displayJSON(notifications notifications.Notifications) error {
 	marshaled, err := notifications.Marshal()
 	if err != nil {
 		return err

@@ -10,6 +10,7 @@ import (
 	"log/slog"
 
 	"github.com/cli/go-gh/pkg/browser"
+
 	"github.com/nobe4/gh-not/internal/colors"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -24,11 +25,11 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 
 	browser := browser.New("", w, w)
 
-	if n.Subject.HtmlUrl == "" {
+	if n.Subject.HTMLURL == "" {
 		return errors.New("no URL to open")
 	}
 
-	err := browser.Browse(n.Subject.HtmlUrl)
+	err := browser.Browse(n.Subject.HTMLURL)
 	fmt.Fprint(w, colors.Blue("OPEN ")+n.Subject.URL)
 
 	return err

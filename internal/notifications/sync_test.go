@@ -6,11 +6,11 @@ import (
 )
 
 func TestSync(t *testing.T) {
-	n0 := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1)}
-	n0Hidden := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1), Meta: Meta{Hidden: true}}
-	n0Updated := &Notification{Id: "0", UpdatedAt: time.Unix(0, 1)}
-	n1 := &Notification{Id: "1", UpdatedAt: time.Unix(0, 0)}
-	n1Done := &Notification{Id: "1", Meta: Meta{Done: true}, UpdatedAt: time.Unix(0, 0)}
+	n0 := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1)}
+	n0Hidden := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1), Meta: Meta{Hidden: true}}
+	n0Updated := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1)}
+	n1 := &Notification{ID: "1", UpdatedAt: time.Unix(0, 0)}
+	n1Done := &Notification{ID: "1", Meta: Meta{Done: true}, UpdatedAt: time.Unix(0, 0)}
 
 	tests := []struct {
 		name     string
@@ -84,7 +84,7 @@ func TestSync(t *testing.T) {
 			}
 
 			for i, n := range got {
-				if n.Id != test.expected[i].Id {
+				if n.ID != test.expected[i].ID {
 					t.Fatalf("expected %+v but got %+v", test.expected[i], n)
 				}
 			}
@@ -94,12 +94,12 @@ func TestSync(t *testing.T) {
 	t.Run("update Meta.RemoteExist", func(t *testing.T) {
 		got := Sync(
 			Notifications{
-				&Notification{Id: "0", UpdatedAt: time.Unix(0, 2), Meta: Meta{RemoteExists: false}},
-				&Notification{Id: "1", UpdatedAt: time.Unix(0, 1), Meta: Meta{RemoteExists: true}},
+				&Notification{ID: "0", UpdatedAt: time.Unix(0, 2), Meta: Meta{RemoteExists: false}},
+				&Notification{ID: "1", UpdatedAt: time.Unix(0, 1), Meta: Meta{RemoteExists: true}},
 			},
 			Notifications{
-				&Notification{Id: "0", UpdatedAt: time.Unix(0, 2)},
-				&Notification{Id: "2", UpdatedAt: time.Unix(0, 0)},
+				&Notification{ID: "0", UpdatedAt: time.Unix(0, 2)},
+				&Notification{ID: "2", UpdatedAt: time.Unix(0, 0)},
 			},
 		)
 
