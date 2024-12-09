@@ -3,15 +3,19 @@
 # Inspired by https://github.com/ccoVeille/golangci-lint-config-examples/
 linters:
   enable:
-    - revive
-    - gci
-    - thelper
-    - mirror
-    - usestdlibvars
-    - misspell
     - dupword
-    - loggercheck
+    - errorlint
     - fatcontext
+    - gci
+    - gocritic
+    - govet
+    - loggercheck
+    - mirror
+    - misspell
+    - nolintlint
+    - revive
+    - thelper
+    - usestdlibvars
 
 linters-settings:
   gci:
@@ -19,6 +23,21 @@ linters-settings:
       - standard
       - default
       - localmodule
+
+  gocritic:
+    enable-all: true
+    disabled-checks:
+      # Detects params that incur excessive amount of copying.
+      # https://go-critic.com/overview.html#hugeparam
+      - hugeParam
+
+  govet:
+    enable-all: true
+    disable:
+      # Check for possible unintended shadowing of variables.
+      - shadow
+      # Find structs that would use less memory if their fields were sorted.
+      - fieldalignment
 
   revive:
     rules:
@@ -33,6 +52,11 @@ linters-settings:
       - name: error-return
       - name: error-strings
       - name: errorf
+      - name: exported
+      - name: identical-branches
+      - name: if-return
+      - name: import-alias-naming
+      - name: import-shadowing
       - name: increment-decrement
       - name: indent-error-flow
       - name: range
@@ -40,11 +64,32 @@ linters-settings:
       - name: redefines-builtin-id
       - name: superfluous-else
       - name: time-naming
+      - name: unexported-naming
       - name: unexported-return
+      - name: unhandled-error
       - name: unreachable-code
       - name: unused-parameter
+      - name: unused-receiver
+      - name: use-any
+      - name: useless-break
       - name: var-declaration
       - name: var-naming
 
   misspell:
     locale: US
+
+  nolintlint:
+    # Disable to ensure that all nolint directives actually have an effect.
+    # Default: false
+    allow-unused: true  # too many false positive reported
+    # Exclude following linters from requiring an explanation.
+    # Default: []
+    allow-no-explanation: []
+    # Enable to require an explanation of nonzero length
+    # after each nolint directive.
+    # Default: false
+    require-explanation: true
+    # Enable to require nolint directives to mention the specific
+    # linter being suppressed.
+    # Default: false
+    require-specific: true
