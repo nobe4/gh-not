@@ -60,7 +60,7 @@ func TestRun(t *testing.T) {
 			},
 		}
 
-		if err := runner.Run(n, []string{"user"}, w); err != expectedError {
+		if err := runner.Run(n, []string{"user"}, w); !errors.Is(err, expectedError) {
 			t.Fatalf("expected %#v but got %#v", expectedError, err)
 		}
 

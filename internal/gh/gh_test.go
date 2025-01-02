@@ -316,7 +316,7 @@ func TestRequest(t *testing.T) {
 			t.Errorf("expected test to fails")
 		}
 
-		if err != expectedError {
+		if !errors.Is(err, expectedError) {
 			t.Errorf("expected %#v, got %#v", expectedError, err)
 		}
 
@@ -576,7 +576,7 @@ func TestEnrich(t *testing.T) {
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
 				t.Helper()
-				if err != errSample {
+				if !errors.Is(err, errSample) {
 					t.Errorf("expected to fail with %#v but got %#v", errSample, err)
 				}
 			},
