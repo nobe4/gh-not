@@ -1,6 +1,7 @@
 package jq
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/itchyny/gojq"
@@ -39,8 +40,9 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 			break
 		}
 
-		if err, ok := v.(error); ok {
-			if err, ok := err.(*gojq.HaltError); ok && err.Value() == nil {
+		if err, ok = v.(error); ok {
+			haltError := &gojq.HaltError{}
+			if ok = errors.As(err, &haltError); ok && haltError.Value() == nil {
 				break
 			}
 			return nil, err
