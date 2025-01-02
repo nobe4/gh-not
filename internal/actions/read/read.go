@@ -21,7 +21,7 @@ type Runner struct {
 }
 
 func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
-	_, err := a.Client.API.Request(http.MethodPatch, n.URL, nil)
+	r, err := a.Client.API.Request(http.MethodPatch, n.URL, nil)
 
 	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
 	// to catch this case.
@@ -29,6 +29,7 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 	if err != nil && err.Error() != "unexpected end of JSON input" {
 		return err
 	}
+	defer r.Body.Close()
 
 	n.Unread = false
 

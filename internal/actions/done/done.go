@@ -27,10 +27,11 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 
 	n.Meta.Done = true
 
-	_, err := a.Client.API.Request(http.MethodDelete, n.URL, nil)
+	r, err := a.Client.API.Request(http.MethodDelete, n.URL, nil)
 	if err != nil {
 		return err
 	}
+	defer r.Body.Close()
 
 	fmt.Fprint(w, colors.Red("DONE ")+n.String())
 
