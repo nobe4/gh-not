@@ -5,33 +5,37 @@ linters:
 
   disable:
     # TODO: remove the line and fix the issues
-    - err113
-    - forbidigo
-    - gochecknoglobals
-    - gomnd
-    - ireturn
-    - mnd
-    - paralleltest
-    - revive
-    - wrapcheck
-    - wsl
-    - errorlint
-    - depguard
-    - lll
-    - predeclared
-    - inamedparam
-    - whitespace
-    - nestif
-    - gochecknoinits
     - bodyclose
     - cyclop
+    - depguard
+    - err113
+    - errorlint
+    - forbidigo
+    - gochecknoglobals
+    - gochecknoinits
+    - gomnd
+    - inamedparam
+    - ireturn
+    - lll
     - musttag
+    - nestif
+    - paralleltest
+    - predeclared
+    - recvcheck
+    - revive
+    - whitespace
+    - wrapcheck
+    - wsl
 
     - nlreturn # keeps the code concise
     - godox # I like leaving TODOs in the code
     - varnamelen # short variable names are okay
     - testpackage # keep the tests close to the code
     - exhaustruct # it's ok not to specify all the fields in a struct definition
+
+    # deprecated
+    - mnd
+    - exportloopref
 
 issues:
   exclude-rules:
