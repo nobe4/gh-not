@@ -22,7 +22,6 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	default:
 		return m.handleBrowsing(msg)
-
 	}
 }
 
@@ -67,7 +66,6 @@ func (m model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
-
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
 		m.showHelp = !m.showHelp
 		slog.Debug("toggle help", "showAll", m.showHelp)

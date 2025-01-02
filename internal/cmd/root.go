@@ -54,6 +54,7 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+//nolint:lll
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 

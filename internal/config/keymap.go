@@ -13,6 +13,7 @@ type (
 
 type KeyBinding []string
 
+//nolint:gochecknoglobals
 var unicodeReplacement = []string{
 	"up", "↑",
 	"down", "↓",

@@ -2,6 +2,7 @@ package config
 
 import "path"
 
+//nolint:gochecknoglobals
 var Defaults = map[string]any{
 	"cache.ttl_in_hours": 1,
 	"cache.path":         path.Join(StateDir(), "cache.json"),
