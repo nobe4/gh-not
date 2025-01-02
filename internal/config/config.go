@@ -35,6 +35,8 @@ type Data struct {
 }
 
 // Endpoint is the configuration for the GitHub API endpoint.
+//
+//nolint:lll
 type Endpoint struct {
 	// Pull all notifications from the endpoint.
 	// By default, only the unread notifications are fetched.

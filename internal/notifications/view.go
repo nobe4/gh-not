@@ -13,17 +13,20 @@ import (
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
+//nolint:gochecknoglobals
 var prettyRead = map[bool]string{
 	false: colors.Red("RD"),
 	true:  colors.Green("UR"),
 }
 
+//nolint:gochecknoglobals
 var prettyTypes = map[string]string{
 	"Issue":       colors.Blue("IS"),
 	"PullRequest": colors.Cyan("PR"),
 	"Discussion":  colors.Green("DS"),
 }
 
+//nolint:gochecknoglobals
 var prettyState = map[string]string{
 	"open":   colors.Green("OP"),
 	"closed": colors.Red("CL"),
@@ -103,7 +106,15 @@ func (n Notifications) Render() error {
 
 	// Default to a simple string
 	for _, n := range n {
-		n.rendered = fmt.Sprintf("%s %s %s %s by %s at %s: '%s'", n.prettyRead(), n.prettyType(), n.prettyState(), n.Repository.FullName, n.Author.Login, text.RelativeTimeAgo(time.Now(), n.UpdatedAt), n.Subject.Title)
+		n.rendered = fmt.Sprintf(
+			"%s %s %s %s by %s at %s: '%s'",
+			n.prettyRead(),
+			n.prettyType(),
+			n.prettyState(),
+			n.Repository.FullName,
+			n.Author.Login,
+			text.RelativeTimeAgo(time.Now(), n.UpdatedAt),
+			n.Subject.Title)
 	}
 
 	// Try to render a table

@@ -41,6 +41,7 @@ See synchronization logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal
 	}
 )
 
+//nolint:lll
 func init() {
 	rootCmd.AddCommand(syncCmd)
 

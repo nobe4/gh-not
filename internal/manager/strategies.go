@@ -39,7 +39,6 @@ func (r *RefreshStrategy) Allowed() string {
 
 func (r *RefreshStrategy) ShouldRefresh(expired bool) bool {
 	switch *r {
-
 	case ForceRefresh:
 		slog.Info("forcing a refresh")
 		return true
