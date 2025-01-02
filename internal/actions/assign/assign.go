@@ -64,10 +64,11 @@ func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Wri
 		return err
 	}
 
-	_, err = a.Client.API.Request(http.MethodPost, assigneesURL, bytes.NewReader(body))
+	r, err := a.Client.API.Request(http.MethodPost, assigneesURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
+	defer r.Body.Close()
 
 	fmt.Fprint(w, colors.Red("ASSIGN ")+n.String()+" to "+strings.Join(assignees, ", "))
 

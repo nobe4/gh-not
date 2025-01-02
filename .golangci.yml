@@ -5,7 +5,6 @@ linters:
 
   disable:
     # TODO: remove the line and fix the issues
-    - bodyclose
     - cyclop
     - depguard
     - err113
@@ -13,7 +12,7 @@ linters:
     - forbidigo
     - gochecknoglobals
     - gochecknoinits
-    - gomnd
+    - mnd
     - inamedparam
     - ireturn
     - lll
@@ -34,13 +33,13 @@ linters:
     - exhaustruct # it's ok not to specify all the fields in a struct definition
 
     # deprecated
-    - mnd
     - exportloopref
 
 issues:
   exclude-rules:
     - path: _test.go
       linters:
+        - bodyclose
         - funlen
 
 linters-settings:
