@@ -149,7 +149,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 
 		if !found {
 			slog.Error("Rule not found", "rule", ruleFlag)
-			return nil, fmt.Errorf("Rule '%s' not found", ruleFlag)
+			return nil, fmt.Errorf("rule '%s' not found", ruleFlag)
 		}
 	}
 

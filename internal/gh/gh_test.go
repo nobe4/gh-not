@@ -549,7 +549,6 @@ func TestEnrich(t *testing.T) {
 		notification *notifications.Notification
 		assertError  func(*testing.T, error)
 	}{
-
 		{
 			name: "no notification",
 		},

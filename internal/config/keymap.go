@@ -6,8 +6,10 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
-type Keymap map[string]KeyBindings
-type KeyBindings map[string]KeyBinding
+type (
+	Keymap      map[string]KeyBindings
+	KeyBindings map[string]KeyBinding
+)
 
 type KeyBinding []string
 

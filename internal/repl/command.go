@@ -84,7 +84,7 @@ func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 
 	runner, ok := m.actions[msg.Command]
 	if !ok {
-		return m, m.renderResult(fmt.Errorf("Invalid command %s", msg.Command))
+		return m, m.renderResult(fmt.Errorf("invalid command %s", msg.Command))
 	}
 
 	m.resultStrings = []string{}
@@ -123,7 +123,7 @@ func (m model) applyNext() tea.Cmd {
 
 		slog.Debug("apply next", "notification", current.notification.String())
 
-		message := ""
+		var message string
 		out := &strings.Builder{}
 		if err := m.currentRun.Runner.Run(current.notification, m.currentRun.Args, out); err != nil {
 			message = fmt.Sprintf("Error for '%s': %s", current.notification.Subject.Title, err.Error())

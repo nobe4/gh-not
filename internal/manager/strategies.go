@@ -48,6 +48,8 @@ func (r RefreshStrategy) ShouldRefresh(expired bool) bool {
 		slog.Info("preventing a refresh")
 		return false
 
+	case AutoRefresh:
+		fallthrough
 	default:
 		slog.Debug("refresh based on cache expiration", "expired", expired)
 		return expired

@@ -21,7 +21,7 @@ It applies the following rules:
 Notes on (2) Update: Updating the notification will also reset the `Meta.Done`
 state if the remote notification is newer than the local one.
 
-TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`
+TODO: refactor this to `func (n Notifications) Sync(remote Notifications) {}`.
 */
 func Sync(local, remote Notifications) Notifications {
 	// TODO: do we need to have the whole map?

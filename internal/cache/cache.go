@@ -42,7 +42,6 @@ func NewFileCache(path string) *FileCache {
 
 func (c *FileCache) Read(out any) error {
 	content, err := os.ReadFile(c.path)
-
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			slog.Debug("cache doesn't exist", "path", c.path)
@@ -94,9 +93,9 @@ func (c *FileCache) Write(in any) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(c.path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(c.path), 0o755); err != nil {
 		return err
 	}
 
-	return os.WriteFile(c.path, marshaled, 0644)
+	return os.WriteFile(c.path, marshaled, 0o600)
 }

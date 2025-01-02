@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -63,7 +64,7 @@ func (m *Manager) Refresh() error {
 
 func (m *Manager) refreshNotifications() error {
 	if m.client == nil {
-		return fmt.Errorf("manager has no client, cannot refresh notifications")
+		return errors.New("manager has no client, cannot refresh notifications")
 	}
 
 	fmt.Printf("Refreshing notifications...\n")
