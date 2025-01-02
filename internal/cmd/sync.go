@@ -44,8 +44,8 @@ See synchronization logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal
 func init() {
 	rootCmd.AddCommand(syncCmd)
 
-	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", fmt.Sprintf("Force strategy: %s", forceStrategy.Allowed()))
-	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", fmt.Sprintf("Refresh strategy: %s", refreshStrategy.Allowed()))
+	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", "Force strategy: "+forceStrategy.Allowed())
+	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", "Refresh strategy: "+refreshStrategy.Allowed())
 
 	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
 }

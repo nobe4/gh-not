@@ -1,17 +1,47 @@
 ---
 # Ref: https://golangci-lint.run/usage/configuration/
-# Inspired by https://github.com/ccoVeille/golangci-lint-config-examples/
 linters:
-  enable:
+  enable-all: true
+
+  disable:
+    # TODO: remove the line and fix the issues
+    - bodyclose
+    - cyclop
+    - depguard
+    - err113
+    - errorlint
+    - forbidigo
+    - gochecknoglobals
+    - gochecknoinits
+    - gomnd
+    - inamedparam
+    - ireturn
+    - lll
+    - musttag
+    - nestif
+    - paralleltest
+    - predeclared
+    - recvcheck
     - revive
-    - gci
-    - thelper
-    - mirror
-    - usestdlibvars
-    - misspell
-    - dupword
-    - loggercheck
-    - fatcontext
+    - whitespace
+    - wrapcheck
+    - wsl
+
+    - nlreturn # keeps the code concise
+    - godox # I like leaving TODOs in the code
+    - varnamelen # short variable names are okay
+    - testpackage # keep the tests close to the code
+    - exhaustruct # it's ok not to specify all the fields in a struct definition
+
+    # deprecated
+    - mnd
+    - exportloopref
+
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - funlen
 
 linters-settings:
   gci:
@@ -21,30 +51,17 @@ linters-settings:
       - localmodule
 
   revive:
+    enable-all-rules: true
     rules:
-      - name: blank-imports
       - name: context-as-argument
         arguments:
           - allowTypesBefore: "*testing.T"
-      - name: context-keys-type
-      - name: dot-imports
-      - name: empty-block
-      - name: error-naming
-      - name: error-return
-      - name: error-strings
-      - name: errorf
-      - name: increment-decrement
-      - name: indent-error-flow
-      - name: range
-      - name: receiver-naming
-      - name: redefines-builtin-id
-      - name: superfluous-else
-      - name: time-naming
-      - name: unexported-return
-      - name: unreachable-code
-      - name: unused-parameter
-      - name: var-declaration
-      - name: var-naming
+
+  tagliatelle:
+    case:
+      rules:
+        json: snake
 
   misspell:
     locale: US
+    mode: default

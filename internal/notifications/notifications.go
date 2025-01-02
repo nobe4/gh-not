@@ -13,8 +13,10 @@ import (
 	"time"
 )
 
-type Notifications []*Notification
-type NotificationMap map[string]*Notification
+type (
+	Notifications   []*Notification
+	NotificationMap map[string]*Notification
+)
 
 type Notification struct {
 	// Standard API fields
@@ -167,7 +169,7 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
-// TODO: in-place update
+// TODO: in-place update.
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
 		return n == nil
@@ -185,7 +187,7 @@ func (n Notifications) Sort() {
 	})
 }
 
-// TODO: in-place update
+// TODO: in-place update.
 func (n Notifications) Uniq() Notifications {
 	seenIDs := map[string]bool{}
 	return slices.DeleteFunc(n, func(n *Notification) bool {

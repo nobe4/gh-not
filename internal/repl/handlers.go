@@ -66,7 +66,6 @@ func (m *model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-
 	switch {
 
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):

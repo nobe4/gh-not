@@ -10,9 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var (
-	noStyle = lipgloss.NewStyle()
-)
+var noStyle = lipgloss.NewStyle()
 
 func (m *model) initView() {
 	m.list.SetShowStatusBar(false)
@@ -112,8 +110,8 @@ func (m model) View() string {
 		return m.viewFullHelp()
 	}
 
-	content := ""
-	statusLine := ""
+	var content string
+	var statusLine string
 
 	if m.showResult {
 		content = m.result.View()

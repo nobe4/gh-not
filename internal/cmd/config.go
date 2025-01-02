@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -75,7 +76,7 @@ func editConfig() error {
 
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
-		return fmt.Errorf("EDITOR environment variable not set")
+		return errors.New("EDITOR environment variable not set")
 	}
 
 	cmd := exec.Command(editor, config.Path)

@@ -4,12 +4,12 @@ package gh
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	ghapi "github.com/cli/go-gh/v2/pkg/api"
 
@@ -45,7 +45,7 @@ func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.E
 		query.Set("all", "true")
 	}
 	if config.PerPage > 0 && config.PerPage != 100 {
-		query.Set("per_page", fmt.Sprintf("%d", config.PerPage))
+		query.Set("per_page", strconv.Itoa(config.PerPage))
 	}
 	url.RawQuery = query.Encode()
 
