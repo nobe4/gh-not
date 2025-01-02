@@ -21,8 +21,8 @@ const (
 	PreventRefresh
 )
 
-func (r RefreshStrategy) String() string {
-	switch r {
+func (r *RefreshStrategy) String() string {
+	switch *r {
 	case AutoRefresh:
 		return "auto"
 	case ForceRefresh:
@@ -37,8 +37,8 @@ func (r *RefreshStrategy) Allowed() string {
 	return "auto, force, prevent"
 }
 
-func (r RefreshStrategy) ShouldRefresh(expired bool) bool {
-	switch r {
+func (r *RefreshStrategy) ShouldRefresh(expired bool) bool {
+	switch *r {
 
 	case ForceRefresh:
 		slog.Info("forcing a refresh")
@@ -71,7 +71,7 @@ func (r *RefreshStrategy) Set(value string) error {
 	return nil
 }
 
-func (r RefreshStrategy) Type() string {
+func (r *RefreshStrategy) Type() string {
 	return "RefreshStrategy"
 }
 
@@ -92,11 +92,11 @@ const (
 	ForceEnrich
 )
 
-func (r ForceStrategy) Has(s ForceStrategy) bool {
-	return r&s != 0
+func (r *ForceStrategy) Has(s ForceStrategy) bool {
+	return *r&s != 0
 }
 
-func (r ForceStrategy) String() string {
+func (r *ForceStrategy) String() string {
 	s := []string{}
 
 	if r.Has(ForceApply) {
@@ -114,7 +114,7 @@ func (r ForceStrategy) String() string {
 	return strings.Join(s, ", ")
 }
 
-func (r ForceStrategy) Allowed() string {
+func (r *ForceStrategy) Allowed() string {
 	return "apply, noop, enrich"
 }
 
@@ -137,6 +137,6 @@ func (r *ForceStrategy) Set(value string) error {
 	return nil
 }
 
-func (r ForceStrategy) Type() string {
+func (r *ForceStrategy) Type() string {
 	return "ForceStrategy"
 }

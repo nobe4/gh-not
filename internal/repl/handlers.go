@@ -51,7 +51,7 @@ func (CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 	)
 }
 
-func (m *model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key.Matches(msg, m.keymap.CommandAccept):
 		return m.acceptCommand()
@@ -65,7 +65,7 @@ func (m *model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch {
 
 	case key.Matches(msg, m.list.KeyMap.ShowFullHelp):
@@ -82,7 +82,7 @@ func (m *model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("browsing", "key", msg.String())
 
 	switch {
@@ -136,7 +136,7 @@ func (m model) setIndexes() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *model) handleFiltering(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) handleFiltering(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("filtering", "key", msg.String())
 
 	var cmd tea.Cmd
