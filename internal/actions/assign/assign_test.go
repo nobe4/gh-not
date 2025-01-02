@@ -3,7 +3,9 @@ package assign
 import (
 	"bytes"
 	"errors"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/nobe4/gh-not/internal/api/mock"
@@ -72,7 +74,7 @@ func TestRun(t *testing.T) {
 			Verb:     "POST",
 			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:     `{"assignees":["user"]}`,
-			Response: &http.Response{StatusCode: http.StatusCreated},
+			Response: &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))},
 		})
 		n := &notifications.Notification{
 			Subject: notifications.Subject{
@@ -94,7 +96,7 @@ func TestRun(t *testing.T) {
 			Verb:     "POST",
 			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:     `{"assignees":["user"]}`,
-			Response: &http.Response{StatusCode: http.StatusCreated},
+			Response: &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))},
 		})
 		n := &notifications.Notification{
 			Subject: notifications.Subject{
