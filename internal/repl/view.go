@@ -12,7 +12,7 @@ import (
 
 var noStyle = lipgloss.NewStyle()
 
-func (m *model) initView() {
+func (m model) initView() model {
 	m.list.SetShowStatusBar(false)
 	m.list.SetShowTitle(false)
 	m.list.SetShowFilter(false)
@@ -48,9 +48,11 @@ func (m *model) initView() {
 
 	m.command.SetSuggestions(suggestions)
 	m.command.ShowSuggestions = true
+
+	return m
 }
 
-func (m *model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+func (m model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
 
 	m.list.SetHeight(min(msg.Height, m.maxHeight))

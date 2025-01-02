@@ -47,8 +47,8 @@ func Init(n notifications.Notifications, actions actions.ActionsMap, keymap conf
 	}
 
 	m.list.SetItems(items)
-	m.initView()
-	m.initKeymap(keymap)
+	m = m.initView()
+	m = m.initKeymap(keymap)
 
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return err

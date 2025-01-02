@@ -28,7 +28,7 @@ func (k Keymap) FullHelp() [][]key.Binding {
 	}
 }
 
-func (m *model) initKeymap(keymap config.Keymap) {
+func (m model) initKeymap(keymap config.Keymap) model {
 	m.keymap = Keymap{
 		Toggle:        keymap.Binding("normal", "toggle selected"),
 		All:           keymap.Binding("normal", "select all"),
@@ -62,6 +62,8 @@ func (m *model) initKeymap(keymap config.Keymap) {
 		PageDown: keymap.Binding("normal", "next page"),
 		PageUp:   keymap.Binding("normal", "previous page"),
 	}
+
+	return m
 }
 
 type ViewportKeymap struct {

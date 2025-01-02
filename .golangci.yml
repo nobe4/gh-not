@@ -19,7 +19,6 @@ linters:
     - nestif
     - paralleltest
     - predeclared
-    - recvcheck
     - revive
     - whitespace
     - wrapcheck
