@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // Simplest way to have a "no style" style.
 var noStyle = lipgloss.NewStyle()
 
 func (m model) initView() model {

@@ -13,20 +13,20 @@ import (
 	"github.com/nobe4/gh-not/internal/colors"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // This map is used a lot.
 var prettyRead = map[bool]string{
 	false: colors.Red("RD"),
 	true:  colors.Green("UR"),
 }
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // This map is used a lot.
 var prettyTypes = map[string]string{
 	"Issue":       colors.Blue("IS"),
 	"PullRequest": colors.Cyan("PR"),
 	"Discussion":  colors.Green("DS"),
 }
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // This map is used a lot.
 var prettyState = map[string]string{
 	"open":   colors.Green("OP"),
 	"closed": colors.Red("CL"),

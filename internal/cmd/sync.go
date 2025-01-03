@@ -41,7 +41,7 @@ See synchronization logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal
 	}
 )
 
-//nolint:lll
+//nolint:lll // Having the whole flag definition on a single line is OK.
 func init() {
 	rootCmd.AddCommand(syncCmd)
 
@@ -97,7 +97,7 @@ func runSync(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	//nolint:forbidigo
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Loaded %d, refreshed %d, visible %d at %s\n",
 		loadedNotifications,
 		refreshedNotifications,

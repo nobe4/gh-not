@@ -23,7 +23,7 @@ func InitWithFile(verbosity int, path string) (*os.File, error) {
 	return f, nil
 }
 
-//nolint:mnd
+//nolint:mnd // Verbosity is parsed from int to allow for a simple 1-5 scale.
 func initWithWriter(w io.Writer, verbosity int) {
 	opts := &slog.HandlerOptions{}
 

@@ -54,7 +54,7 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-//nolint:lll
+//nolint:lll // Having the whole flag definition on a single line is OK.
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
@@ -189,10 +189,10 @@ func display(notifications notifications.Notifications) error {
 }
 
 func displayTable(n notifications.Notifications) {
-	//nolint:forbidigo
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Println(n)
 
-	//nolint:forbidigo
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Found %d notifications %s\n",
 		len(n),
 		text.RelativeTimeAgo(
@@ -208,7 +208,7 @@ func displayJSON(notifications notifications.Notifications) error {
 		return err
 	}
 
-	//nolint:forbidigo
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("%s\n", marshaled)
 
 	return nil
@@ -216,7 +216,7 @@ func displayJSON(notifications notifications.Notifications) error {
 
 func displayTags(n notifications.Notifications) error {
 	for tag, count := range n.TagsMap() {
-		//nolint:forbidigo
+		//nolint:forbidigo // This is an expected print statement.
 		fmt.Printf("%s: %d\n", tag, count)
 	}
 

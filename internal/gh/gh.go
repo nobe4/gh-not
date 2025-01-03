@@ -22,7 +22,7 @@ import (
 var (
 	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 
-	//nolint:gochecknoglobals
+	//nolint:gochecknoglobals // This is used as a default in a couple of places.
 	DefaultURL = url.URL{
 		Scheme: "https",
 		Host:   "api.github.com",
@@ -66,7 +66,7 @@ func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.E
 // Unexpected status codes and decoding errors are considered retryable.
 // See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user--status-codes
 //
-//nolint:lll
+//nolint:lll // Links can be long.
 func isRetryable(e error) bool {
 	var httpError *ghapi.HTTPError
 	if errors.As(e, &httpError) {
