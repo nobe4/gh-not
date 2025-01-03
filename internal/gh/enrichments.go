@@ -27,6 +27,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	if err != nil {
 		return err
 	}
+
 	n.Author = threadExtra.User
 	n.Subject.State = threadExtra.State
 	n.Subject.HTMLURL = threadExtra.HTMLURL
@@ -38,6 +39,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	if err != nil {
 		return err
 	}
+
 	n.LatestCommentor = LastCommentor
 
 	return nil
@@ -49,10 +51,12 @@ func (c *Client) getThreadExtra(n *notifications.Notification) (ThreadExtra, err
 	}
 
 	slog.Debug("getting the thread extra", "id", n.ID, "url", n.Subject.URL)
+
 	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
 	if err != nil {
 		return ThreadExtra{}, err
 	}
+
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -61,6 +65,7 @@ func (c *Client) getThreadExtra(n *notifications.Notification) (ThreadExtra, err
 	}
 
 	extra := ThreadExtra{}
+
 	err = json.Unmarshal(body, &extra)
 	if err != nil {
 		return ThreadExtra{}, err
@@ -75,10 +80,12 @@ func (c *Client) getLastCommentor(n *notifications.Notification) (notifications.
 	}
 
 	slog.Debug("getting the last commentor", "id", n.ID, "url", n.Subject.LatestCommentURL)
+
 	resp, err := c.API.Request(http.MethodGet, n.Subject.LatestCommentURL, nil)
 	if err != nil {
 		return notifications.User{}, err
 	}
+
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -89,6 +96,7 @@ func (c *Client) getLastCommentor(n *notifications.Notification) (notifications.
 	comment := struct {
 		User notifications.User `json:"user"`
 	}{}
+
 	err = json.Unmarshal(body, &comment)
 	if err != nil {
 		return notifications.User{}, err

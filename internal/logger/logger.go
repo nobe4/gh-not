@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"syscall"
 )
 
 func Init(verbosity int) {
@@ -12,7 +13,7 @@ func Init(verbosity int) {
 }
 
 func InitWithFile(verbosity int, path string) (*os.File, error) {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o600)
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, syscall.S_IRUSR|syscall.S_IWUSR)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file for logging: %w", err)
 	}
@@ -22,6 +23,7 @@ func InitWithFile(verbosity int, path string) (*os.File, error) {
 	return f, nil
 }
 
+//nolint:mnd
 func initWithWriter(w io.Writer, verbosity int) {
 	opts := &slog.HandlerOptions{}
 

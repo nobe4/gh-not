@@ -29,6 +29,7 @@ type CleanListMsg struct{}
 
 func (CleanListMsg) apply(m model) (tea.Model, tea.Cmd) {
 	items := []list.Item{}
+
 	for _, e := range m.list.Items() {
 		i, ok := e.(item)
 
@@ -61,6 +62,7 @@ func (m model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.command, cmd = m.command.Update(msg)
+
 	return m, cmd
 }
 
@@ -77,6 +79,7 @@ func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.result, cmd = m.result.Update(msg)
+
 	return m, cmd
 }
 
@@ -118,6 +121,7 @@ func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
+
 	return m, cmd
 }
 
@@ -139,5 +143,6 @@ func (m model) handleFiltering(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
+
 	return m, cmd
 }

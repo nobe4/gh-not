@@ -53,6 +53,7 @@ func init() {
 
 func runSync(_ *cobra.Command, _ []string) error {
 	var caller api.Requestor
+
 	var err error
 
 	if notificationDumpPath != "" {
@@ -64,6 +65,7 @@ func runSync(_ *cobra.Command, _ []string) error {
 			return err
 		}
 	}
+
 	manager.SetCaller(caller)
 
 	manager.ForceStrategy = forceStrategy
@@ -73,18 +75,21 @@ func runSync(_ *cobra.Command, _ []string) error {
 		slog.Error("Failed to load the notifications", "err", err)
 		return err
 	}
+
 	loadedNotifications := len(manager.Notifications)
 
 	if err := manager.Refresh(); err != nil {
 		slog.Error("Failed to refresh the notifications", "err", err)
 		return err
 	}
+
 	refreshedNotifications := len(manager.Notifications)
 
 	if err := manager.Apply(); err != nil {
 		slog.Error("Failed to applying rules", "err", err)
 		return err
 	}
+
 	visibleNotifications := len(manager.Notifications.Visible())
 
 	if err := manager.Save(); err != nil {
@@ -92,6 +97,7 @@ func runSync(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	//nolint:forbidigo
 	fmt.Printf("Loaded %d, refreshed %d, visible %d at %s\n",
 		loadedNotifications,
 		refreshedNotifications,

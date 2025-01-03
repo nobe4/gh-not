@@ -28,6 +28,7 @@ func ConfigDir() string {
 		d, _ := os.UserHomeDir()
 		path = filepath.Join(d, ".config", "gh-not")
 	}
+
 	return path
 }
 
@@ -42,5 +43,6 @@ func StateDir() string {
 		c, _ := os.UserHomeDir()
 		path = filepath.Join(c, ".local", "state", "gh-not")
 	}
+
 	return path
 }

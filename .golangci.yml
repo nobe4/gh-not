@@ -5,26 +5,22 @@ linters:
 
   disable:
     # TODO: remove the line and fix the issues
-    - depguard
     - err113
-    - forbidigo
-    - mnd
-    - inamedparam
     - ireturn
     - musttag
     - nestif
     - paralleltest
-    - predeclared
     - revive
     - wrapcheck
-    - wsl
 
     - cyclop # some functions need refactoring, I'll deal with that later
-    - nlreturn # keeps the code concise
-    - godox # I like leaving TODOs in the code
-    - varnamelen # short variable names are okay
-    - testpackage # keep the tests close to the code
+    - depguard # I'm not that pedantic
     - exhaustruct # it's ok not to specify all the fields in a struct definition
+    - godox # I like leaving TODOs in the code
+    - nlreturn # keeps the code concise
+    - predeclared # need to rename the print action
+    - testpackage # keep the tests close to the code
+    - varnamelen # short variable names are okay
 
     # deprecated
     - exportloopref

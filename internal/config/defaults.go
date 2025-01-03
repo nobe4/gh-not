@@ -1,3 +1,4 @@
+//nolint:mnd
 package config
 
 import "path"

@@ -45,9 +45,11 @@ func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.E
 	if config.All {
 		query.Set("all", "true")
 	}
+
 	if config.PerPage > 0 && config.PerPage != 100 {
 		query.Set("per_page", strconv.Itoa(config.PerPage))
 	}
+
 	url.RawQuery = query.Encode()
 
 	return &Client{
@@ -108,11 +110,13 @@ func nextPageLink(h *http.Header) string {
 			return m[1]
 		}
 	}
+
 	return ""
 }
 
 func (c *Client) request(verb, endpoint string, body io.Reader) ([]*notifications.Notification, string, error) {
 	slog.Debug("request", "verb", verb, "endpoint", endpoint)
+
 	response, err := c.API.Request(verb, endpoint, body)
 	if err != nil {
 		return nil, "", err
@@ -142,7 +146,9 @@ func (c *Client) retry(verb, endpoint string, body io.Reader) ([]*notifications.
 // inspired by https://github.com/cli/go-gh/blob/25db6b99518c88e03f71dbe9e58397c4cfb62caf/example_gh_test.go#L96-L134
 func (c *Client) paginate() (notifications.Notifications, error) {
 	var list notifications.Notifications
+
 	var pageList []*notifications.Notification
+
 	var err error
 
 	pageLeft := c.maxPage

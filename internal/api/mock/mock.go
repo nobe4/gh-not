@@ -46,6 +46,7 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	}
 
 	m.index++
+
 	slog.Debug("mock call", "verb", verb, "endpoint", endpoint, "call", call)
 
 	return call, nil

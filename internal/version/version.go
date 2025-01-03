@@ -21,6 +21,7 @@ func String() string {
 			if setting.Key == "vcs.revision" {
 				commit = setting.Value
 			}
+
 			if setting.Key == "vcs.time" {
 				date = setting.Value
 			}

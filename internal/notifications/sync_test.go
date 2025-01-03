@@ -106,9 +106,11 @@ func TestSync(t *testing.T) {
 		if !got[0].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be true but got false")
 		}
+
 		if got[1].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be false but got true")
 		}
+
 		if !got[2].Meta.RemoteExists {
 			t.Fatalf("expected RemoteExists to be true but got false")
 		}

@@ -28,6 +28,7 @@ var unicodeReplacement = []string{
 
 func (k Keymap) Binding(mode, action string) key.Binding {
 	keys := k[mode][action]
+
 	return key.NewBinding(
 		key.WithKeys(keys...),
 		key.WithHelp(keys.Help(), action),

@@ -1,6 +1,7 @@
 /*
 Package print implements an [actions.Runner] that prints a notification.
 */
+//nolint:forbidigo
 package print
 
 import (

@@ -70,26 +70,31 @@ func (n Notifications) String() string {
 	for _, n := range n {
 		out += fmt.Sprintf("%s\n", n)
 	}
+
 	return out
 }
 
 func (n Notifications) Visible() Notifications {
 	visible := Notifications{}
+
 	for _, n := range n {
 		if n.Visible() {
 			visible = append(visible, n)
 		}
 	}
+
 	return visible
 }
 
 func (n Notifications) TagsMap() map[string]int {
 	tags := map[string]int{}
+
 	for _, n := range n {
 		for _, t := range n.Meta.Tags {
 			tags[t]++
 		}
 	}
+
 	return tags
 }
 
@@ -121,6 +126,7 @@ func (n Notifications) Render() error {
 	out := bytes.Buffer{}
 
 	t := term.FromEnv()
+
 	w, _, err := t.Size()
 	if err != nil {
 		return err
@@ -135,10 +141,12 @@ func (n Notifications) Render() error {
 		printer.AddField(n.Repository.FullName)
 		printer.AddField(n.Author.Login)
 		printer.AddField(n.Subject.Title)
+
 		relativeTime := text.RelativeTimeAgo(time.Now(), n.UpdatedAt)
 		if n.LatestCommentor.Login != "" {
 			relativeTime += " by " + n.LatestCommentor.Login
 		}
+
 		printer.AddField(relativeTime)
 		printer.EndRow()
 	}
