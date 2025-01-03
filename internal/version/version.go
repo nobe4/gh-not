@@ -5,6 +5,7 @@ import (
 	"runtime/debug"
 )
 
+//nolint:gochecknoglobals // Those globals are used to render the version.
 var (
 	tag    = "UNSET_TAG" // set via ldflags
 	commit = "UNSET_COMMIT"

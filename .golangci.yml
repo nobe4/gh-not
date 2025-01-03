@@ -39,10 +39,6 @@ issues:
         # using globals is recommended with spf13/cobra
         - gochecknoglobals
 
-    - path: internal/version
-      linters:
-        - gochecknoglobals
-
 linters-settings:
   nolintlint:
     require-explanation: true
