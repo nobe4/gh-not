@@ -124,6 +124,7 @@ func (m model) applyNext() tea.Cmd {
 		slog.Debug("apply next", "notification", current.notification.String())
 
 		var message string
+
 		out := &strings.Builder{}
 		if err := m.currentRun.Runner.Run(current.notification, m.currentRun.Args, out); err != nil {
 			message = fmt.Sprintf("Error for '%s': %s", current.notification.Subject.Title, err.Error())

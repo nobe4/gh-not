@@ -5,6 +5,7 @@ import (
 	"runtime/debug"
 )
 
+//nolint:gochecknoglobals // Those globals are used to render the version.
 var (
 	tag    = "UNSET_TAG" // set via ldflags
 	commit = "UNSET_COMMIT"
@@ -21,6 +22,7 @@ func String() string {
 			if setting.Key == "vcs.revision" {
 				commit = setting.Value
 			}
+
 			if setting.Key == "vcs.time" {
 				date = setting.Value
 			}

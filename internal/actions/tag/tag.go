@@ -55,6 +55,7 @@ func (*Runner) Run(n *notifications.Notification, tags []string, w io.Writer) er
 	n.Meta.Tags = append(n.Meta.Tags, tagsToAdd...)
 
 	newTags := []string{}
+
 	for _, tag := range n.Meta.Tags {
 		if !slices.Contains(tagsToRemove, tag) {
 			newTags = append(newTags, tag)

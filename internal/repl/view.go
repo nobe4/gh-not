@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // Simplest way to have a "no style" style.
 var noStyle = lipgloss.NewStyle()
 
 func (m model) initView() model {
@@ -114,15 +114,18 @@ func (m model) View() string {
 	}
 
 	var content string
+
 	var statusLine string
 
 	if m.showResult {
 		content = m.result.View()
+
 		slog.Debug("showResult")
 
 		if !m.result.AtTop() {
 			statusLine = m.list.Help.Styles.ShortDesc.Render("↑ to scroll up ")
 		}
+
 		if !m.result.AtBottom() {
 			statusLine += m.list.Help.Styles.ShortDesc.Render("↓ to scroll down ")
 		}
@@ -131,13 +134,13 @@ func (m model) View() string {
 	} else {
 		statusLine = m.list.Paginator.View() + " "
 		selected := 0
+
 		for _, e := range m.list.Items() {
-			if i, ok := e.(item); ok {
-				if i.selected {
-					selected++
-				}
+			if i, ok := e.(item); ok && i.selected {
+				selected++
 			}
 		}
+
 		statusLine += fmt.Sprintf("%d/%d/%d ", len(m.list.Items()), len(m.list.VisibleItems()), selected)
 
 		if m.command.Focused() {

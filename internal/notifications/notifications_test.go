@@ -8,6 +8,7 @@ import (
 func TestIDList(t *testing.T) {
 	n := Notifications{}
 	ids := []string{"0", "1", "2"}
+
 	for _, id := range ids {
 		n = append(n, &Notification{ID: id})
 	}

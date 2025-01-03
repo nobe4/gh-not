@@ -54,7 +54,7 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-//nolint:lll
+//nolint:lll // Having the whole flag definition on a single line is OK.
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
@@ -79,6 +79,7 @@ func setupGlobals(_ *cobra.Command, _ []string) error {
 	logger.Init(verbosityFlag)
 
 	var err error
+
 	config, err = configPkg.New(configPathFlag)
 	if err != nil {
 		slog.Error("Failed to load the config", "path", configPathFlag, "err", err)
@@ -188,7 +189,10 @@ func display(notifications notifications.Notifications) error {
 }
 
 func displayTable(n notifications.Notifications) {
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Println(n)
+
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Found %d notifications %s\n",
 		len(n),
 		text.RelativeTimeAgo(
@@ -204,6 +208,7 @@ func displayJSON(notifications notifications.Notifications) error {
 		return err
 	}
 
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("%s\n", marshaled)
 
 	return nil
@@ -211,6 +216,7 @@ func displayJSON(notifications notifications.Notifications) error {
 
 func displayTags(n notifications.Notifications) error {
 	for tag, count := range n.TagsMap() {
+		//nolint:forbidigo // This is an expected print statement.
 		fmt.Printf("%s: %d\n", tag, count)
 	}
 
@@ -223,6 +229,7 @@ func displayRepl(n notifications.Notifications) error {
 		slog.Error("Failed to create an API REST client", "err", err)
 		return err
 	}
+
 	manager.SetCaller(caller)
 
 	// Launching bubbletea will occupy STDOUT and STDERR, so we need to redirect

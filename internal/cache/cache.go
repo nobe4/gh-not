@@ -13,13 +13,14 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 )
 
 type RefreshReadWriter interface {
-	Read(any) error
-	Write(any) error
-	Refresh(time.Time)
+	Read(d any) error
+	Write(d any) error
+	Refresh(t time.Time)
 	RefreshedAt() time.Time
 }
 
@@ -47,6 +48,7 @@ func (c *FileCache) Read(out any) error {
 			slog.Debug("cache doesn't exist", "path", c.path)
 			return nil
 		}
+
 		return err
 	}
 
@@ -93,9 +95,16 @@ func (c *FileCache) Write(in any) error {
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(c.path), 0o755); err != nil {
+	if err := os.MkdirAll(
+		filepath.Dir(c.path),
+		syscall.S_IRUSR|syscall.S_IWUSR|syscall.S_IXUSR,
+	); err != nil {
 		return err
 	}
 
-	return os.WriteFile(c.path, marshaled, 0o600)
+	return os.WriteFile(
+		c.path,
+		marshaled,
+		syscall.S_IRUSR|syscall.S_IWUSR,
+	)
 }

@@ -34,6 +34,7 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 	filteredIDs := []string{}
 
 	iter := query.Run(notificationsRaw)
+
 	for {
 		v, ok := iter.Next()
 		if !ok {
@@ -45,6 +46,7 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 			if ok = errors.As(err, &haltError); ok && haltError.Value() == nil {
 				break
 			}
+
 			return nil, err
 		}
 

@@ -46,6 +46,8 @@ func runConfig(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
+
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Config sourced from: %s\n\n%s\n", config.Path, marshaled)
 
 	return nil
@@ -66,6 +68,8 @@ func initConfig() error {
 		slog.Error("Failed to save initial config", "err", err)
 		return err
 	}
+
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Initial config saved to %s\n", initialPath)
 
 	return nil

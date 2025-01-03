@@ -6,5 +6,5 @@ import (
 )
 
 type Requestor interface {
-	Request(string, string, io.Reader) (*http.Response, error)
+	Request(method string, url string, body io.Reader) (*http.Response, error)
 }

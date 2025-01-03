@@ -13,7 +13,7 @@ type (
 
 type KeyBinding []string
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals // This replacement list is used a lot.
 var unicodeReplacement = []string{
 	"up", "↑",
 	"down", "↓",
@@ -28,6 +28,7 @@ var unicodeReplacement = []string{
 
 func (k Keymap) Binding(mode, action string) key.Binding {
 	keys := k[mode][action]
+
 	return key.NewBinding(
 		key.WithKeys(keys...),
 		key.WithHelp(keys.Help(), action),

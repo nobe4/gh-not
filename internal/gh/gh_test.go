@@ -53,12 +53,15 @@ func mockNotifications(ids []int) []*notifications.Notification {
 	for _, id := range ids {
 		n = append(n, mockNotification(id))
 	}
+
 	return n
 }
 
 func mockNotificationsResponse(t *testing.T, ids []int, next bool) *http.Response {
 	t.Helper()
+
 	n := mockNotifications(ids)
+
 	body, err := json.Marshal(n)
 	if err != nil {
 		t.Fatal(err)
@@ -99,6 +102,7 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 
 func mockClient(c []mock.Call) (*Client, *mock.Mock) {
 	mock := &mock.Mock{Calls: c}
+
 	return &Client{
 		API:      mock,
 		url:      endpoint,
@@ -420,6 +424,7 @@ func TestRetry(t *testing.T) {
 			if !notificationsEqual(notifications, test.notifications) {
 				t.Errorf("want %#v, got %#v", test.notifications, notifications)
 			}
+
 			if err := api.Done(); err != nil {
 				t.Fatal(err)
 			}
@@ -535,6 +540,7 @@ func TestPaginate(t *testing.T) {
 			if !notificationsEqual(notifications, test.notifications) {
 				t.Errorf("want %#v, got %#v", test.notifications, notifications)
 			}
+
 			if err := api.Done(); err != nil {
 				t.Fatal(err)
 			}

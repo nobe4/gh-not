@@ -67,6 +67,7 @@ func (m *Manager) refreshNotifications() error {
 		return errors.New("manager has no client, cannot refresh notifications")
 	}
 
+	//nolint:forbidigo // This is an expected print statement.
 	fmt.Printf("Refreshing notifications...\n")
 
 	remoteNotifications, err := m.client.Notifications()
@@ -128,6 +129,7 @@ func (m *Manager) Apply() error {
 			}
 
 			if m.ForceStrategy.Has(ForceNoop) {
+				//nolint:forbidigo // This is an expected print statement.
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
 				continue
 			}
@@ -135,6 +137,7 @@ func (m *Manager) Apply() error {
 			if err := runner.Run(notification, rule.Args, os.Stdout); err != nil {
 				slog.Error("action failed", "action", rule.Action, "err", err)
 			}
+
 			fmt.Fprintln(os.Stdout, "")
 		}
 	}

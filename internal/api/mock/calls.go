@@ -49,6 +49,7 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 	}
 
 	calls := make([]Call, len(rawCalls))
+
 	for i, rawCall := range rawCalls {
 		body, err := json.Marshal(rawCall.Response.Body)
 		if err != nil {

@@ -36,6 +36,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	c.Data.Cache.Path = cachePath
 
 	m := manager.New(c.Data)
@@ -49,6 +50,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	caller := &apiMock.Mock{Calls: calls}
 	m.SetCaller(caller)
 
@@ -74,6 +76,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	if err := json.Unmarshal(raw, &want); err != nil {
 		t.Fatal(err)
 	}
@@ -86,6 +89,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	for _, dir := range dirs {
 		if !dir.IsDir() {
 			continue

@@ -138,6 +138,7 @@ func (n Notifications) Debug() string {
 	for _, n := range n {
 		out = append(out, n.Debug())
 	}
+
 	return strings.Join(out, "\n")
 }
 
@@ -150,6 +151,7 @@ func (n Notifications) Map() NotificationMap {
 	for _, n := range n {
 		m[n.ID] = n
 	}
+
 	return m
 }
 
@@ -158,6 +160,7 @@ func (m NotificationMap) List() Notifications {
 	for _, n := range m {
 		l = append(l, n)
 	}
+
 	return l
 }
 
@@ -166,6 +169,7 @@ func (n Notifications) IDList() []string {
 	for _, n := range n {
 		ids = append(ids, n.ID)
 	}
+
 	return ids
 }
 
@@ -183,6 +187,7 @@ func (n Notifications) Sort() {
 		} else if a.UpdatedAt.After(b.UpdatedAt) {
 			return -1
 		}
+
 		return 0
 	})
 }
@@ -190,11 +195,14 @@ func (n Notifications) Sort() {
 // TODO: in-place update.
 func (n Notifications) Uniq() Notifications {
 	seenIDs := map[string]bool{}
+
 	return slices.DeleteFunc(n, func(n *Notification) bool {
 		if _, ok := seenIDs[n.ID]; ok {
 			return true
 		}
+
 		seenIDs[n.ID] = true
+
 		return false
 	})
 }

@@ -29,6 +29,7 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 	if err != nil && err.Error() != "unexpected end of JSON input" {
 		return err
 	}
+
 	defer r.Body.Close()
 
 	n.Unread = false

@@ -36,7 +36,7 @@ type Data struct {
 
 // Endpoint is the configuration for the GitHub API endpoint.
 //
-//nolint:lll
+//nolint:lll // Links can be long.
 type Endpoint struct {
 	// Pull all notifications from the endpoint.
 	// By default, only the unread notifications are fetched.
@@ -77,6 +77,7 @@ type View struct {
 
 func Default(path string) (*viper.Viper, string) {
 	slog.Debug("loading default configuration")
+
 	if path == "" {
 		path = filepath.Join(ConfigDir(), "config.yaml")
 		slog.Debug("path is empty, setting default path", "default path", path)
@@ -110,6 +111,7 @@ func New(path string) (*Config, error) {
 			return nil, err
 		}
 	}
+
 	c.Path = c.viper.ConfigFileUsed()
 
 	if err := c.viper.Unmarshal(&c.Data); err != nil {

@@ -36,9 +36,11 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	if n.selected {
 		selected = "x"
 	}
+
 	cursor := " "
 
 	str := n.notification.String()
+
 	if index == m.Index() {
 		cursor = ">"
 		str = strings.ReplaceAll(str, " ", "⋅")

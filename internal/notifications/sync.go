@@ -51,6 +51,7 @@ func Sync(local, remote Notifications) Notifications {
 			if local[i].Meta.Hidden {
 				slog.Debug("sync", "action", "keeping hidden", "id", local[i].ID)
 				n = append(n, local[i])
+
 				continue
 			}
 

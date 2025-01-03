@@ -30,6 +30,7 @@ func (r *RefreshStrategy) String() string {
 	case PreventRefresh:
 		return "prevent"
 	}
+
 	return "unknown"
 }
 
