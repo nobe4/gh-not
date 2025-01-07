@@ -95,6 +95,8 @@ func parse(r *http.Response) ([]*notifications.Notification, string, error) {
 	return n, nextPageLink(&r.Header), nil
 }
 
+// TODO: this should only return the path, as the full URL is not expected in
+// the Request.
 func nextPageLink(h *http.Header) string {
 	for _, m := range linkRE.FindAllStringSubmatch(h.Get("Link"), -1) {
 		if len(m) > 2 && m[2] == "next" {

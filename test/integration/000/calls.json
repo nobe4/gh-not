@@ -1,7 +1,7 @@
 [
   {
     "verb": "GET",
-    "endpoint": "https://api.github.com/notifications?all=true",
+    "endpoint": "notifications?all=true",
     "response": {
       "status_code": 200,
       "body": []
