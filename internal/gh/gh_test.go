@@ -105,7 +105,7 @@ func mockClient(c []mock.Call) (*Client, *mock.Mock) {
 
 	return &Client{
 		API:      mock,
-		url:      endpoint,
+		path:     endpoint,
 		maxRetry: 100,
 		maxPage:  100,
 	}, mock
@@ -202,8 +202,8 @@ func TestNewClient(t *testing.T) {
 			client := NewClient(nil, nil, *config)
 
 			// only testing the result URL, the rest is stored verbatim.
-			if client.url != test.wantURL {
-				t.Errorf("expected %s, got %s", test.wantURL, client.url)
+			if client.path != test.wantURL {
+				t.Errorf("expected %s, got %s", test.wantURL, client.path)
 			}
 		})
 	}
