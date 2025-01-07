@@ -86,7 +86,7 @@ GH_HOST=ghe.io GH_ENTERPRISE_TOKEN=XXX gh-not ...
 
 See the [`gh` environment documentation](https://cli.github.com/manual/gh_help_environment).
 
-> [!IMPORANT]
+> [!IMPORTANT]
 > If you plan on using `gh-not` with more than one host, you might want to
 > create a separate cache for it. See [cache](#cache).
 
