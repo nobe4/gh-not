@@ -24,6 +24,8 @@ func notificationsEqual(a notifications.Notifications, ids []string) bool {
 }
 
 func TestFilter(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		filter    string
@@ -100,6 +102,8 @@ func TestFilter(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := Filter(test.filter, test.n)
 			if test.assertErr != nil {
 				test.assertErr(t, err)
@@ -113,6 +117,8 @@ func TestFilter(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		filter    string
@@ -145,6 +151,8 @@ func TestValidate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := Validate(test.filter)
 			if test.assertErr != nil {
 				test.assertErr(t, err)

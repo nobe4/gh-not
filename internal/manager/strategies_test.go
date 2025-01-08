@@ -3,7 +3,11 @@ package manager
 import "testing"
 
 func TestRefreshStrategy(t *testing.T) {
+	t.Parallel()
+
 	t.Run("String", func(t *testing.T) {
+		t.Parallel()
+
 		tests := []struct {
 			strategy RefreshStrategy
 			want     string
@@ -22,6 +26,8 @@ func TestRefreshStrategy(t *testing.T) {
 	})
 
 	t.Run("Set", func(t *testing.T) {
+		t.Parallel()
+
 		tests := []struct {
 			value string
 			want  RefreshStrategy
@@ -35,6 +41,8 @@ func TestRefreshStrategy(t *testing.T) {
 
 		for _, test := range tests {
 			t.Run(test.value, func(t *testing.T) {
+				t.Parallel()
+
 				var got RefreshStrategy
 				err := got.Set(test.value)
 
@@ -57,7 +65,11 @@ func TestRefreshStrategy(t *testing.T) {
 }
 
 func TestForceStrategy(t *testing.T) {
+	t.Parallel()
+
 	t.Run("String", func(t *testing.T) {
+		t.Parallel()
+
 		tests := []struct {
 			strategy ForceStrategy
 			want     string
@@ -76,6 +88,8 @@ func TestForceStrategy(t *testing.T) {
 	})
 
 	t.Run("Set", func(t *testing.T) {
+		t.Parallel()
+
 		tests := []struct {
 			value string
 			want  ForceStrategy
@@ -89,6 +103,8 @@ func TestForceStrategy(t *testing.T) {
 
 		for _, test := range tests {
 			t.Run(test.value, func(t *testing.T) {
+				t.Parallel()
+
 				var got ForceStrategy
 				err := got.Set(test.value)
 

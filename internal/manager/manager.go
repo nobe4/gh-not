@@ -72,7 +72,7 @@ func (m *Manager) refreshNotifications() error {
 
 	remoteNotifications, err := m.client.Notifications()
 	if err != nil {
-		return err
+		return fmt.Errorf("error listing remote notifications: %w", err)
 	}
 
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
@@ -85,7 +85,11 @@ func (m *Manager) refreshNotifications() error {
 }
 
 func (m *Manager) Save() error {
-	return m.Cache.Write(m.Notifications.Compact())
+	if err := m.Cache.Write(m.Notifications.Compact()); err != nil {
+		return fmt.Errorf("cannot save the cache: %w", err)
+	}
+
+	return nil
 }
 
 func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
@@ -117,7 +121,7 @@ func (m *Manager) Apply() error {
 
 		selectedNotifications, err := rule.Filter(m.Notifications)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to filter notifications: %w", err)
 		}
 
 		slog.Debug("apply rule", "name", rule.Name, "count", len(selectedNotifications))

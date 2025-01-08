@@ -10,6 +10,7 @@ package cache
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -51,7 +52,7 @@ func (c *FileCache) Read(out any) error {
 			return nil
 		}
 
-		return err
+		return fmt.Errorf("failed to read cache: %w", err)
 	}
 
 	c.wrap.Data = out
@@ -66,7 +67,7 @@ func (c *FileCache) Read(out any) error {
 		return c.deprecatedRead(content)
 	}
 
-	return err
+	return fmt.Errorf("failed to unmarshal cache: %w", err)
 }
 
 func (c *FileCache) Refresh(t time.Time) {
@@ -81,7 +82,7 @@ func (c *FileCache) deprecatedRead(content []byte) error {
 	slog.Warn("Cache is in an format deprecated in v0.5.0. Attempting to read from the old format.")
 
 	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal deprecated cache: %w", err)
 	}
 
 	c.wrap.RefreshedAt = time.Unix(0, 0)
@@ -94,19 +95,23 @@ func (c *FileCache) Write(in any) error {
 
 	marshaled, err := json.Marshal(c.wrap)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal cache: %w", err)
 	}
 
 	if err := os.MkdirAll(
 		filepath.Dir(c.path),
 		syscall.S_IRUSR|syscall.S_IWUSR|syscall.S_IXUSR,
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	return os.WriteFile(
+	if err := os.WriteFile(
 		c.path,
 		marshaled,
 		syscall.S_IRUSR|syscall.S_IWUSR,
-	)
+	); err != nil {
+		return fmt.Errorf("failed to write cache: %w", err)
+	}
+
+	return nil
 }

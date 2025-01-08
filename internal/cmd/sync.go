@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/cli/go-gh/v2/pkg/text"
@@ -61,8 +60,7 @@ func runSync(_ *cobra.Command, _ []string) error {
 	} else {
 		caller, err = github.New()
 		if err != nil {
-			slog.Error("Failed to create an API REST client", "err", err)
-			return err
+			return fmt.Errorf("failed to create an API REST client: %w", err)
 		}
 	}
 
@@ -72,29 +70,25 @@ func runSync(_ *cobra.Command, _ []string) error {
 	manager.RefreshStrategy = refreshStrategy
 
 	if err := manager.Load(); err != nil {
-		slog.Error("Failed to load the notifications", "err", err)
-		return err
+		return fmt.Errorf("failed to load the notifications: %w", err)
 	}
 
 	loadedNotifications := len(manager.Notifications)
 
 	if err := manager.Refresh(); err != nil {
-		slog.Error("Failed to refresh the notifications", "err", err)
-		return err
+		return fmt.Errorf("failed to refresh the notifications: %w", err)
 	}
 
 	refreshedNotifications := len(manager.Notifications)
 
 	if err := manager.Apply(); err != nil {
-		slog.Error("Failed to applying rules", "err", err)
-		return err
+		return fmt.Errorf("failed to apply the rules: %w", err)
 	}
 
 	visibleNotifications := len(manager.Notifications.Visible())
 
 	if err := manager.Save(); err != nil {
-		slog.Error("Failed to save the notifications", "err", err)
-		return err
+		return fmt.Errorf("failed to save the notifications: %w", err)
 	}
 
 	//nolint:forbidigo // This is an expected print statement.

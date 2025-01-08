@@ -2,6 +2,7 @@ package mock
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -41,11 +42,11 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	if err = json.Unmarshal(content, &rawCalls); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal file: %w", err)
 	}
 
 	calls := make([]Call, len(rawCalls))
@@ -53,7 +54,7 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 	for i, rawCall := range rawCalls {
 		body, err := json.Marshal(rawCall.Response.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to marshal body: %w", err)
 		}
 
 		call := Call{

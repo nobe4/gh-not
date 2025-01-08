@@ -129,7 +129,7 @@ func (n Notifications) Render() error {
 
 	w, _, err := t.Size()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get terminal size: %w", err)
 	}
 
 	printer := tableprinter.New(&out, t.IsTerminalOutput(), w)
@@ -152,7 +152,7 @@ func (n Notifications) Render() error {
 	}
 
 	if err := printer.Render(); err != nil {
-		return err
+		return fmt.Errorf("failed to render table: %w", err)
 	}
 
 	for i, l := range strings.Split(strings.TrimRight(out.String(), "\n"), "\n") {

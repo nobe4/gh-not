@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -51,7 +52,7 @@ func Init(n notifications.Notifications, actions actions.ActionsMap, keymap conf
 	m = m.initKeymap(keymap)
 
 	if _, err := tea.NewProgram(m).Run(); err != nil {
-		return err
+		return fmt.Errorf("failed to run program: %w", err)
 	}
 
 	return nil

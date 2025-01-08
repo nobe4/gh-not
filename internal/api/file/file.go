@@ -3,6 +3,7 @@ package file
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -27,7 +28,7 @@ func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, err
 func (a *API) readFile() (*http.Response, error) {
 	f, err := os.Open(a.path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
 
 	return &http.Response{

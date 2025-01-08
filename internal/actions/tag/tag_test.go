@@ -9,9 +9,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	r := &Runner{}
-	n := &notifications.Notification{}
-	w := &strings.Builder{}
+	t.Parallel()
 
 	tests := []struct {
 		name string
@@ -55,7 +53,14 @@ func TestRun(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			n.Meta.Tags = test.tags
+			t.Parallel()
+
+			r := &Runner{}
+			n := &notifications.Notification{
+				Meta: notifications.Meta{Tags: test.tags},
+			}
+			w := &strings.Builder{}
+
 			if err := r.Run(n, test.args, w); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

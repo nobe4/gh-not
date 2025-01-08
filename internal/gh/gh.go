@@ -4,6 +4,7 @@ package gh
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -112,7 +113,7 @@ func (c *Client) request(verb, endpoint string, body io.Reader) ([]*notification
 
 	response, err := c.API.Request(verb, endpoint, body)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("failed to request notifications: %w", err)
 	}
 
 	return parse(response)

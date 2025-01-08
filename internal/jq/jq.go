@@ -21,14 +21,14 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 	// FilterFromIds will be used to get back the notifications from the IDs.
 	query, err := gojq.Parse(fmt.Sprintf(".[] | select(%s) | .id", filter))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse filter: %w", err)
 	}
 
 	// gojq works only on `any` data, so we need to convert Notifications to
 	// interface{}. This also gives us back the JSON fields from the API.
 	notificationsRaw, err := n.Interface()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to convert notifications to raw interface: %w", err)
 	}
 
 	filteredIDs := []string{}
@@ -63,5 +63,5 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 
 func Validate(filter string) error {
 	_, err := gojq.Parse(filter)
-	return err
+	return fmt.Errorf("failed to parse filter: %w", err)
 }

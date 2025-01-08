@@ -61,12 +61,12 @@ func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Wri
 
 	body, err := json.Marshal(Body{Assignees: assignees})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal body: %w", err)
 	}
 
 	r, err := a.Client.API.Request(http.MethodPost, assigneesURL, bytes.NewReader(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to request assignees: %w", err)
 	}
 	defer r.Body.Close()
 

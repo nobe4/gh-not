@@ -3,6 +3,8 @@ package notifications
 import "testing"
 
 func TestVisible(t *testing.T) {
+	t.Parallel()
+
 	n := Notifications{
 		&Notification{Meta: Meta{Done: false, Hidden: false}},
 		&Notification{Meta: Meta{Done: true, Hidden: false}},

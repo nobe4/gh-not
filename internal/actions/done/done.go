@@ -29,7 +29,7 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 
 	r, err := a.Client.API.Request(http.MethodDelete, n.URL, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to mark notification as done: %w", err)
 	}
 	defer r.Body.Close()
 
