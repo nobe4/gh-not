@@ -6,8 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/nobe4/gh-not/internal/gh"
 )
 
 type API struct {
@@ -19,7 +17,7 @@ func New(path string) *API {
 }
 
 func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, error) {
-	if verb == "GET" && url == gh.DefaultURL.String() {
+	if verb == "GET" {
 		return a.readFile()
 	}
 

@@ -19,29 +19,20 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-var (
-	linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
-
-	//nolint:gochecknoglobals // This is used as a default in a couple of places.
-	DefaultURL = url.URL{
-		Scheme: "https",
-		Host:   "api.github.com",
-		Path:   "/notifications",
-	}
-)
+var linkRE = regexp.MustCompile(`<([^>]+)>;\s*rel="([^"]+)"`)
 
 type Client struct {
 	API      api.Requestor
 	cache    cache.RefreshReadWriter
 	maxRetry int
 	maxPage  int
-	url      string
+	path     string
 }
 
 func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.Endpoint) *Client {
-	url := DefaultURL
+	path := url.URL{Path: "notifications"}
 
-	query := url.Query()
+	query := path.Query()
 	if config.All {
 		query.Set("all", "true")
 	}
@@ -50,14 +41,14 @@ func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.E
 		query.Set("per_page", strconv.Itoa(config.PerPage))
 	}
 
-	url.RawQuery = query.Encode()
+	path.RawQuery = query.Encode()
 
 	return &Client{
 		API:      api,
 		cache:    cache,
 		maxRetry: config.MaxRetry,
 		maxPage:  config.MaxPage,
-		url:      url.String(),
+		path:     path.String(),
 	}
 }
 
@@ -104,6 +95,8 @@ func parse(r *http.Response) ([]*notifications.Notification, string, error) {
 	return n, nextPageLink(&r.Header), nil
 }
 
+// TODO: this should only return the path, as the full URL is not expected in
+// the Request.
 func nextPageLink(h *http.Header) string {
 	for _, m := range linkRE.FindAllStringSubmatch(h.Get("Link"), -1) {
 		if len(m) > 2 && m[2] == "next" {
@@ -152,7 +145,7 @@ func (c *Client) paginate() (notifications.Notifications, error) {
 	var err error
 
 	pageLeft := c.maxPage
-	endpoint := c.url
+	endpoint := c.path
 
 	for endpoint != "" && pageLeft > 0 {
 		slog.Info("API REST request", "endpoint", endpoint, "page_left", pageLeft)

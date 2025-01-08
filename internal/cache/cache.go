@@ -42,6 +42,8 @@ func NewFileCache(path string) *FileCache {
 }
 
 func (c *FileCache) Read(out any) error {
+	slog.Debug("Reading cache", "path", c.path)
+
 	content, err := os.ReadFile(c.path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

@@ -57,7 +57,79 @@ section](#automatic-fetching).
 The other commands are used to interact with the local cache. It uses `gh
 api`-equivalent to modify the notifications on GitHub's side.
 
-# Configure
+# Authentication
+
+`gh-not` uses `gh`'s built-in authentication, meaning that if `gh` works,
+`gh-not` should work.
+
+If you want to use a specific PAT, you can do so with the environment variable
+`GH_TOKEN`. The PAT requires the scopes: `notifications`, and `repo`.
+
+E.g.:
+
+```bash
+# gh's authentication for github.com
+gh-not ...
+
+# Using a PAT for github.com.
+GH_TOKEN=XXX gh-not ...
+```
+
+`gh-not` also respects `GH_HOST` and `GH_ENTERPRISE_TOKEN` if you need to use a
+non-`github.com` host.
+
+E.g.:
+
+```bash
+# gh's authentication for ghe.io
+GH_HOST=ghe.io gh-not ...
+
+# Using a PAT for ghe.io
+GH_HOST=ghe.io GH_ENTERPRISE_TOKEN=XXX gh-not ...
+```
+
+See the [`gh` environment documentation](https://cli.github.com/manual/gh_help_environment).
+
+> [!IMPORTANT]
+> If you plan on using `gh-not` with more than one host, you might want to
+> create a separate cache for it. See [cache](#cache).
+
+# Configuration
+
+## Cache
+
+The cache is where the notifications are locally stored.
+
+It contains 2 fields:
+
+- `path`: the path to the JSON file.
+
+- `TTLInHours`: how long before the cache needs to be refreshed.
+
+If you use multiple hosts, you might want to have separate configurations and
+caches to prevent overrides. Create one config file per host you want to use and
+point the cache's path to a _different file_.
+
+E.g.
+
+- `config.github.yaml`
+    ```yaml
+    cache:
+      path: cache.github.json
+    ...
+    ```
+
+    Use it with `gh-not --config config.github.yaml`.
+
+- `config.gheio.yaml `
+    ```yaml
+    cache:
+      path: cache.gheio.json
+    ...
+    ```
+    Use it with `gh-not --config config.gheio.yaml`.
+
+## Rules
 
 The configuration file contains the rules to apply to the notifications. Each
 rule contains three fields:

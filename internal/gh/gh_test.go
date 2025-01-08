@@ -105,7 +105,7 @@ func mockClient(c []mock.Call) (*Client, *mock.Mock) {
 
 	return &Client{
 		API:      mock,
-		url:      endpoint,
+		path:     endpoint,
 		maxRetry: 100,
 		maxPage:  100,
 	}, mock
@@ -160,34 +160,34 @@ func TestIsRetryable(t *testing.T) {
 
 func TestNewClient(t *testing.T) {
 	tests := []struct {
-		name    string
-		all     bool
-		perPage int
-		wantURL string
+		name     string
+		all      bool
+		perPage  int
+		wantPath string
 	}{
 		{
-			name:    "default",
-			all:     false,
-			perPage: 0,
-			wantURL: "https://api.github.com/notifications",
+			name:     "default",
+			all:      false,
+			perPage:  0,
+			wantPath: "notifications",
 		},
 		{
-			name:    "all",
-			all:     true,
-			perPage: 0,
-			wantURL: "https://api.github.com/notifications?all=true",
+			name:     "all",
+			all:      true,
+			perPage:  0,
+			wantPath: "notifications?all=true",
 		},
 		{
-			name:    "10 per page",
-			all:     false,
-			perPage: 10,
-			wantURL: "https://api.github.com/notifications?per_page=10",
+			name:     "10 per page",
+			all:      false,
+			perPage:  10,
+			wantPath: "notifications?per_page=10",
 		},
 		{
-			name:    "all and 10 per page",
-			all:     true,
-			perPage: 10,
-			wantURL: "https://api.github.com/notifications?all=true&per_page=10",
+			name:     "all and 10 per page",
+			all:      true,
+			perPage:  10,
+			wantPath: "notifications?all=true&per_page=10",
 		},
 	}
 
@@ -202,8 +202,8 @@ func TestNewClient(t *testing.T) {
 			client := NewClient(nil, nil, *config)
 
 			// only testing the result URL, the rest is stored verbatim.
-			if client.url != test.wantURL {
-				t.Errorf("expected %s, got %s", test.wantURL, client.url)
+			if client.path != test.wantPath {
+				t.Errorf("expected %s, got %s", test.wantPath, client.path)
 			}
 		})
 	}
