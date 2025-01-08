@@ -65,9 +65,6 @@ api`-equivalent to modify the notifications on GitHub's side.
 If you want to use a specific PAT, you can do so with the environment variable
 `GH_TOKEN`. The PAT requires the scopes: `notifications`, and `repo`.
 
-`gh-not` also respects `GH_HOST` and `GH_ENTERPRISE_TOKEN` if you need to use a
-non-`github.com` host.
-
 E.g.:
 
 ```bash
@@ -76,7 +73,14 @@ gh-not ...
 
 # Using a PAT for github.com.
 GH_TOKEN=XXX gh-not ...
+```
 
+`gh-not` also respects `GH_HOST` and `GH_ENTERPRISE_TOKEN` if you need to use a
+non-`github.com` host.
+
+E.g.:
+
+```bash
 # gh's authentication for ghe.io
 GH_HOST=ghe.io gh-not ...
 
@@ -103,17 +107,27 @@ It contains 2 fields:
 - `TTLInHours`: how long before the cache needs to be refreshed.
 
 If you use multiple hosts, you might want to have separate configurations and
-caches to prevent overrides:
+caches to prevent overrides. Create one config file per host you want to use and
+point the cache's path to a _different file_.
 
-```yaml
-# config.github.yaml
-cache:
-  path: cache.github.json
+E.g.
 
-# config.gheio.yaml
-cache:
-  path: cache.gheio.json
-```
+- `config.github.yaml`
+    ```yaml
+    cache:
+      path: cache.github.json
+    ...
+    ```
+
+    Use it with `gh-not --config config.github.yaml`.
+
+- `config.gheio.yaml `
+    ```yaml
+    cache:
+      path: cache.gheio.json
+    ...
+    ```
+    Use it with `gh-not --config config.gheio.yaml`.
 
 ## Rules
 
