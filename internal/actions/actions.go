@@ -17,9 +17,9 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-type ActionsMap map[string]Runner
+type Map map[string]Runner
 
-func Map(client *gh.Client) ActionsMap {
+func GetMap(client *gh.Client) Map {
 	return map[string]Runner{
 		"pass":   &pass.Runner{},
 		"debug":  &debug.Runner{},

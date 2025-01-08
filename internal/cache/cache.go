@@ -25,24 +25,24 @@ type RefreshReadWriter interface {
 	RefreshedAt() time.Time
 }
 
-type FileCache struct {
+type File struct {
 	path string
-	wrap *CacheWrap
+	wrap *Wrap
 }
 
-type CacheWrap struct {
+type Wrap struct {
 	Data        any       `json:"data"`
 	RefreshedAt time.Time `json:"refreshed_at"`
 }
 
-func NewFileCache(path string) *FileCache {
-	return &FileCache{
+func NewFileCache(path string) *File {
+	return &File{
 		path: path,
-		wrap: &CacheWrap{RefreshedAt: time.Unix(0, 0)},
+		wrap: &Wrap{RefreshedAt: time.Unix(0, 0)},
 	}
 }
 
-func (c *FileCache) Read(out any) error {
+func (c *File) Read(out any) error {
 	slog.Debug("Reading cache", "path", c.path)
 
 	content, err := os.ReadFile(c.path)
@@ -70,15 +70,15 @@ func (c *FileCache) Read(out any) error {
 	return fmt.Errorf("failed to unmarshal cache: %w", err)
 }
 
-func (c *FileCache) Refresh(t time.Time) {
+func (c *File) Refresh(t time.Time) {
 	c.wrap.RefreshedAt = t
 }
 
-func (c *FileCache) RefreshedAt() time.Time {
+func (c *File) RefreshedAt() time.Time {
 	return c.wrap.RefreshedAt
 }
 
-func (c *FileCache) deprecatedRead(content []byte) error {
+func (c *File) deprecatedRead(content []byte) error {
 	slog.Warn("Cache is in an format deprecated in v0.5.0. Attempting to read from the old format.")
 
 	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
@@ -90,7 +90,7 @@ func (c *FileCache) deprecatedRead(content []byte) error {
 	return nil
 }
 
-func (c *FileCache) Write(in any) error {
+func (c *File) Write(in any) error {
 	c.wrap.Data = in
 
 	marshaled, err := json.Marshal(c.wrap)

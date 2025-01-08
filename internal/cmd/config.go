@@ -22,6 +22,7 @@ var (
 		Short: "Print the config to stdout",
 		RunE:  runConfig,
 	}
+	errNoEditor = errors.New("EDITOR environment variable not set")
 )
 
 func init() {
@@ -78,7 +79,7 @@ func editConfig() error {
 
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
-		return errors.New("EDITOR environment variable not set")
+		return errNoEditor
 	}
 
 	cmd := exec.Command(editor, config.Path)

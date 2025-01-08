@@ -16,7 +16,7 @@ import (
 
 type model struct {
 	keymap     Keymap
-	actions    actions.ActionsMap
+	actions    actions.Map
 	currentRun Run
 
 	showHelp bool
@@ -32,7 +32,7 @@ type model struct {
 	maxHeight    int
 }
 
-func Init(n notifications.Notifications, actions actions.ActionsMap, keymap config.Keymap, view config.View) error {
+func Init(n notifications.Notifications, a actions.Map, keymap config.Keymap, view config.View) error {
 	items := []list.Item{}
 
 	for _, notification := range n {
@@ -42,7 +42,7 @@ func Init(n notifications.Notifications, actions actions.ActionsMap, keymap conf
 	m := model{
 		list:      list.New(items, itemDelegate{}, 0, 0),
 		command:   textinput.New(),
-		actions:   actions,
+		actions:   a,
 		result:    viewport.New(0, 0),
 		maxHeight: view.Height,
 	}

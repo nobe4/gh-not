@@ -44,11 +44,13 @@ type Body struct {
 	Assignees []string `json:"assignees"`
 }
 
+var errNoAssignees = errors.New("no assignees provided")
+
 func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Writer) error {
 	slog.Debug("assigning notification", "notification", n, "assignees", assignees)
 
 	if len(assignees) == 0 {
-		return errors.New("no assignees provided")
+		return errNoAssignees
 	}
 
 	url, ok := issueURL(n.Subject.URL)

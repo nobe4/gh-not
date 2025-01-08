@@ -23,10 +23,10 @@ func (i item) FilterValue() string { return i.notification.String() }
 
 type itemDelegate struct{}
 
-func (d itemDelegate) Height() int                             { return 1 }
-func (d itemDelegate) Spacing() int                            { return 0 }
-func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+func (itemDelegate) Height() int                             { return 1 }
+func (itemDelegate) Spacing() int                            { return 0 }
+func (itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+func (itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	n, ok := listItem.(item)
 	if !ok {
 		return

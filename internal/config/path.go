@@ -8,6 +8,7 @@ import (
 
 // inspired by https://github.com/cli/go-gh/blob/trunk/pkg/config/config.go
 const (
+	appName        = "gh-not"
 	appData        = "AppData"
 	ghNotConfigDir = "GHNOT_CONFIG_DIR"
 	localAppData   = "LocalAppData"
@@ -15,18 +16,18 @@ const (
 	xdgStateHome   = "XDG_STATE_HOME"
 )
 
-// ConfigDir returns the directory where the configuration files are stored.
-func ConfigDir() string {
+// Dir returns the directory where the configuration files are stored.
+func Dir() string {
 	var path string
 	if a := os.Getenv(ghNotConfigDir); a != "" {
 		path = a
 	} else if b := os.Getenv(xdgConfigHome); b != "" {
-		path = filepath.Join(b, "gh-not")
+		path = filepath.Join(b, appName)
 	} else if c := os.Getenv(appData); runtime.GOOS == "windows" && c != "" {
-		path = filepath.Join(c, "gh-not")
+		path = filepath.Join(c, appName)
 	} else {
 		d, _ := os.UserHomeDir()
-		path = filepath.Join(d, ".config", "gh-not")
+		path = filepath.Join(d, ".config", appName)
 	}
 
 	return path
@@ -36,12 +37,12 @@ func ConfigDir() string {
 func StateDir() string {
 	var path string
 	if a := os.Getenv(xdgStateHome); a != "" {
-		path = filepath.Join(a, "gh-not")
+		path = filepath.Join(a, appName)
 	} else if b := os.Getenv(localAppData); runtime.GOOS == "windows" && b != "" {
-		path = filepath.Join(b, "gh-not")
+		path = filepath.Join(b, appName)
 	} else {
 		c, _ := os.UserHomeDir()
-		path = filepath.Join(c, ".local", "state", "gh-not")
+		path = filepath.Join(c, ".local", "state", appName)
 	}
 
 	return path

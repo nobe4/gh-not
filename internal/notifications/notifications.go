@@ -230,13 +230,13 @@ func (n Notifications) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-func (n Notifications) Interface() (interface{}, error) {
+func (n Notifications) Interface() (any, error) {
 	marshaled, err := n.Marshal()
 	if err != nil {
 		return nil, err
 	}
 
-	var i interface{}
+	var i any
 	if err := json.Unmarshal(marshaled, &i); err != nil {
 		return nil, fmt.Errorf("cannot convert to interface: %w", err)
 	}

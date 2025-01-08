@@ -36,12 +36,12 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	n.Reviewers = threadExtra.Reviewers
 	n.ReviewersTeams = threadExtra.ReviewersTeams
 
-	LastCommentor, err := c.getLastCommentor(n)
+	lastCommentor, err := c.getLastCommentor(n)
 	if err != nil {
 		return err
 	}
 
-	n.LatestCommentor = LastCommentor
+	n.LatestCommentor = lastCommentor
 
 	return nil
 }

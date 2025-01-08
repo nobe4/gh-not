@@ -16,21 +16,26 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+var errNoURL = errors.New("no URL to open")
+
 type Runner struct {
 	Client *gh.Client
 }
 
-func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
+func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	slog.Debug("open notification in browser", "notification", n)
 
-	browser := browser.New("", w, w)
+	b := browser.New("", w, w)
 
 	if n.Subject.HTMLURL == "" {
-		return errors.New("no URL to open")
+		return errNoURL
 	}
 
-	err := browser.Browse(n.Subject.HTMLURL)
 	fmt.Fprint(w, colors.Blue("OPEN ")+n.Subject.URL)
 
-	return fmt.Errorf("failed to open browser: %w", err)
+	if err := b.Browse(n.Subject.HTMLURL); err != nil {
+		return fmt.Errorf("failed to open browser: %w", err)
+	}
+
+	return nil
 }
