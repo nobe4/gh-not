@@ -30,25 +30,25 @@ type Client struct {
 	path     string
 }
 
-func NewClient(api api.Requestor, cache cache.RefreshReadWriter, config config.Endpoint) *Client {
+func NewClient(a api.Requestor, c cache.RefreshReadWriter, conf config.Endpoint) *Client {
 	path := url.URL{Path: "notifications"}
 
 	query := path.Query()
-	if config.All {
+	if conf.All {
 		query.Set("all", "true")
 	}
 
-	if config.PerPage > 0 && config.PerPage != 100 {
-		query.Set("per_page", strconv.Itoa(config.PerPage))
+	if conf.PerPage > 0 && conf.PerPage != 100 {
+		query.Set("per_page", strconv.Itoa(conf.PerPage))
 	}
 
 	path.RawQuery = query.Encode()
 
 	return &Client{
-		API:      api,
-		cache:    cache,
-		maxRetry: config.MaxRetry,
-		maxPage:  config.MaxPage,
+		API:      a,
+		cache:    c,
+		maxRetry: conf.MaxRetry,
+		maxPage:  conf.MaxPage,
 		path:     path.String(),
 	}
 }
@@ -121,9 +121,9 @@ func (c *Client) request(verb, endpoint string, body io.Reader) ([]*notification
 
 func (c *Client) retry(verb, endpoint string, body io.Reader) ([]*notifications.Notification, string, error) {
 	for i := c.maxRetry; i >= 0; i-- {
-		notifications, next, err := c.request(verb, endpoint, body)
+		n, next, err := c.request(verb, endpoint, body)
 		if err == nil {
-			return notifications, next, nil
+			return n, next, nil
 		}
 
 		if isRetryable(err) {

@@ -17,11 +17,12 @@ func New(path string) *API {
 	return &API{path: path}
 }
 
-func (a *API) Request(verb string, url string, _ io.Reader) (*http.Response, error) {
+func (a *API) Request(verb string, _ string, _ io.Reader) (*http.Response, error) {
 	if verb == "GET" {
 		return a.readFile()
 	}
 
+	//nolint:err113 // this is a TODO
 	return nil, errors.New("TODO")
 }
 

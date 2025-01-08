@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -14,6 +15,8 @@ type Run struct {
 	Runner actions.Runner
 	Args   []string
 }
+
+var errInvalidCommand = errors.New("invalid command")
 
 func (m model) commandAndArgs(value, suggestion string) (string, []string) {
 	if value == suggestion {
@@ -84,7 +87,7 @@ func (msg ApplyCommandMsg) apply(m model) (tea.Model, tea.Cmd) {
 
 	runner, ok := m.actions[msg.Command]
 	if !ok {
-		return m, m.renderResult(fmt.Errorf("invalid command %s", msg.Command))
+		return m, m.renderResult(fmt.Errorf("%s: %w", msg.Command, errInvalidCommand))
 	}
 
 	m.resultStrings = []string{}
@@ -119,6 +122,8 @@ func (m model) applyNext() tea.Cmd {
 		}
 
 		current, tail := m.processQueue[0], m.processQueue[1:]
+		//nolint:revive // This seems to be working, but I am not sure why.
+		// TODO: investigate why not passing a pointer here does work.
 		m.processQueue = tail
 
 		slog.Debug("apply next", "notification", current.notification.String())

@@ -9,6 +9,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+var errInvalidID = errors.New("invalid ID")
+
 // TODO: refactor this as a callback to be called on n.Filter(flt) and have
 // n.Filter call .Compact
 // Filter applies a `.[] | select(filter)` on the notifications.
@@ -52,7 +54,7 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 
 		newID, ok := v.(string)
 		if !ok {
-			return nil, fmt.Errorf("invalid filtered id %#v", v)
+			return nil, fmt.Errorf("invalid filtered id %#v: %w", v, errInvalidID)
 		}
 
 		filteredIDs = append(filteredIDs, newID)
@@ -62,6 +64,9 @@ func Filter(filter string, n notifications.Notifications) (notifications.Notific
 }
 
 func Validate(filter string) error {
-	_, err := gojq.Parse(filter)
-	return fmt.Errorf("failed to parse filter: %w", err)
+	if _, err := gojq.Parse(filter); err != nil {
+		return fmt.Errorf("failed to parse filter: %w", err)
+	}
+
+	return nil
 }

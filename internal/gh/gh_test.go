@@ -24,10 +24,11 @@ const (
 )
 
 var (
-	errHTTP   = &api.HTTPError{StatusCode: 502}
-	errURL    = &url.Error{}
-	errSample = errors.New("error")
-	errRetry  = RetryError{verb, endpoint}
+	errHTTP     = &api.HTTPError{StatusCode: 502}
+	errURL      = &url.Error{}
+	errSample   = errors.New("error")
+	errRetry    = RetryError{verb, endpoint}
+	errExpected = errors.New("expected")
 )
 
 func mockSubjectURL(id int) string {
@@ -332,16 +333,15 @@ func TestRequest(t *testing.T) {
 	t.Run("errors", func(t *testing.T) {
 		t.Parallel()
 
-		expectedError := errors.New("error")
-		client, api := mockClient([]mock.Call{{Error: expectedError}})
+		client, api := mockClient([]mock.Call{{Error: errExpected}})
 
 		_, _, err := client.request(verb, endpoint, nil)
 		if err == nil {
 			t.Errorf("expected test to fails")
 		}
 
-		if !errors.Is(err, expectedError) {
-			t.Errorf("expected %#v, got %#v", expectedError, err)
+		if !errors.Is(err, errExpected) {
+			t.Errorf("expected %#v, got %#v", errExpected, err)
 		}
 
 		if err := api.Done(); err != nil {

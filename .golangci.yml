@@ -4,11 +4,6 @@ linters:
   enable-all: true
 
   disable:
-    # TODO: remove the line and fix the issues
-    - err113
-    - ireturn
-    - revive
-
     - cyclop # some functions need refactoring, I'll deal with that later
     - depguard # I'm not that pedantic
     - exhaustruct # it's ok not to specify all the fields in a struct definition
@@ -27,6 +22,7 @@ issues:
       linters:
         - bodyclose
         - funlen
+        - revive
 
     - path: internal/cmd
       linters:
@@ -34,6 +30,11 @@ issues:
         - gochecknoinits
         # using globals is recommended with spf13/cobra
         - gochecknoglobals
+
+    - path: internal/repl
+      linters:
+        # returning interface is the way to work with charmbracelet/bubbletea
+        - ireturn
 
 linters-settings:
   nolintlint:
@@ -48,9 +49,41 @@ linters-settings:
   revive:
     enable-all-rules: true
     rules:
+      - name: add-constant
+        disabled: true
+
       - name: context-as-argument
         arguments:
           - allowTypesBefore: "*testing.T"
+
+      - name: comment-spacings
+        arguments:
+          - "nolint"
+
+      - name: cognitive-complexity
+        disabled: true # TODO: re enable to simplify functions
+
+      - name: cyclomatic
+        disabled: true # TODO: re enable to simplify functions
+
+      - name: max-public-structs
+        disabled: true # I might enable that later
+
+
+      - name: import-alias-naming
+        arguments:
+          - "^[a-z][A-Za-z0-9]{0,}$"
+
+      - name: line-length-limit
+        disabled: true # using lll
+
+      - name: unhandled-error
+        arguments:
+          - "fmt.Printf"
+          - "fmt.Println"
+          - "fmt.Fprint"
+          - "fmt.Fprintf"
+          - "fmt.Fprintln"
 
   tagliatelle:
     case:

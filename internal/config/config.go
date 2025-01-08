@@ -80,7 +80,7 @@ func Default(path string) (*viper.Viper, string) {
 	slog.Debug("loading default configuration")
 
 	if path == "" {
-		path = filepath.Join(ConfigDir(), "config.yaml")
+		path = filepath.Join(Dir(), "config.yaml")
 		slog.Debug("path is empty, setting default path", "default path", path)
 	}
 
@@ -104,12 +104,12 @@ func New(path string) (*Config, error) {
 
 	if err := c.viper.ReadInConfig(); err != nil {
 		var viperNotFoundError viper.ConfigFileNotFoundError
-		if errors.As(err, &viperNotFoundError) ||
-			errors.Is(err, fs.ErrNotExist) {
-			slog.Warn("Config file not found, using default")
-		} else {
+		if !errors.As(err, &viperNotFoundError) &&
+			!errors.Is(err, fs.ErrNotExist) {
 			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
+
+		slog.Warn("Config file not found, using default")
 	}
 
 	c.Path = c.viper.ConfigFileUsed()

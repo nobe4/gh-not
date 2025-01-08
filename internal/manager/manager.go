@@ -20,16 +20,18 @@ type Manager struct {
 	Cache         cache.RefreshReadWriter
 	config        *config.Data
 	client        *gh.Client
-	Actions       actions.ActionsMap
+	Actions       actions.Map
 
 	RefreshStrategy RefreshStrategy
 	ForceStrategy   ForceStrategy
 }
 
-func New(config *config.Data) *Manager {
+var errNoClient = errors.New("no client set")
+
+func New(c *config.Data) *Manager {
 	m := &Manager{}
 
-	m.config = config
+	m.config = c
 	m.Cache = cache.NewFileCache(m.config.Cache.Path)
 
 	return m
@@ -37,7 +39,7 @@ func New(config *config.Data) *Manager {
 
 func (m *Manager) SetCaller(caller api.Requestor) {
 	m.client = gh.NewClient(caller, m.Cache, m.config.Endpoint)
-	m.Actions = actions.Map(m.client)
+	m.Actions = actions.GetMap(m.client)
 }
 
 func (m *Manager) Load() error {
@@ -64,7 +66,7 @@ func (m *Manager) Refresh() error {
 
 func (m *Manager) refreshNotifications() error {
 	if m.client == nil {
-		return errors.New("manager has no client, cannot refresh notifications")
+		return fmt.Errorf("cannot refresh notifications: %w", errNoClient)
 	}
 
 	//nolint:forbidigo // This is an expected print statement.

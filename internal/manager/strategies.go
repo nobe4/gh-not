@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -21,6 +22,8 @@ const (
 	PreventRefresh
 )
 
+var errNotAllowed = errors.New("not allowed")
+
 func (r *RefreshStrategy) String() string {
 	switch *r {
 	case AutoRefresh:
@@ -34,7 +37,7 @@ func (r *RefreshStrategy) String() string {
 	return "unknown"
 }
 
-func (r *RefreshStrategy) Allowed() string {
+func (*RefreshStrategy) Allowed() string {
 	return "auto, force, prevent"
 }
 
@@ -65,13 +68,13 @@ func (r *RefreshStrategy) Set(value string) error {
 	case "prevent":
 		*r = PreventRefresh
 	default:
-		return fmt.Errorf(`must be one of %s`, r.Allowed())
+		return fmt.Errorf(`%s must be one of %s: %w`, value, r.Allowed(), errNotAllowed)
 	}
 
 	return nil
 }
 
-func (r *RefreshStrategy) Type() string {
+func (*RefreshStrategy) Type() string {
 	return "RefreshStrategy"
 }
 
@@ -114,7 +117,7 @@ func (r *ForceStrategy) String() string {
 	return strings.Join(s, ", ")
 }
 
-func (r *ForceStrategy) Allowed() string {
+func (*ForceStrategy) Allowed() string {
 	return "apply, noop, enrich"
 }
 
@@ -130,13 +133,13 @@ func (r *ForceStrategy) Set(value string) error {
 		case "enrich":
 			*r |= ForceEnrich
 		default:
-			return fmt.Errorf(`must be one of %s`, r.Allowed())
+			return fmt.Errorf(`%s must be one of %s: %w`, s, r.Allowed(), errNotAllowed)
 		}
 	}
 
 	return nil
 }
 
-func (r *ForceStrategy) Type() string {
+func (*ForceStrategy) Type() string {
 	return "ForceStrategy"
 }

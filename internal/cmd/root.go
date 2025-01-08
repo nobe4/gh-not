@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -48,6 +49,8 @@ var (
 		SilenceErrors:     true,
 		RunE:              runRoot,
 	}
+
+	errRuleNotFound = errors.New("rule not found")
 )
 
 func Execute() error {
@@ -99,15 +102,15 @@ func runRoot(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to load the notifications: %w", err)
 	}
 
-	notifications := load()
+	n := load()
 
-	notifications, err := filter(notifications)
+	n, err := filter(n)
 	if err != nil {
 		slog.Error("Failed to filter the notifications", "err", err)
 		return err
 	}
 
-	if err := display(notifications); err != nil {
+	if err := display(n); err != nil {
 		slog.Error("Failed to display the notifications", "err", err)
 		return err
 	}
@@ -116,24 +119,24 @@ func runRoot(_ *cobra.Command, _ []string) error {
 }
 
 func load() notifications.Notifications {
-	var notifications notifications.Notifications
+	var n notifications.Notifications
 
 	if allFlag {
-		notifications = manager.Notifications
+		n = manager.Notifications
 	} else {
-		notifications = manager.Notifications.Visible()
+		n = manager.Notifications.Visible()
 	}
 
-	notifications.Sort()
+	n.Sort()
 
-	return notifications
+	return n
 }
 
-func filter(notifications notifications.Notifications) (notifications.Notifications, error) {
+func filter(n notifications.Notifications) (notifications.Notifications, error) {
 	var err error
 
 	if filterFlag != "" {
-		if notifications, err = jq.Filter(filterFlag, notifications); err != nil {
+		if n, err = jq.Filter(filterFlag, n); err != nil {
 			return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 		}
 	}
@@ -145,7 +148,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 			if rule.Name == ruleFlag {
 				found = true
 
-				if notifications, err = rule.Filter(notifications); err != nil {
+				if n, err = rule.Filter(n); err != nil {
 					return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 				}
 			}
@@ -153,39 +156,39 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 
 		if !found {
 			slog.Error("Rule not found", "rule", ruleFlag)
-			return nil, fmt.Errorf("rule '%s' not found", ruleFlag)
+			return nil, fmt.Errorf("invalid rule '%s': %w", ruleFlag, errRuleNotFound)
 		}
 	}
 
 	if tagFlag != "" {
 		filter := fmt.Sprintf(`select(.meta.tags | index("%s"))`, tagFlag)
 
-		if notifications, err = jq.Filter(filter, notifications); err != nil {
+		if n, err = jq.Filter(filter, n); err != nil {
 			return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 		}
 	}
 
-	return notifications, nil
+	return n, nil
 }
 
-func display(notifications notifications.Notifications) error {
+func display(n notifications.Notifications) error {
 	if tagsFlag {
-		return displayTags(notifications)
+		return displayTags(n)
 	}
 
 	if jsonFlag {
-		return displayJSON(notifications)
+		return displayJSON(n)
 	}
 
-	if err := notifications.Render(); err != nil {
+	if err := n.Render(); err != nil {
 		slog.Warn("Failed to generate a table, using toString", "err", err)
 	}
 
 	if replFlag {
-		return displayRepl(notifications)
+		return displayRepl(n)
 	}
 
-	displayTable(notifications)
+	displayTable(n)
 
 	return nil
 }
@@ -204,8 +207,8 @@ func displayTable(n notifications.Notifications) {
 	)
 }
 
-func displayJSON(notifications notifications.Notifications) error {
-	marshaled, err := notifications.Marshal()
+func displayJSON(n notifications.Notifications) error {
+	marshaled, err := n.Marshal()
 	if err != nil {
 		return fmt.Errorf("failed to marshal the notifications: %w", err)
 	}

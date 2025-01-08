@@ -13,6 +13,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+var errExpected = errors.New("expected error")
+
 func TestRun(t *testing.T) {
 	t.Parallel()
 
@@ -60,13 +62,12 @@ func TestRun(t *testing.T) {
 		api := &mock.Mock{}
 		client := gh.Client{API: api}
 		runner := Runner{Client: &client}
-		expectedError := errors.New("expected error")
 
 		api.Calls = append(api.Calls, mock.Call{
 			Verb:  "POST",
 			URL:   "https://api.github.com/repos/owner/repo/issues/123/assignees",
 			Data:  `{"assignees":["user"]}`,
-			Error: expectedError,
+			Error: errExpected,
 		})
 		n := &notifications.Notification{
 			Subject: notifications.Subject{
@@ -74,8 +75,8 @@ func TestRun(t *testing.T) {
 			},
 		}
 
-		if err := runner.Run(n, []string{"user"}, w); !errors.Is(err, expectedError) {
-			t.Fatalf("expected %#v but got %#v", expectedError, err)
+		if err := runner.Run(n, []string{"user"}, w); !errors.Is(err, errExpected) {
+			t.Fatalf("expected %#v but got %#v", errExpected, err)
 		}
 
 		if err := api.Done(); err != nil {
