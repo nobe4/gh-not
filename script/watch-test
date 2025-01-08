@@ -3,6 +3,6 @@
 find . -not -path './.git/*' -not -path './dist/*' | \
     entr -c \
     bash -c '
-        go test -cover -coverprofile=coverage ./... &&
+        go test -race -count 10 -race -count 10  -cover -coverprofile=coverage ./... &&
         go tool cover -html=coverage -o coverage.html
     '

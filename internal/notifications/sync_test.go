@@ -77,10 +77,12 @@ func TestSync(t *testing.T) {
 			expected: Notifications{n0Updated, n1},
 		},
 	}
+
+	//nolint:paralleltest // Those needs to be run sequentially
+	// The test reuses variables, so it's easier to just not run in
+	// parallel.
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-
 			got := Sync(test.local, test.remote)
 
 			if len(got) != len(test.expected) {
