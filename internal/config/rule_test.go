@@ -8,6 +8,8 @@ import (
 )
 
 func TestFilterIds(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		r    Rule
 		n    notifications.Notifications
@@ -161,6 +163,8 @@ func TestFilterIds(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.r.Name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := test.r.Filter(test.n)
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)

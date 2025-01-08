@@ -6,6 +6,8 @@ import (
 )
 
 func TestSync(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1)}
 	n0Hidden := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1), Meta: Meta{Hidden: true}}
 	n0Updated := &Notification{ID: "0", UpdatedAt: time.Unix(0, 1)}
@@ -77,6 +79,8 @@ func TestSync(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := Sync(test.local, test.remote)
 
 			if len(got) != len(test.expected) {
@@ -92,6 +96,8 @@ func TestSync(t *testing.T) {
 	}
 
 	t.Run("update Meta.RemoteExist", func(t *testing.T) {
+		t.Parallel()
+
 		got := Sync(
 			Notifications{
 				&Notification{ID: "0", UpdatedAt: time.Unix(0, 2), Meta: Meta{RemoteExists: false}},
@@ -117,6 +123,8 @@ func TestSync(t *testing.T) {
 	})
 
 	t.Run("update Meta.Done", func(t *testing.T) {
+		t.Parallel()
+
 		tests := []struct {
 			name         string
 			local        *Notification
@@ -150,6 +158,8 @@ func TestSync(t *testing.T) {
 		}
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
+				t.Parallel()
+
 				got := Sync(Notifications{test.local}, Notifications{test.remote})
 				if got[0].Meta.Done != test.expectedDone {
 					t.Fatalf("expected Done to be %v but got %v", test.expectedDone, got[0].Meta.Done)

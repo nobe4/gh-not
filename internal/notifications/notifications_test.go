@@ -6,6 +6,8 @@ import (
 )
 
 func TestIDList(t *testing.T) {
+	t.Parallel()
+
 	n := Notifications{}
 	ids := []string{"0", "1", "2"}
 
@@ -23,6 +25,8 @@ func TestIDList(t *testing.T) {
 }
 
 func TestCompact(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0"}
 	n1 := &Notification{ID: "1"}
 	n := Notifications{nil, nil, n0, nil, n1, nil}
@@ -43,6 +47,8 @@ func TestCompact(t *testing.T) {
 }
 
 func TestSort(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{UpdatedAt: time.Unix(0, 2)}
 	n1 := &Notification{UpdatedAt: time.Unix(0, 1)}
 	n2 := &Notification{UpdatedAt: time.Unix(0, 0)}
@@ -64,6 +70,8 @@ func TestSort(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0", UpdatedAt: time.Unix(0, 2)}
 	n1 := &Notification{ID: "1", UpdatedAt: time.Unix(0, 1)}
 	n2 := &Notification{ID: "2", UpdatedAt: time.Unix(0, 0)}
@@ -88,6 +96,8 @@ func TestMap(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0"}
 	n1 := &Notification{ID: "1"}
 	n2 := &Notification{ID: "2"}
@@ -111,6 +121,8 @@ func TestList(t *testing.T) {
 }
 
 func TestUniq(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0"}
 	n1 := &Notification{ID: "1"}
 	n2 := &Notification{ID: "2"}
@@ -136,6 +148,8 @@ func TestUniq(t *testing.T) {
 }
 
 func TestFilterFromIds(t *testing.T) {
+	t.Parallel()
+
 	n0 := &Notification{ID: "0"}
 	n1 := &Notification{ID: "1"}
 	n2 := &Notification{ID: "2"}

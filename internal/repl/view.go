@@ -117,6 +117,7 @@ func (m model) View() string {
 
 	var statusLine string
 
+	//nolint: nestif // I know this is messy, but it's the easiest way I found
 	if m.showResult {
 		content = m.result.View()
 

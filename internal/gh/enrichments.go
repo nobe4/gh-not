@@ -2,6 +2,7 @@ package gh
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -54,21 +55,21 @@ func (c *Client) getThreadExtra(n *notifications.Notification) (ThreadExtra, err
 
 	resp, err := c.API.Request(http.MethodGet, n.Subject.URL, nil)
 	if err != nil {
-		return ThreadExtra{}, err
+		return ThreadExtra{}, fmt.Errorf("failed to get thread extra: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return ThreadExtra{}, err
+		return ThreadExtra{}, fmt.Errorf("failed to read thread extra: %w", err)
 	}
 
 	extra := ThreadExtra{}
 
 	err = json.Unmarshal(body, &extra)
 	if err != nil {
-		return ThreadExtra{}, err
+		return ThreadExtra{}, fmt.Errorf("failed to unmarshal thread extra: %w", err)
 	}
 
 	return extra, nil
@@ -83,14 +84,14 @@ func (c *Client) getLastCommentor(n *notifications.Notification) (notifications.
 
 	resp, err := c.API.Request(http.MethodGet, n.Subject.LatestCommentURL, nil)
 	if err != nil {
-		return notifications.User{}, err
+		return notifications.User{}, fmt.Errorf("failed to get last commentor: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return notifications.User{}, err
+		return notifications.User{}, fmt.Errorf("failed to read last commentor: %w", err)
 	}
 
 	comment := struct {
@@ -99,7 +100,7 @@ func (c *Client) getLastCommentor(n *notifications.Notification) (notifications.
 
 	err = json.Unmarshal(body, &comment)
 	if err != nil {
-		return notifications.User{}, err
+		return notifications.User{}, fmt.Errorf("failed to unmarshal last commentor: %w", err)
 	}
 
 	return comment.User, nil

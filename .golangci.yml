@@ -7,11 +7,7 @@ linters:
     # TODO: remove the line and fix the issues
     - err113
     - ireturn
-    - musttag
-    - nestif
-    - paralleltest
     - revive
-    - wrapcheck
 
     - cyclop # some functions need refactoring, I'll deal with that later
     - depguard # I'm not that pedantic

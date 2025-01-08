@@ -3,6 +3,8 @@ package gh
 import "testing"
 
 func TestRetryError(t *testing.T) {
+	t.Parallel()
+
 	e := RetryError{
 		verb: "verb",
 		url:  "url",

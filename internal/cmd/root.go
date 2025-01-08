@@ -51,7 +51,11 @@ var (
 )
 
 func Execute() error {
-	return rootCmd.Execute()
+	if err := rootCmd.Execute(); err != nil {
+		return fmt.Errorf("failed to execute the root command: %w", err)
+	}
+
+	return nil
 }
 
 //nolint:lll // Having the whole flag definition on a single line is OK.
@@ -82,8 +86,7 @@ func setupGlobals(_ *cobra.Command, _ []string) error {
 
 	config, err = configPkg.New(configPathFlag)
 	if err != nil {
-		slog.Error("Failed to load the config", "path", configPathFlag, "err", err)
-		return err
+		return fmt.Errorf("failed to load the config: %w", err)
 	}
 
 	manager = managerPkg.New(config.Data)
@@ -93,8 +96,7 @@ func setupGlobals(_ *cobra.Command, _ []string) error {
 
 func runRoot(_ *cobra.Command, _ []string) error {
 	if err := manager.Load(); err != nil {
-		slog.Error("Failed to load the notifications", "err", err)
-		return err
+		return fmt.Errorf("failed to load the notifications: %w", err)
 	}
 
 	notifications := load()
@@ -132,7 +134,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 
 	if filterFlag != "" {
 		if notifications, err = jq.Filter(filterFlag, notifications); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 		}
 	}
 
@@ -144,7 +146,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 				found = true
 
 				if notifications, err = rule.Filter(notifications); err != nil {
-					return nil, err
+					return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 				}
 			}
 		}
@@ -159,7 +161,7 @@ func filter(notifications notifications.Notifications) (notifications.Notificati
 		filter := fmt.Sprintf(`select(.meta.tags | index("%s"))`, tagFlag)
 
 		if notifications, err = jq.Filter(filter, notifications); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to filter the notifications: %w", err)
 		}
 	}
 
@@ -205,7 +207,7 @@ func displayTable(n notifications.Notifications) {
 func displayJSON(notifications notifications.Notifications) error {
 	marshaled, err := notifications.Marshal()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal the notifications: %w", err)
 	}
 
 	//nolint:forbidigo // This is an expected print statement.
@@ -226,8 +228,7 @@ func displayTags(n notifications.Notifications) error {
 func displayRepl(n notifications.Notifications) error {
 	caller, err := github.New()
 	if err != nil {
-		slog.Error("Failed to create an API REST client", "err", err)
-		return err
+		return fmt.Errorf("failed to create an API REST client: %w", err)
 	}
 
 	manager.SetCaller(caller)
@@ -236,18 +237,16 @@ func displayRepl(n notifications.Notifications) error {
 	// the logs to a file.
 	f, err := logger.InitWithFile(verbosityFlag, "/tmp/gh-not-debug.log")
 	if err != nil {
-		slog.Error("Failed to init the logger", "err", err)
-		return err
+		return fmt.Errorf("failed to init the logger: %w", err)
 	}
 	defer f.Close()
 
 	if err := repl.Init(n, manager.Actions, config.Data.Keymap, config.Data.View); err != nil {
-		return err
+		return fmt.Errorf("failed to init the REPL: %w", err)
 	}
 
 	if err := manager.Save(); err != nil {
-		slog.Error("Failed to save the notifications", "err", err)
-		return err
+		return fmt.Errorf("failed to save the notifications: %w", err)
 	}
 
 	return nil

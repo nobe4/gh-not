@@ -44,7 +44,7 @@ func runConfig(_ *cobra.Command, _ []string) error {
 
 	marshaled, err := config.Marshal()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
 	//nolint:forbidigo // This is an expected print statement.
@@ -60,13 +60,11 @@ func initConfig() error {
 	initialConfigDir := filepath.Dir(initialPath)
 
 	if err := os.MkdirAll(initialConfigDir, os.ModePerm); err != nil {
-		slog.Error("Failed to create config directory", "path", initialConfigDir, "err", err)
-		return err
+		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
 	if err := initialConfig.WriteConfig(); err != nil {
-		slog.Error("Failed to save initial config", "err", err)
-		return err
+		return fmt.Errorf("failed to save initial config: %w", err)
 	}
 
 	//nolint:forbidigo // This is an expected print statement.
@@ -90,11 +88,11 @@ func editConfig() error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("failed to start the editor: %w", err)
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return err
+		return fmt.Errorf("failed to wait for the editor: %w", err)
 	}
 
 	return nil

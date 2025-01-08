@@ -85,6 +85,8 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 }
 
 func TestIntegration(t *testing.T) {
+	t.Parallel()
+
 	dirs, err := os.ReadDir(".")
 	if err != nil {
 		t.Fatal(err)
@@ -96,6 +98,8 @@ func TestIntegration(t *testing.T) {
 		}
 
 		t.Run(dir.Name(), func(t *testing.T) {
+			t.Parallel()
+
 			m, c, want := setup(t, config{
 				ID:              dir.Name(),
 				RefreshStrategy: manager.ForceRefresh,

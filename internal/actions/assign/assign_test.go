@@ -14,14 +14,16 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	w := &bytes.Buffer{}
-
-	api := &mock.Mock{}
-	client := gh.Client{API: api}
-
-	runner := Runner{Client: &client}
+	t.Parallel()
 
 	t.Run("not assignees", func(t *testing.T) {
+		t.Parallel()
+
+		w := &bytes.Buffer{}
+		api := &mock.Mock{}
+		client := gh.Client{API: api}
+		runner := Runner{Client: &client}
+
 		n := &notifications.Notification{URL: "http://example.com"}
 
 		if err := runner.Run(n, []string{}, w); err == nil {
@@ -34,6 +36,12 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("not an issue or pull", func(t *testing.T) {
+		t.Parallel()
+
+		w := &bytes.Buffer{}
+		api := &mock.Mock{}
+		client := gh.Client{API: api}
+		runner := Runner{Client: &client}
 		n := &notifications.Notification{URL: "http://example.com"}
 
 		if err := runner.Run(n, []string{"user"}, w); err != nil {
@@ -46,6 +54,12 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("return an API failure", func(t *testing.T) {
+		t.Parallel()
+
+		w := &bytes.Buffer{}
+		api := &mock.Mock{}
+		client := gh.Client{API: api}
+		runner := Runner{Client: &client}
 		expectedError := errors.New("expected error")
 
 		api.Calls = append(api.Calls, mock.Call{
@@ -69,52 +83,41 @@ func TestRun(t *testing.T) {
 		}
 	})
 
-	t.Run("works for an issue", func(t *testing.T) {
-		api.Calls = append(api.Calls, mock.Call{
-			Verb:     "POST",
-			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
-			Data:     `{"assignees":["user"]}`,
-			Response: &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))},
+	for _, c := range []string{"issues", "pulls"} {
+		t.Run("works for "+c, func(t *testing.T) {
+			t.Parallel()
+
+			w := &bytes.Buffer{}
+			api := &mock.Mock{}
+			client := gh.Client{API: api}
+			runner := Runner{Client: &client}
+
+			api.Calls = append(api.Calls, mock.Call{
+				Verb:     "POST",
+				URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
+				Data:     `{"assignees":["user"]}`,
+				Response: &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))},
+			})
+			n := &notifications.Notification{
+				Subject: notifications.Subject{
+					URL: "https://api.github.com/repos/owner/repo/" + c + "/123",
+				},
+			}
+
+			if err := runner.Run(n, []string{"user"}, w); err != nil {
+				t.Fatal("unexpected error", err)
+			}
+
+			if err := api.Done(); err != nil {
+				t.Fatal("unexpected error", err)
+			}
 		})
-		n := &notifications.Notification{
-			Subject: notifications.Subject{
-				URL: "https://api.github.com/repos/owner/repo/issues/123",
-			},
-		}
-
-		if err := runner.Run(n, []string{"user"}, w); err != nil {
-			t.Fatal("unexpected error", err)
-		}
-
-		if err := api.Done(); err != nil {
-			t.Fatal("unexpected error", err)
-		}
-	})
-
-	t.Run("works for a pull", func(t *testing.T) {
-		api.Calls = append(api.Calls, mock.Call{
-			Verb:     "POST",
-			URL:      "https://api.github.com/repos/owner/repo/issues/123/assignees",
-			Data:     `{"assignees":["user"]}`,
-			Response: &http.Response{StatusCode: http.StatusCreated, Body: io.NopCloser(strings.NewReader(""))},
-		})
-		n := &notifications.Notification{
-			Subject: notifications.Subject{
-				URL: "https://api.github.com/repos/owner/repo/pulls/123",
-			},
-		}
-
-		if err := runner.Run(n, []string{"user"}, w); err != nil {
-			t.Fatal("unexpected error", err)
-		}
-
-		if err := api.Done(); err != nil {
-			t.Fatal("unexpected error", err)
-		}
-	})
+	}
 }
 
 func TestIsIssueOrPull(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		url   string
 		want  string
@@ -158,6 +161,8 @@ func TestIsIssueOrPull(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.url, func(t *testing.T) {
+			t.Parallel()
+
 			got, match := issueURL(test.url)
 			if match != test.match {
 				t.Errorf("want %v but got %v", test.match, match)

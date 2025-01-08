@@ -112,6 +112,8 @@ func mockClient(c []mock.Call) (*Client, *mock.Mock) {
 }
 
 func TestIsRetryable(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		err  error
@@ -150,6 +152,8 @@ func TestIsRetryable(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := isRetryable(test.err)
 			if got != test.want {
 				t.Errorf("expected %#v, got %#v", test.want, got)
@@ -159,6 +163,8 @@ func TestIsRetryable(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		all      bool
@@ -193,6 +199,8 @@ func TestNewClient(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			config := &config.Endpoint{
 				All:      test.all,
 				PerPage:  test.perPage,
@@ -210,6 +218,8 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		response *http.Response
@@ -256,6 +266,8 @@ func TestParse(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			notifications, next, err := parse(test.response)
 
 			if test.fails && err == nil {
@@ -276,6 +288,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestNextPageLink(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		header   http.Header
@@ -302,6 +316,8 @@ func TestNextPageLink(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := nextPageLink(&test.header)
 			if got != test.expected {
 				t.Errorf("expected %s, got %s", test.expected, got)
@@ -311,7 +327,11 @@ func TestNextPageLink(t *testing.T) {
 }
 
 func TestRequest(t *testing.T) {
+	t.Parallel()
+
 	t.Run("errors", func(t *testing.T) {
+		t.Parallel()
+
 		expectedError := errors.New("error")
 		client, api := mockClient([]mock.Call{{Error: expectedError}})
 
@@ -330,6 +350,8 @@ func TestRequest(t *testing.T) {
 	})
 
 	t.Run("calls parse", func(t *testing.T) {
+		t.Parallel()
+
 		response := &http.Response{
 			Body:   io.NopCloser(strings.NewReader(`[{"id":"0"}]`)),
 			Header: http.Header{"Link": []string{`<https://next.page>; rel="next"`}},
@@ -360,6 +382,8 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRetry(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name          string
 		calls         []mock.Call
@@ -412,6 +436,8 @@ func TestRetry(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			client, api := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 
@@ -433,6 +459,8 @@ func TestRetry(t *testing.T) {
 }
 
 func TestPaginate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name          string
 		calls         []mock.Call
@@ -527,6 +555,8 @@ func TestPaginate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			client, api := mockClient(test.calls)
 			client.maxRetry = test.maxRetry
 			client.maxPage = test.maxPage
@@ -549,6 +579,8 @@ func TestPaginate(t *testing.T) {
 }
 
 func TestEnrich(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		calls        []mock.Call
@@ -614,6 +646,8 @@ func TestEnrich(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			client, api := mockClient(test.calls)
 
 			err := client.Enrich(test.notification)

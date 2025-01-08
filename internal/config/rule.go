@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log/slog"
+	"fmt"
 
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -47,8 +47,7 @@ type Rule struct {
 func (r Rule) Test() error {
 	for _, filter := range r.Filters {
 		if err := jq.Validate(filter); err != nil {
-			slog.Error("rule failed", "rule", r.Name, "filter", filter, "err", err)
-			return err
+			return fmt.Errorf("failed to validate rule %q, filter %s: %w", r.Name, filter, err)
 		}
 	}
 
@@ -63,9 +62,8 @@ func (r Rule) Filter(n notifications.Notifications) (notifications.Notifications
 	// once instead of looping over the filters.
 	// Given that it's joined by `and`, we can just write the filters directly.
 	for _, filter := range r.Filters {
-		n, err = jq.Filter(filter, n)
-		if err != nil {
-			return nil, err
+		if n, err = jq.Filter(filter, n); err != nil {
+			return nil, fmt.Errorf("failed to filter notifications: %w", err)
 		}
 	}
 

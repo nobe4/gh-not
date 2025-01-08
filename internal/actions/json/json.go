@@ -20,7 +20,7 @@ func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error
 
 	marshaled, err := json.MarshalIndent(n, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal notification: %w", err)
 	}
 
 	fmt.Fprint(w, string(marshaled))

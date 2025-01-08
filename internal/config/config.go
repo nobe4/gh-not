@@ -10,6 +10,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"path/filepath"
@@ -107,15 +108,14 @@ func New(path string) (*Config, error) {
 			errors.Is(err, fs.ErrNotExist) {
 			slog.Warn("Config file not found, using default")
 		} else {
-			slog.Error("Failed to read config file", "err", err)
-			return nil, err
+			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
 	}
 
 	c.Path = c.viper.ConfigFileUsed()
 
 	if err := c.viper.Unmarshal(&c.Data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
 	for _, rule := range c.Data.Rules {
@@ -128,10 +128,10 @@ func New(path string) (*Config, error) {
 }
 
 func (c *Config) Marshal() ([]byte, error) {
+	//nolint:musttag // The struct is annotated with `mapstructure` tags already
 	marshaled, err := yaml.Marshal(c.Data)
 	if err != nil {
-		slog.Error("Failed to marshall config", "err", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal config: %w", err)
 	}
 
 	return marshaled, nil

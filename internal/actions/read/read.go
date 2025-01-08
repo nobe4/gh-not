@@ -27,7 +27,7 @@ func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) err
 	// to catch this case.
 	// ref: https://github.com/cli/go-gh/issues/161
 	if err != nil && err.Error() != "unexpected end of JSON input" {
-		return err
+		return fmt.Errorf("failed to mark notification as read: %w", err)
 	}
 
 	defer r.Body.Close()
