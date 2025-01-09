@@ -69,6 +69,7 @@ func Sync(local, remote Notifications) Notifications {
 			if local[i].Meta.Done || local[i].Meta.Hidden {
 				// (4) Drop
 				slog.Debug("sync", "action", "drop", "id", local[i].ID)
+
 				continue
 			}
 

@@ -118,6 +118,7 @@ func (m model) applyNext() tea.Cmd {
 	return func() tea.Msg {
 		if len(m.processQueue) == 0 {
 			slog.Debug("no more command to apply")
+
 			return CleanListMsg{}
 		}
 

@@ -100,6 +100,7 @@ func (n Notifications) Equal(others Notifications) bool {
 	for i, n := range n {
 		if !n.Equal(others[i]) {
 			slog.Info("notification not equal", "n", n.Debug(), "other", others[i].Debug())
+
 			return false
 		}
 	}

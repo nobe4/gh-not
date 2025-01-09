@@ -74,6 +74,7 @@ func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.list.KeyMap.Quit):
 		m.showResult = false
+
 		return m, nil
 	}
 
@@ -116,6 +117,7 @@ func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.keymap.CommandMode):
 		slog.Debug("focus command")
+
 		return m, m.command.Focus()
 	}
 

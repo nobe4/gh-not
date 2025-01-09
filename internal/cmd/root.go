@@ -107,11 +107,13 @@ func runRoot(_ *cobra.Command, _ []string) error {
 	n, err := filter(n)
 	if err != nil {
 		slog.Error("Failed to filter the notifications", "err", err)
+
 		return err
 	}
 
 	if err := display(n); err != nil {
 		slog.Error("Failed to display the notifications", "err", err)
+
 		return err
 	}
 
@@ -156,6 +158,7 @@ func filter(n notifications.Notifications) (notifications.Notifications, error) 
 
 		if !found {
 			slog.Error("Rule not found", "rule", ruleFlag)
+
 			return nil, fmt.Errorf("invalid rule '%s': %w", ruleFlag, errRuleNotFound)
 		}
 	}
