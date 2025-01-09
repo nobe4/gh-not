@@ -118,6 +118,7 @@ func (m *Manager) Apply() error {
 		runner, ok := m.Actions[rule.Action]
 		if !ok {
 			slog.Error("unknown action", "action", rule.Action)
+
 			continue
 		}
 
@@ -131,12 +132,14 @@ func (m *Manager) Apply() error {
 		for _, notification := range selectedNotifications {
 			if notification.Meta.Done && !m.ForceStrategy.Has(ForceApply) {
 				slog.Debug("skipping done notification", "id", notification.ID)
+
 				continue
 			}
 
 			if m.ForceStrategy.Has(ForceNoop) {
 				//nolint:forbidigo // This is an expected print statement.
 				fmt.Printf("NOOP'ing action %s on notification %s\n", rule.Action, notification.String())
+
 				continue
 			}
 

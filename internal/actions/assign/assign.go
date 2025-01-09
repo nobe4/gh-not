@@ -56,6 +56,7 @@ func (a *Runner) Run(n *notifications.Notification, assignees []string, w io.Wri
 	url, ok := issueURL(n.Subject.URL)
 	if !ok {
 		slog.Warn("not an issue or pull", "notification", n)
+
 		return nil
 	}
 

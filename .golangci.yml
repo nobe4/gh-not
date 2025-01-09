@@ -7,8 +7,6 @@ linters:
     - cyclop # some functions need refactoring, I'll deal with that later
     - exhaustruct # it's ok not to specify all the fields in a struct definition
     - godox # I like leaving TODOs in the code
-    - nlreturn # keeps the code concise
-    - predeclared # need to rename the print action
     - testpackage # keep the tests close to the code
     - varnamelen # short variable names are okay
 

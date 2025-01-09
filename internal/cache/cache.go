@@ -48,6 +48,7 @@ func (c *File) Read(out any) error {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			slog.Debug("cache doesn't exist", "path", c.path)
+
 			return nil
 		}
 

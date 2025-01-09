@@ -1,7 +1,7 @@
 /*
 Package print implements an [actions.Runner] that prints a notification.
 */
-//nolint:forbidigo // This action is correctly named.
+//nolint:forbidigo,predeclared // This action is correctly named.
 package print
 
 import (
