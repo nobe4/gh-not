@@ -14,7 +14,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
@@ -98,18 +97,11 @@ func (c *File) Write(in any) error {
 		return fmt.Errorf("failed to marshal cache: %w", err)
 	}
 
-	if err := os.MkdirAll(
-		filepath.Dir(c.path),
-		syscall.S_IRUSR|syscall.S_IWUSR|syscall.S_IXUSR,
-	); err != nil {
+	if err := os.MkdirAll(filepath.Dir(c.path), 0o700); err != nil {
 		return fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	if err := os.WriteFile(
-		c.path,
-		marshaled,
-		syscall.S_IRUSR|syscall.S_IWUSR,
-	); err != nil {
+	if err := os.WriteFile(c.path, marshaled, 0o600); err != nil {
 		return fmt.Errorf("failed to write cache: %w", err)
 	}
 

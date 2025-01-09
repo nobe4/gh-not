@@ -5,7 +5,6 @@ linters:
 
   disable:
     - cyclop # some functions need refactoring, I'll deal with that later
-    - depguard # I'm not that pedantic
     - exhaustruct # it's ok not to specify all the fields in a struct definition
     - godox # I like leaving TODOs in the code
     - nlreturn # keeps the code concise
@@ -45,6 +44,34 @@ linters-settings:
       - standard
       - default
       - localmodule
+
+  mnd:
+    ignored-numbers:
+      # UNIX permissions mask
+      - "0o700" # rwx------
+      - "0o600" # rw-------
+
+    ignored-functions:
+      # Functions that require a UNIX permissions mask
+      - "os.WriteFile"
+      - "os.OpenFile"
+      - "os.MkdirAll"
+
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+        allow:
+          - $gostd
+          - github.com/cli/go-gh
+          - github.com/nobe4/gh-not
+          - github.com/charmbracelet/bubbletea
+          - github.com/charmbracelet/bubbles
+          - github.com/charmbracelet/lipgloss
+          - github.com/spf13/cobra
+          - github.com/spf13/viper
+          - github.com/itchyny/gojq
 
   revive:
     enable-all-rules: true
