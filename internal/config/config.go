@@ -100,7 +100,7 @@ func Default(path string) (*viper.Viper, string) {
 
 func New(path string) (*Config, error) {
 	if strings.HasPrefix(path, "~") {
-		slog.Warn("tilde expansion is not supported, use $HOME instead")
+		return nil, fmt.Errorf("%w: config path: %s", tildeUsageErr, path)
 	}
 
 	v, path := Default(path)
@@ -127,6 +127,10 @@ func New(path string) (*Config, error) {
 		if err := rule.Test(); err != nil {
 			return nil, err
 		}
+	}
+
+	if strings.HasPrefix(c.Data.Cache.Path, "~") {
+		return nil, fmt.Errorf("%w: cache path: %s", tildeUsageErr, c.Data.Cache.Path)
 	}
 
 	return c, nil
