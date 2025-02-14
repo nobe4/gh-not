@@ -5,19 +5,20 @@ import (
 	"runtime/debug"
 )
 
-//nolint:gochecknoglobals // Those globals are used to render the version.
-var (
-	tag    = "UNSET_TAG" // set via ldflags
-	commit = "UNSET_COMMIT"
-	date   = "UNSET_DATE"
-)
-
-const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
-
 func String() string {
+	const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
+
+	var (
+		tag    = "UNSET_TAG"
+		commit = "UNSET_COMMIT"
+		date   = "UNSET_DATE"
+	)
+
 	info, ok := debug.ReadBuildInfo()
 
 	if ok {
+		tag = info.Main.Version
+
 		for _, setting := range info.Settings {
 			if setting.Key == "vcs.revision" {
 				commit = setting.Value

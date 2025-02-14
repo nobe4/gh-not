@@ -14,7 +14,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X github.com/nobe4/gh-not/internal/version.tag={{.Tag}}
+      - -s -w
 
 archives:
   - name_template: "{{ .Os }}-{{ .Arch }}"
