@@ -17,8 +17,6 @@ func String() string {
 	info, ok := debug.ReadBuildInfo()
 
 	if ok {
-		fmt.Printf("%+v\n", info)
-
 		tag = info.Main.Version
 
 		for _, setting := range info.Settings {
