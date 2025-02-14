@@ -29,6 +29,8 @@
     go build ./cmd/gh-not
     ```
 
+    See [`version.go`](./internal/version/version.go) for custom build info.
+
 # Getting started
 
 Run the following commands to get started and see the available commands and

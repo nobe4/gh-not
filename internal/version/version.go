@@ -5,15 +5,27 @@ import (
 	"runtime/debug"
 )
 
+const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
+
+// Leaving them global to allow setting them via ldflags.
+// E.g. go build ./cmd/gh-not -ldflags "-X github.com/nobe4/gh-not/internal/version.tag=0.1.0".
+//
+//nolint:gochecknoglobals // see above.
+var (
+	tag    = "UNSET_TAG"
+	commit = "UNSET_COMMIT"
+	date   = "UNSET_DATE"
+)
+
 func String() string {
-	const template = "%s (%s) built at %s\nhttps://github.com/nobe4/gh-not/releases/tag/%s"
+	if tag == "UNSET_TAG" && commit == "UNSET_COMMIT" && date == "UNSET_DATE" {
+		parseBuildInfo()
+	}
 
-	var (
-		tag    = "UNSET_TAG"
-		commit = "UNSET_COMMIT"
-		date   = "UNSET_DATE"
-	)
+	return fmt.Sprintf(template, tag, commit, date, tag)
+}
 
+func parseBuildInfo() {
 	info, ok := debug.ReadBuildInfo()
 
 	if ok {
@@ -29,6 +41,4 @@ func String() string {
 			}
 		}
 	}
-
-	return fmt.Sprintf(template, tag, commit, date, tag)
 }
