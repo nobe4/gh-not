@@ -1,6 +1,6 @@
 module github.com/nobe4/gh-not
 
-go 1.22.0
+go 1.24.0
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
