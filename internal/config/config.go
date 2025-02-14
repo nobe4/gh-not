@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -98,6 +99,10 @@ func Default(path string) (*viper.Viper, string) {
 }
 
 func New(path string) (*Config, error) {
+	if strings.HasPrefix(path, "~") {
+		slog.Warn("tilde expansion is not supported, use $HOME instead")
+	}
+
 	v, path := Default(path)
 	slog.Debug("loading configuration", "path", path)
 	c := &Config{viper: v, Path: path}
