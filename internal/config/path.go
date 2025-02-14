@@ -17,7 +17,7 @@ const (
 	xdgStateHome   = "XDG_STATE_HOME"
 )
 
-var tildeUsageErr = errors.New("tilde in path is not supported, use $HOME instead")
+var errTiledUsage = errors.New("tilde in path is not supported, use $HOME instead")
 
 // Dir returns the directory where the configuration files are stored.
 func Dir() string {

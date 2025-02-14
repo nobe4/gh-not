@@ -100,7 +100,7 @@ func Default(path string) (*viper.Viper, string) {
 
 func New(path string) (*Config, error) {
 	if strings.HasPrefix(path, "~") {
-		return nil, fmt.Errorf("%w: config path: %s", tildeUsageErr, path)
+		return nil, fmt.Errorf("%w: config path: %s", errTiledUsage, path)
 	}
 
 	v, path := Default(path)
@@ -130,7 +130,7 @@ func New(path string) (*Config, error) {
 	}
 
 	if strings.HasPrefix(c.Data.Cache.Path, "~") {
-		return nil, fmt.Errorf("%w: cache path: %s", tildeUsageErr, c.Data.Cache.Path)
+		return nil, fmt.Errorf("%w: cache path: %s", errTiledUsage, c.Data.Cache.Path)
 	}
 
 	return c, nil
