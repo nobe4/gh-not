@@ -55,7 +55,7 @@ func StateDir() string {
 
 func ExpandPathWithoutTilde(path string) (string, error) {
 	if strings.HasPrefix(path, "~") {
-		return "", fmt.Errorf("%w: config path: %s", errTildeUsage, path)
+		return "", fmt.Errorf("%w: %s", errTildeUsage, path)
 	}
 
 	// Allows to use $HOME and other environment variables in the configuration
