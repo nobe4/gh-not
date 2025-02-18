@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
@@ -82,6 +83,9 @@ func Default(path string) (*viper.Viper, string) {
 	if path == "" {
 		path = filepath.Join(Dir(), "config.yaml")
 		slog.Debug("path is empty, setting default path", "default path", path)
+	} else {
+		// Allows to use $HOME in the config path.
+		path = os.ExpandEnv(path)
 	}
 
 	v := viper.New()
@@ -123,6 +127,9 @@ func New(path string) (*Config, error) {
 			return nil, err
 		}
 	}
+
+	// Allows to use $HOME in the cache path.
+	c.Data.Cache.Path = os.ExpandEnv(c.Data.Cache.Path)
 
 	return c, nil
 }
