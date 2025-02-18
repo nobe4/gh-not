@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // inspired by https://github.com/cli/go-gh/blob/trunk/pkg/config/config.go
@@ -15,6 +18,8 @@ const (
 	xdgConfigHome  = "XDG_CONFIG_HOME"
 	xdgStateHome   = "XDG_STATE_HOME"
 )
+
+var errTildeUsage = errors.New("tilde in path is not supported, use $HOME instead")
 
 // Dir returns the directory where the configuration files are stored.
 func Dir() string {
@@ -46,4 +51,14 @@ func StateDir() string {
 	}
 
 	return path
+}
+
+func ExpandPathWithoutTilde(path string) (string, error) {
+	if strings.HasPrefix(path, "~") {
+		return "", fmt.Errorf("%w: config path: %s", errTildeUsage, path)
+	}
+
+	// Allows to use $HOME and other environment variables in the configuration
+	// paths.
+	return os.ExpandEnv(path), nil
 }

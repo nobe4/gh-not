@@ -85,6 +85,18 @@ func init() {
 func setupGlobals(_ *cobra.Command, _ []string) error {
 	logger.Init(verbosityFlag)
 
+	slog.Debug("flags",
+		"verbosity", verbosityFlag,
+		"config", configPathFlag,
+		"all", allFlag,
+		"rule", ruleFlag,
+		"filter", filterFlag,
+		"tag", tagFlag,
+		"tags", tagsFlag,
+		"json", jsonFlag,
+		"repl", replFlag,
+	)
+
 	var err error
 
 	config, err = configPkg.New(configPathFlag)
