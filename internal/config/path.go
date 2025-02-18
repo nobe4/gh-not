@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,6 +16,8 @@ const (
 	xdgConfigHome  = "XDG_CONFIG_HOME"
 	xdgStateHome   = "XDG_STATE_HOME"
 )
+
+var errTildeUsage = errors.New("tilde in path is not supported, use $HOME instead")
 
 // Dir returns the directory where the configuration files are stored.
 func Dir() string {
