@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -22,19 +23,68 @@ func TestExpandPathWithoutTilde(t *testing.T) {
 		}
 	})
 
-	t.Run("expands environment variables", func(t *testing.T) {
-		t.Setenv("HOME", "/home/user")
+	tests := []struct {
+		envKey   string
+		envValue string
+		path     string
+		want     string
+	}{
+		{
+			envKey:   "HOME",
+			envValue: "/home",
+			path:     "/dev",
+			want:     "/dev",
+		},
+		{
+			envKey:   "HOME",
+			envValue: "/home",
+			path:     "$HOME/dev",
+			want:     "/home/dev",
+		},
+		{
+			envKey:   "XDG_CONFIG_HOME",
+			envValue: "/home/.config",
+			path:     "$XDG_CONFIG_HOME/dev",
+			want:     "/home/.config/dev",
+		},
+		{
+			envKey:   "FOO",
+			envValue: "/home",
+			path:     "$FOO/dev",
+			want:     "/home/dev",
+		},
+		{
+			envKey:   "FOO",
+			envValue: "/user",
+			path:     "$FOO/dev$FOO",
+			want:     "/user/dev/user",
+		},
+		{
+			envKey:   "FOO",
+			envValue: "",
+			path:     "$FOO/dev$FOO",
+			want:     "/dev",
+		},
+		{
+			envKey:   "FOO",
+			envValue: "$FOO",
+			path:     "/dev$FOO",
+			want:     "/dev$FOO",
+		},
+	}
 
-		path := "$HOME/.config/gh-not"
-		want := "/home/user/.config/gh-not"
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("expands '%s' correctly", test.path), func(t *testing.T) {
+			t.Setenv(test.envKey, test.envValue)
 
-		got, err := ExpandPathWithoutTilde(path)
-		if err != nil {
-			t.Fatalf("want no error, got %v", err)
-		}
+			got, err := ExpandPathWithoutTilde(test.path)
+			if err != nil {
+				t.Fatalf("want no error, got %v", err)
+			}
 
-		if got != want {
-			t.Errorf("want %q, got %q", want, got)
-		}
-	})
+			if got != test.want {
+				t.Errorf("want %q, got %q", test.want, got)
+			}
+		})
+	}
 }
