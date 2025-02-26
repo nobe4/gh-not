@@ -2,9 +2,11 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // inspired by https://github.com/cli/go-gh/blob/trunk/pkg/config/config.go
@@ -49,4 +51,14 @@ func StateDir() string {
 	}
 
 	return path
+}
+
+func ExpandPathWithoutTilde(path string) (string, error) {
+	if strings.HasPrefix(path, "~") {
+		return "", fmt.Errorf("%w: %s", errTildeUsage, path)
+	}
+
+	// Allows to use $HOME and other environment variables in the configuration
+	// paths.
+	return os.ExpandEnv(path), nil
 }

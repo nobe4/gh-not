@@ -14,7 +14,6 @@ import (
 	"io/fs"
 	"log/slog"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -99,8 +98,9 @@ func Default(path string) (*viper.Viper, string) {
 }
 
 func New(path string) (*Config, error) {
-	if strings.HasPrefix(path, "~") {
-		return nil, fmt.Errorf("%w: config path: %s", errTildeUsage, path)
+	path, err := ExpandPathWithoutTilde(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to expand config path: %w", err)
 	}
 
 	v, path := Default(path)
@@ -129,8 +129,9 @@ func New(path string) (*Config, error) {
 		}
 	}
 
-	if strings.HasPrefix(c.Data.Cache.Path, "~") {
-		return nil, fmt.Errorf("%w: cache path: %s", errTildeUsage, c.Data.Cache.Path)
+	c.Data.Cache.Path, err = ExpandPathWithoutTilde(c.Data.Cache.Path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to expand cache path: %w", err)
 	}
 
 	return c, nil
