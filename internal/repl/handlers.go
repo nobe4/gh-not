@@ -1,8 +1,8 @@
 package repl
 
 import (
+	"io"
 	"log/slog"
-	"os"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -109,7 +109,7 @@ func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keymap.Open):
 		current, ok := m.list.SelectedItem().(item)
 		if ok {
-			err := m.actions["open"].Run(current.notification, nil, os.Stderr)
+			err := m.actions["open"].Run(current.notification, nil, io.Discard)
 			if err != nil {
 				slog.Warn("error opening", "notification", current.notification, "error", err)
 			}
