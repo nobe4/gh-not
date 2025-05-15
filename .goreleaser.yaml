@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-# Local testing: goreleaser --snapshot --clean
 
 version: 2
 
@@ -10,7 +8,7 @@ before:
     - go generate ./...
 
 builds:
-  - main: ./cmd/gh-not
+  - main: ./cmd/{{ .ProjectName }}
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -18,10 +16,10 @@ builds:
 
 archives:
   - name_template: "{{ .Os }}-{{ .Arch }}"
-    format: binary
+    formats: binary
 
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  version_template: "{{ .Tag }}-next"
 
 changelog:
   use: github-native
