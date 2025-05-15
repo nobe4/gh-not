@@ -1,5 +1,10 @@
 /*
 Package json implements an [actions.Runner] that prints a notification in JSON.
+
+In the REPL, you can pass a single filter to narrow down the output, like you
+would with `jq`:
+
+	:json .subject.url
 */
 package json
 
