@@ -1,3 +1,4 @@
+//nolint:ireturn // Returning interfaces is how bubbletea works.
 package repl
 
 import (
@@ -104,6 +105,9 @@ func (m model) viewFullHelp() string {
 	)
 }
 
+//nolint:cyclop // TODO: simplify.
+//revive:disable:cognitive-complexity // Ditto.
+//revive:disable:cyclomatic // Ditto.
 func (m model) View() string {
 	if !m.ready {
 		return "Initializing..."

@@ -91,6 +91,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 	return ns, nil
 }
 
+//revive:disable:cognitive-complexity // TODO: simplify.
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
 		runner, ok := m.Actions[rule.Action]

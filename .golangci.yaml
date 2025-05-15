@@ -15,7 +15,6 @@ linters:
     - testpackage # keep the tests close to the code
     - varnamelen # short variable names are okay
     - funlen # using revive's function-length
-    - cyclop # some functions need refactoring, I'll deal with that later
 
   settings:
 
@@ -65,15 +64,6 @@ linters:
             - fmt.Fprintf
             - fmt.Fprintln
 
-        - name: cognitive-complexity
-          disabled: true # TODO: re enable to simplify functions
-
-        - name: cyclomatic
-          disabled: true # TODO: re enable to simplify functions
-
-        - name: max-public-structs
-          disabled: true # I might enable that later
-
     tagliatelle:
       case:
         rules:
@@ -93,49 +83,26 @@ linters:
           - cyclop
           - gocognit
         path: _test.go
-
       - linters:
           - revive
         path: _test
         text: line-length-limit
-
       - linters:
           - revive
         path: _test
         text: function-length
-
       - linters:
           - revive
         path: _test
         text: cyclomatic
-
       - linters:
           - revive
         path: _test
         text: cognitive-complexity
-
       - linters:
           - revive
         text: line-length-limit
         source: https?://
-
-      - linters:
-          - bodyclose
-          - funlen
-          - revive
-        path: _test.go
-
-      - linters:
-          # using globals is recommended with spf13/cobra
-          - gochecknoglobals
-          # using init() is recommended with spf13/cobra
-          - gochecknoinits
-        path: internal/cmd
-
-      - linters:
-          # returning interface is the way to work with charmbracelet/bubbletea
-          - ireturn
-        path: internal/repl
 
     paths:
       - third_party$

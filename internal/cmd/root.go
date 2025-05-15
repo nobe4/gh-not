@@ -19,6 +19,7 @@ import (
 	"github.com/nobe4/gh-not/internal/version"
 )
 
+//nolint:gochecknoglobals // This is how cobra is used.
 var (
 	verbosityFlag  int
 	configPathFlag string
@@ -61,7 +62,8 @@ func Execute() error {
 	return nil
 }
 
-//nolint:lll // Having the whole flag definition on a single line is OK.
+//revive:disable:line-length-limit // Having the whole flag definition on a single line is OK.
+//nolint:gochecknoinits // TODO: check if this can be changed.
 func init() {
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
 
@@ -71,8 +73,7 @@ func init() {
 	// Filter
 	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications, even the hidden/done ones.")
 	rootCmd.Flags().StringVarP(&ruleFlag, "rule", "r", "", "Filter based on a rule name")
-	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "",
-		"Filter with a jq expression passed into a select(...) call")
+	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
 	rootCmd.Flags().StringVarP(&tagFlag, "tag", "t", "", "Filter from a single tag")
 	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter", "tag")
 
@@ -147,6 +148,7 @@ func load() notifications.Notifications {
 	return n
 }
 
+//revive:disable:cognitive-complexity // TODO: simplify.
 func filter(n notifications.Notifications) (notifications.Notifications, error) {
 	var err error
 

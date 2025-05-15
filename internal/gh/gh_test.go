@@ -58,6 +58,7 @@ func mockNotifications(ids []int) []*notifications.Notification {
 	return n
 }
 
+//revive:disable:flag-parameter // In this mock function, this is fine.
 func mockNotificationsResponse(t *testing.T, ids []int, next bool) *http.Response {
 	t.Helper()
 
@@ -102,14 +103,14 @@ func notificationsEqual(a, b []*notifications.Notification) bool {
 }
 
 func mockClient(c []mock.Call) (*Client, *mock.Mock) {
-	mock := &mock.Mock{Calls: c}
+	m := &mock.Mock{Calls: c}
 
 	return &Client{
-		API:      mock,
+		API:      m,
 		path:     endpoint,
 		maxRetry: 100,
 		maxPage:  100,
-	}, mock
+	}, m
 }
 
 func TestIsRetryable(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	apiMock "github.com/nobe4/gh-not/internal/api/mock"
-	configPkg "github.com/nobe4/gh-not/internal/config"
+	apipkg "github.com/nobe4/gh-not/internal/api/mock"
+	configpkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/logger"
 	"github.com/nobe4/gh-not/internal/manager"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -22,7 +22,7 @@ type config struct {
 	RefreshStrategy manager.RefreshStrategy
 }
 
-func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifications.Notifications) {
+func setup(t *testing.T, conf config) (*manager.Manager, *apipkg.Mock, notifications.Notifications) {
 	t.Helper()
 	logger.Init(5)
 	slog.Info("---- Starting test ----", "test", t.Name())
@@ -32,7 +32,7 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	wantPath := fmt.Sprintf("./%s/want.json", conf.ID)
 	cachePath := fmt.Sprintf("./%s/cache.json", conf.ID)
 
-	c, err := configPkg.New(configPath)
+	c, err := configpkg.New(configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,12 +46,12 @@ func setup(t *testing.T, conf config) (*manager.Manager, *apiMock.Mock, notifica
 	m.ForceStrategy = conf.ForceStrategy
 	m.RefreshStrategy = conf.RefreshStrategy
 
-	calls, err := apiMock.LoadCallsFromFile(callsPath)
+	calls, err := apipkg.LoadCallsFromFile(callsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	caller := &apiMock.Mock{Calls: calls}
+	caller := &apipkg.Mock{Calls: calls}
 	m.SetCaller(caller)
 
 	if err = m.Load(); err != nil {

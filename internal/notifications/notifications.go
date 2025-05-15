@@ -2,6 +2,7 @@
 //
 // Reference: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28
 
+//revive:disable:max-public-structs // TODO: split this into multiple files.
 package notifications
 
 import (
@@ -108,6 +109,8 @@ func (n Notifications) Equal(others Notifications) bool {
 	return true
 }
 
+//nolint:cyclop // TODO: add sub struct equality.
+//revive:disable:cyclomatic
 func (n Notification) Equal(other *Notification) bool {
 	return n.ID == other.ID &&
 		n.Unread == other.Unread &&

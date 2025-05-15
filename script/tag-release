@@ -5,5 +5,5 @@ set -e
 echo    "last tag: $(git describe --abbrev=0 || git describe --tags)"
 read -p "new tag:  " new_tag
 
-git tag -s -a -m "${new_tag}" ${new_tag}
+git tag -s -a -m "${new_tag}" "${new_tag}"
 git push origin "${new_tag}"
