@@ -1,29 +1,39 @@
 /*
 Package json implements an [actions.Runner] that prints a notification in JSON.
+
+In the REPL, you can pass a single filter to narrow down the output, like you
+would with `jq`:
+
+	:json .subject.url
 */
 package json
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
+	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 type Runner struct{}
 
-func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
+func (*Runner) Run(n *notifications.Notification, filters []string, w io.Writer) error {
 	if n.Meta.Hidden {
 		return nil
 	}
 
-	marshaled, err := json.MarshalIndent(n, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification: %w", err)
+	filter := ""
+	if len(filters) > 0 {
+		filter = filters[0]
 	}
 
-	fmt.Fprint(w, string(marshaled))
+	result, err := jq.Run(filter, *n)
+	if err != nil {
+		return fmt.Errorf("failed to run json with filter '%s': %w", filter, err)
+	}
+
+	fmt.Fprint(w, result)
 
 	return nil
 }
