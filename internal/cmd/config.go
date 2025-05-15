@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	configPkg "github.com/nobe4/gh-not/internal/config"
+	configpkg "github.com/nobe4/gh-not/internal/config"
 )
 
 var (
@@ -57,7 +57,7 @@ func runConfig(_ *cobra.Command, _ []string) error {
 func initConfig() error {
 	slog.Debug("creating initial config file", "path", configPathFlag)
 
-	initialConfig, initialPath := configPkg.Default(configPathFlag)
+	initialConfig, initialPath := configpkg.Default(configPathFlag)
 	initialConfigDir := filepath.Dir(initialPath)
 
 	if err := os.MkdirAll(initialConfigDir, os.ModePerm); err != nil {

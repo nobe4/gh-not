@@ -31,6 +31,15 @@ func (m *Mock) Done() error {
 	return nil
 }
 
+func (m *Mock) Request(verb, endpoint string, _ io.Reader) (*http.Response, error) {
+	call, err := m.call(verb, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return call.Response, call.Error
+}
+
 func (m *Mock) call(verb, endpoint string) (Call, error) {
 	if m.index >= len(m.Calls) {
 		return Call{}, &Error{verb, endpoint, "unexpected call: no more calls"}
@@ -50,13 +59,4 @@ func (m *Mock) call(verb, endpoint string) (Call, error) {
 	slog.Debug("mock call", "verb", verb, "endpoint", endpoint, "call", call)
 
 	return call, nil
-}
-
-func (m *Mock) Request(verb, endpoint string, _ io.Reader) (*http.Response, error) {
-	call, err := m.call(verb, endpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	return call.Response, call.Error
 }

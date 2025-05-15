@@ -10,14 +10,14 @@ import (
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/api/file"
 	"github.com/nobe4/gh-not/internal/api/github"
-	managerPkg "github.com/nobe4/gh-not/internal/manager"
+	managerpkg "github.com/nobe4/gh-not/internal/manager"
 )
 
 var (
 	notificationDumpPath string
 
-	refreshStrategy managerPkg.RefreshStrategy
-	forceStrategy   managerPkg.ForceStrategy
+	refreshStrategy managerpkg.RefreshStrategy
+	forceStrategy   managerpkg.ForceStrategy
 
 	syncCmd = &cobra.Command{
 		Use:   "sync",
@@ -47,7 +47,8 @@ func init() {
 	syncCmd.Flags().VarP(&forceStrategy, "force-strategy", "f", "Force strategy: "+forceStrategy.Allowed())
 	syncCmd.Flags().VarP(&refreshStrategy, "refresh-strategy", "r", "Refresh strategy: "+refreshStrategy.Allowed())
 
-	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "", "Path to notification dump in JSON (generate with 'gh api /notifications')")
+	syncCmd.Flags().StringVarP(&notificationDumpPath, "from-file", "", "",
+		"Path to notification dump in JSON (generate with 'gh api /notifications')")
 }
 
 func runSync(_ *cobra.Command, _ []string) error {

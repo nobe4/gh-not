@@ -78,18 +78,6 @@ func (c *File) RefreshedAt() time.Time {
 	return c.wrap.RefreshedAt
 }
 
-func (c *File) deprecatedRead(content []byte) error {
-	slog.Warn("Cache is in an format deprecated in v0.5.0. Attempting to read from the old format.")
-
-	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
-		return fmt.Errorf("failed to unmarshal deprecated cache: %w", err)
-	}
-
-	c.wrap.RefreshedAt = time.Unix(0, 0)
-
-	return nil
-}
-
 func (c *File) Write(in any) error {
 	c.wrap.Data = in
 
@@ -105,6 +93,18 @@ func (c *File) Write(in any) error {
 	if err := os.WriteFile(c.path, marshaled, 0o600); err != nil {
 		return fmt.Errorf("failed to write cache: %w", err)
 	}
+
+	return nil
+}
+
+func (c *File) deprecatedRead(content []byte) error {
+	slog.Warn("Cache is in an format deprecated in v0.5.0. Attempting to read from the old format.")
+
+	if err := json.Unmarshal(content, c.wrap.Data); err != nil {
+		return fmt.Errorf("failed to unmarshal deprecated cache: %w", err)
+	}
+
+	c.wrap.RefreshedAt = time.Unix(0, 0)
 
 	return nil
 }
