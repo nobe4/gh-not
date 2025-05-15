@@ -1,3 +1,4 @@
+//nolint:ireturn // Returning interfaces is how bubbletea works.
 package repl
 
 import (
@@ -84,6 +85,8 @@ func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+//revive:disable:cognitive-complexity // TODO: simplify.
+//revive:disable:cyclomatic // Ditto.
 func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("browsing", "key", msg.String())
 

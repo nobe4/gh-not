@@ -4,6 +4,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+//nolint:ireturn // This is how bubbleteam works.
 func (m model) selectAll(selected bool) (tea.Model, tea.Cmd) {
 	cmds := []tea.Cmd{}
 

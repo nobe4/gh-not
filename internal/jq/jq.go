@@ -14,6 +14,8 @@ var errInvalidID = errors.New("invalid ID")
 // TODO: refactor this as a callback to be called on n.Filter(flt) and have
 // n.Filter call .Compact
 // Filter applies a `.[] | select(filter)` on the notifications.
+//
+//revive:disable:cognitive-complexity // TODO: simplify.
 func Filter(filter string, n notifications.Notifications) (notifications.Notifications, error) {
 	if filter == "" {
 		return n, nil

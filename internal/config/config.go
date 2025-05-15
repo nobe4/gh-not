@@ -97,6 +97,7 @@ func Default(path string) (*viper.Viper, string) {
 	return v, path
 }
 
+//revive:disable:cognitive-complexity // TODO: simplify.
 func New(path string) (*Config, error) {
 	path, err := ExpandPathWithoutTilde(path)
 	if err != nil {
@@ -107,7 +108,7 @@ func New(path string) (*Config, error) {
 	slog.Debug("loading configuration", "path", path)
 	c := &Config{viper: v, Path: path}
 
-	if err := c.viper.ReadInConfig(); err != nil {
+	if err = c.viper.ReadInConfig(); err != nil {
 		var viperNotFoundError viper.ConfigFileNotFoundError
 		if !errors.As(err, &viperNotFoundError) &&
 			!errors.Is(err, fs.ErrNotExist) {
@@ -119,12 +120,12 @@ func New(path string) (*Config, error) {
 
 	c.Path = c.viper.ConfigFileUsed()
 
-	if err := c.viper.Unmarshal(&c.Data); err != nil {
+	if err = c.viper.Unmarshal(&c.Data); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
 	for _, rule := range c.Data.Rules {
-		if err := rule.Test(); err != nil {
+		if err = rule.Test(); err != nil {
 			return nil, err
 		}
 	}

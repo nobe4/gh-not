@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+//nolint:gochecknoinits // TODO: check if this can be changed.
 func init() {
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "repl",

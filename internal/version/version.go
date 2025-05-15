@@ -27,18 +27,19 @@ func String() string {
 
 func parseBuildInfo() {
 	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
 
-	if ok {
-		tag = info.Main.Version
+	tag = info.Main.Version
 
-		for _, setting := range info.Settings {
-			if setting.Key == "vcs.revision" {
-				commit = setting.Value
-			}
+	for _, setting := range info.Settings {
+		if setting.Key == "vcs.revision" {
+			commit = setting.Value
+		}
 
-			if setting.Key == "vcs.time" {
-				date = setting.Value
-			}
+		if setting.Key == "vcs.time" {
+			date = setting.Value
 		}
 	}
 }

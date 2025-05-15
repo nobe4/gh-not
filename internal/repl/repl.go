@@ -1,3 +1,4 @@
+//nolint:ireturn // This is how bubbleteam works.
 package repl
 
 import (

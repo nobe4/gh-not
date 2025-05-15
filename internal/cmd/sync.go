@@ -13,6 +13,7 @@ import (
 	managerpkg "github.com/nobe4/gh-not/internal/manager"
 )
 
+//nolint:gochecknoglobals // This is how cobra is used.
 var (
 	notificationDumpPath string
 
@@ -40,6 +41,7 @@ See synchronization logic at https://pkg.go.dev/github.com/nobe4/gh-not/internal
 	}
 )
 
+//nolint:gochecknoinits // TODO: check if this can be changed.
 //nolint:lll // Having the whole flag definition on a single line is OK.
 func init() {
 	rootCmd.AddCommand(syncCmd)

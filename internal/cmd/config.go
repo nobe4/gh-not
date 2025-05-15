@@ -13,6 +13,7 @@ import (
 	configpkg "github.com/nobe4/gh-not/internal/config"
 )
 
+//nolint:gochecknoglobals // This is how cobra is used.
 var (
 	editConfigFlag = false
 	initConfigFlag = false
@@ -25,6 +26,7 @@ var (
 	errNoEditor = errors.New("EDITOR environment variable not set")
 )
 
+//nolint:gochecknoinits // TODO: check if this can be changed.
 func init() {
 	rootCmd.AddCommand(configCmd)
 

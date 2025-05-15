@@ -104,6 +104,8 @@ func (n Notification) Visible() bool {
 
 // Render the notifications in a human readable format.
 // If possible, render a table, otherwise render a simple string.
+//
+//revive:disable:cognitive-complexity // TODO: simplify.
 func (n Notifications) Render() error {
 	if len(n) == 0 {
 		return nil
