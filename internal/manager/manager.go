@@ -64,28 +64,6 @@ func (m *Manager) Refresh() error {
 	return nil
 }
 
-func (m *Manager) refreshNotifications() error {
-	if m.client == nil {
-		return fmt.Errorf("cannot refresh notifications: %w", errNoClient)
-	}
-
-	//nolint:forbidigo // This is an expected print statement.
-	fmt.Printf("Refreshing notifications...\n")
-
-	remoteNotifications, err := m.client.Notifications()
-	if err != nil {
-		return fmt.Errorf("error listing remote notifications: %w", err)
-	}
-
-	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
-	m.Notifications = m.Notifications.Uniq()
-	m.Notifications, err = m.Enrich(m.Notifications)
-
-	m.Cache.Refresh(time.Now())
-
-	return err
-}
-
 func (m *Manager) Save() error {
 	if err := m.Cache.Write(m.Notifications.Compact()); err != nil {
 		return fmt.Errorf("cannot save the cache: %w", err)
@@ -154,4 +132,26 @@ func (m *Manager) Apply() error {
 	m.Notifications = m.Notifications.Compact()
 
 	return nil
+}
+
+func (m *Manager) refreshNotifications() error {
+	if m.client == nil {
+		return fmt.Errorf("cannot refresh notifications: %w", errNoClient)
+	}
+
+	//nolint:forbidigo // This is an expected print statement.
+	fmt.Printf("Refreshing notifications...\n")
+
+	remoteNotifications, err := m.client.Notifications()
+	if err != nil {
+		return fmt.Errorf("error listing remote notifications: %w", err)
+	}
+
+	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
+	m.Notifications = m.Notifications.Uniq()
+	m.Notifications, err = m.Enrich(m.Notifications)
+
+	m.Cache.Refresh(time.Now())
+
+	return err
 }

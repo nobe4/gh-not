@@ -10,10 +10,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nobe4/gh-not/internal/api/github"
-	configPkg "github.com/nobe4/gh-not/internal/config"
+	configpkg "github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/logger"
-	managerPkg "github.com/nobe4/gh-not/internal/manager"
+	managerpkg "github.com/nobe4/gh-not/internal/manager"
 	"github.com/nobe4/gh-not/internal/notifications"
 	"github.com/nobe4/gh-not/internal/repl"
 	"github.com/nobe4/gh-not/internal/version"
@@ -30,8 +30,8 @@ var (
 	jsonFlag       bool
 	allFlag        bool
 
-	config  *configPkg.Config
-	manager *managerPkg.Manager
+	config  *configpkg.Config
+	manager *managerpkg.Manager
 
 	rootCmd = &cobra.Command{
 		Use:     "gh-not",
@@ -71,7 +71,8 @@ func init() {
 	// Filter
 	rootCmd.Flags().BoolVarP(&allFlag, "all", "a", false, "List all the notifications, even the hidden/done ones.")
 	rootCmd.Flags().StringVarP(&ruleFlag, "rule", "r", "", "Filter based on a rule name")
-	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "", "Filter with a jq expression passed into a select(...) call")
+	rootCmd.Flags().StringVarP(&filterFlag, "filter", "f", "",
+		"Filter with a jq expression passed into a select(...) call")
 	rootCmd.Flags().StringVarP(&tagFlag, "tag", "t", "", "Filter from a single tag")
 	rootCmd.MarkFlagsMutuallyExclusive("rule", "filter", "tag")
 
@@ -99,12 +100,12 @@ func setupGlobals(_ *cobra.Command, _ []string) error {
 
 	var err error
 
-	config, err = configPkg.New(configPathFlag)
+	config, err = configpkg.New(configPathFlag)
 	if err != nil {
 		return fmt.Errorf("failed to load the config: %w", err)
 	}
 
-	manager = managerPkg.New(config.Data)
+	manager = managerpkg.New(config.Data)
 
 	return nil
 }
