@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-find . -not -path './.git/*' -not -path './dist/*' | \
-    entr -c \
-    bash -c '
-        go test -race -count 10 -cover -coverprofile=coverage ./... &&
-        go tool cover -html=coverage -o coverage.html
-    '
