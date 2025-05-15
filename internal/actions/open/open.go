@@ -31,7 +31,7 @@ func (*Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error
 		return errNoURL
 	}
 
-	fmt.Fprint(w, colors.Blue("OPEN ")+n.Subject.URL)
+	fmt.Fprint(w, colors.Blue("OPEN ")+n.Subject.URL+" ")
 
 	if err := b.Browse(n.Subject.HTMLURL); err != nil {
 		return fmt.Errorf("failed to open browser: %w", err)
