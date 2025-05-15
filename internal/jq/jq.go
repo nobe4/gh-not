@@ -1,6 +1,7 @@
 package jq
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -9,7 +10,10 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-var errInvalidID = errors.New("invalid ID")
+var (
+	errInvalidID = errors.New("invalid ID")
+	errNextValue = errors.New("failed to get the next value")
+)
 
 // TODO: refactor this as a callback to be called on n.Filter(flt) and have
 // n.Filter call .Compact
@@ -69,4 +73,40 @@ func Validate(filter string) error {
 	}
 
 	return nil
+}
+
+// Run runs the jq filter on the notifications and returns the result as a
+// string.
+func Run(filter string, n notifications.Notification) (string, error) {
+	if filter == "" {
+		filter = "."
+	}
+
+	// gojq works only on `any` data, so we need to convert Notifications to
+	// interface{}. This also gives us back the JSON fields from the API.
+	notificationsRaw, err := n.Interface()
+	if err != nil {
+		return "", fmt.Errorf("failed to convert notifications to raw interface: %w", err)
+	}
+
+	query, err := gojq.Parse(filter)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse filter: %w", err)
+	}
+
+	v, ok := query.Run(notificationsRaw).Next()
+	if !ok {
+		return "", errNextValue
+	}
+
+	if err, ok = v.(error); ok {
+		return "", fmt.Errorf("failed to run filter: %w", err)
+	}
+
+	out, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal result: %w", err)
+	}
+
+	return string(out), nil
 }

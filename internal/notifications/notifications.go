@@ -134,6 +134,29 @@ func (n Notification) Equal(other *Notification) bool {
 		n.Meta.RemoteExists == other.Meta.RemoteExists
 }
 
+func (n Notification) Marshal() ([]byte, error) {
+	marshaled, err := json.Marshal(n)
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal notifications: %w", err)
+	}
+
+	return marshaled, nil
+}
+
+func (n Notification) Interface() (any, error) {
+	marshaled, err := n.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	var i any
+	if err := json.Unmarshal(marshaled, &i); err != nil {
+		return nil, fmt.Errorf("cannot convert to interface: %w", err)
+	}
+
+	return i, nil
+}
+
 func (n Notifications) Debug() string {
 	out := []string{}
 	for _, n := range n {
