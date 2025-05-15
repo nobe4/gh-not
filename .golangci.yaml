@@ -1,0 +1,131 @@
+# Ref: https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+linters:
+  default: all
+
+  disable:
+    - contextcheck # I will revisit that later, with the `slog.Log` wrapper it's difficult.
+    - depguard # Using go.mod is enough
+    - exhaustruct # it's ok not to specify all the fields in a struct definition
+    - godox # I like leaving TODOs in the code
+    - lll # using revive's line-length-limit
+    - nonamedreturns # using revive's confusing-results and bare-return
+    - testpackage # keep the tests close to the code
+    - varnamelen # short variable names are okay
+    - funlen # using revive's function-length
+
+  settings:
+
+    misspell:
+      mode: default
+      locale: US
+
+    mnd:
+      ignored-numbers:
+        # UNIX permissions mask
+        - "0o700" # rwx------
+        - "0o600" # rw-------
+
+      ignored-functions:
+        # Functions that require a UNIX permissions mask
+        - os.WriteFile
+        - os.OpenFile
+        - os.MkdirAll
+
+    nolintlint:
+      require-explanation: true
+
+    revive:
+      enable-all-rules: true
+
+      rules:
+        - name: add-constant
+          disabled: true
+
+        - name: context-as-argument
+          arguments:
+            - allowTypesBefore: '*testing.T'
+
+        - name: comment-spacings
+          arguments:
+            - nolint
+
+        - name: line-length-limit
+          arguments:
+            - 120
+
+        - name: unhandled-error
+          arguments:
+            - fmt.Printf
+            - fmt.Println
+            - fmt.Fprint
+            - fmt.Fprintf
+            - fmt.Fprintln
+
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+          yaml: snake
+
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+
+    rules:
+      - linters:
+          - bodyclose
+          - cyclop
+          - gocognit
+        path: _test.go
+      - linters:
+          - revive
+        path: _test
+        text: line-length-limit
+      - linters:
+          - revive
+        path: _test
+        text: function-length
+      - linters:
+          - revive
+        path: _test
+        text: cyclomatic
+      - linters:
+          - revive
+        path: _test
+        text: cognitive-complexity
+      - linters:
+          - revive
+        text: line-length-limit
+        source: https?://
+
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+
+formatters:
+
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+
+  exclusions:
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
