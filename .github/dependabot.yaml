@@ -1,19 +1,30 @@
 ---
 version: 2
 
+# It's fine to have dependabot consider more languages than used in the repo.
+
 updates:
+
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
     groups:
-      github-actions:
+      go:
         patterns: ["*"]
+    schedule:
+      interval: monthly
 
   - package-ecosystem: "gomod"
     directory: "/"
-    schedule:
-      interval: "weekly"
     groups:
-      go-packages:
+      go:
         patterns: ["*"]
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    groups:
+      npm:
+        patterns: ["*"]
+    schedule:
+      interval: monthly
