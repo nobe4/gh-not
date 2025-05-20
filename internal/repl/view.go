@@ -55,10 +55,10 @@ func (m model) initView() model {
 }
 
 func (m model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
-	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
-
 	// NOTE: the height needs to be reduced by 1 to allow for the status line.
 	newHeight := min(msg.Height, m.maxHeight) - 1
+
+	slog.Debug("resize", "width", msg.Width, "height", newHeight)
 
 	m.list.SetHeight(newHeight)
 	m.list.SetWidth(msg.Width)
