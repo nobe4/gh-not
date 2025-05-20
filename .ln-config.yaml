@@ -4,7 +4,7 @@ defaults:
 
 links:
   - from: script/tag-release
-  - from: .github/dependabot.yml
+  - from: .github/dependabot.yaml
 
   - from: go/.ln-config.yaml
     to: .ln-config.yaml
