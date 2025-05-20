@@ -57,10 +57,13 @@ func (m model) initView() model {
 func (m model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
 
-	m.list.SetHeight(min(msg.Height, m.maxHeight))
+	// NOTE: the height needs to be reduced by 1 to allow for the status line.
+	newHeight := min(msg.Height, m.maxHeight) - 1
+
+	m.list.SetHeight(newHeight)
 	m.list.SetWidth(msg.Width)
 
-	m.result.Height = min(msg.Height, m.maxHeight)
+	m.result.Height = newHeight
 	m.result.Width = msg.Width
 
 	if !m.ready {
@@ -137,6 +140,8 @@ func (m model) View() string {
 
 		statusLine += m.list.Help.Styles.ShortDesc.Render("? to toggle help")
 	} else {
+		slog.Debug("show list", "height", m.list.Height())
+
 		statusLine = m.list.Paginator.View() + " "
 		selected := 0
 
