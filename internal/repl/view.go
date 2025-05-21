@@ -57,7 +57,8 @@ func (m model) initView() model {
 func (m model) handleResize(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("resize", "width", msg.Width, "height", msg.Height)
 
-	m.list.SetHeight(min(msg.Height, m.maxHeight))
+	// shorten the list height by one because statusLine is always 1 line
+	m.list.SetHeight(min(msg.Height, m.maxHeight) - 1)
 	m.list.SetWidth(msg.Width)
 
 	m.result.Height = min(msg.Height, m.maxHeight)
