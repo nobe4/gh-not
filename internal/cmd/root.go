@@ -256,7 +256,7 @@ func displayRepl(n notifications.Notifications) error {
 
 	// Launching bubbletea will occupy STDOUT and STDERR, so we need to redirect
 	// the logs to a file.
-	replLogFile := "/tmp/gh-not-debug.log"
+	replLogFile := config.Data.View.LogPath
 	slog.Debug("Repl view logs directed to separate file", "path", replLogFile)
 
 	f, err := logger.InitWithFile(verbosityFlag, replLogFile)
