@@ -74,6 +74,8 @@ type Cache struct {
 type View struct {
 	// Number of notifications to display at once.
 	Height int `mapstructure:"height"`
+	// Where to write logs when REPL is showing.
+	LogPath string `mapstructure:"log_path"`
 }
 
 func Default(path string) (*viper.Viper, string) {
