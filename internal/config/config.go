@@ -74,7 +74,7 @@ type Cache struct {
 type View struct {
 	// Number of notifications to display at once.
 	Height int `mapstructure:"height"`
-	// Where to write logs when repl is showing
+	// Where to write logs when REPL is showing.
 	LogPath string `mapstructure:"log_path"`
 }
 

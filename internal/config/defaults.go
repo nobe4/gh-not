@@ -13,7 +13,7 @@ var Defaults = map[string]any{
 	"endpoint.per_page":  100,
 
 	"view.height":   40,
-	"view.log_path": path.Join(StateDir(), "gh-not-debug.log"),
+	"view.log_path": path.Join(StateDir(), "debug.log"),
 
 	"rules": []Rule{},
 
