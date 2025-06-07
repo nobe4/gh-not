@@ -4,22 +4,11 @@ defaults:
 
 links:
   - from: script/tag-release
-  - from: .github/dependabot.yaml
-
-  - from: go/.ln-config.yaml
-    to: .ln-config.yaml
-
-  - from: go/script/lint
-    to: script/lint
-
-  - from: go/script/test
-    to: script/test
-
-  - from: go/script/build
-    to: script/build
-
-  - from: go/.golangci.yaml
-    to: .golangci.yaml
-
-  - from: go/.goreleaser.yaml
-    to: .goreleaser.yaml
+  - from:
+      - "go/.ln-config.yaml"
+      - go/script/lint
+      - go/script/test
+      - go/script/build
+      - go/.golangci.yaml
+      - go/.goreleaser.yaml
+    to: "{{ pathTrimN .Link.From.Path 1 }}"

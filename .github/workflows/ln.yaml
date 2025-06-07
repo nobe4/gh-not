@@ -15,5 +15,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
     steps:
       - uses: nobe4/action-ln@v0
+        with:
+          noop: true
