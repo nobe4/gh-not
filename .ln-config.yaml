@@ -4,6 +4,7 @@ defaults:
 
 links:
   - from: script/tag-release
+  - from: .github/workflows/ln.yaml
   - from: .github/dependabot.yaml
   - from:
       - go/.ln-config.yaml
