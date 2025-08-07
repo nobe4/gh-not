@@ -2,6 +2,9 @@
 
 version: "2"
 
+run:
+  allow-parallel-runners: true
+
 linters:
   default: all
 
@@ -15,6 +18,8 @@ linters:
     - testpackage # keep the tests close to the code
     - varnamelen # short variable names are okay
     - funlen # using revive's function-length
+    - noinlineerr # inline errors are sometimes ok
+    - wsl # deprecated
 
   settings:
 
