@@ -273,7 +273,7 @@ func TestParse(t *testing.T) {
 			notifications, next, err := parse(test.response)
 
 			if test.fails && err == nil {
-				t.Errorf("expected test to fails")
+				t.Error("expected test to fails")
 			} else if !test.fails && err != nil {
 				t.Errorf("expected test to pass, got %#v", err)
 			}
@@ -338,7 +338,7 @@ func TestRequest(t *testing.T) {
 
 		_, _, err := client.request(verb, endpoint, nil)
 		if err == nil {
-			t.Errorf("expected test to fails")
+			t.Error("expected test to fails")
 		}
 
 		if !errors.Is(err, errExpected) {
@@ -361,7 +361,7 @@ func TestRequest(t *testing.T) {
 
 		notifications, next, err := client.request(verb, endpoint, nil)
 		if err != nil {
-			t.Errorf("expected test to pass")
+			t.Error("expected test to pass")
 		}
 
 		if next != "https://next.page" {
@@ -634,7 +634,7 @@ func TestEnrich(t *testing.T) {
 			assertError: func(t *testing.T, err error) {
 				t.Helper()
 				if err == nil {
-					t.Fatalf("expected error but got nil")
+					t.Fatal("expected error but got nil")
 				}
 
 				expected := &json.SyntaxError{}

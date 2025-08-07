@@ -44,11 +44,12 @@ func TestRefreshStrategy(t *testing.T) {
 				t.Parallel()
 
 				var got RefreshStrategy
+
 				err := got.Set(test.value)
 
 				if test.error {
 					if err == nil {
-						t.Errorf("expected an error but got none")
+						t.Error("expected an error but got none")
 					}
 				} else {
 					if err != nil {
@@ -106,11 +107,12 @@ func TestForceStrategy(t *testing.T) {
 				t.Parallel()
 
 				var got ForceStrategy
+
 				err := got.Set(test.value)
 
 				if test.error {
 					if err == nil {
-						t.Errorf("expected an error but got none")
+						t.Error("expected an error but got none")
 					}
 				} else {
 					if err != nil {

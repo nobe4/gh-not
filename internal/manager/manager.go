@@ -141,7 +141,7 @@ func (m *Manager) refreshNotifications() error {
 	}
 
 	//nolint:forbidigo // This is an expected print statement.
-	fmt.Printf("Refreshing notifications...\n")
+	fmt.Print("Refreshing notifications...\n")
 
 	remoteNotifications, err := m.client.Notifications()
 	if err != nil {

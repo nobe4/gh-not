@@ -65,6 +65,7 @@ func isRetryable(e error) bool {
 		switch httpError.StatusCode {
 		case http.StatusNotFound, http.StatusBadGateway, http.StatusGatewayTimeout: // expected status code
 			return true
+		default:
 		}
 	}
 

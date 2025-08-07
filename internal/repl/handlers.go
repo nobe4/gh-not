@@ -59,9 +59,12 @@ func (m model) handleCommand(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, m.keymap.CommandCancel):
 		return m.cancelCommand()
+
+	default:
 	}
 
 	var cmd tea.Cmd
+
 	m.command, cmd = m.command.Update(msg)
 
 	return m, cmd
@@ -77,9 +80,12 @@ func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.showResult = false
 
 		return m, nil
+
+	default:
 	}
 
 	var cmd tea.Cmd
+
 	m.result, cmd = m.result.Update(msg)
 
 	return m, cmd
@@ -87,6 +93,7 @@ func (m model) handleResult(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 //revive:disable:cognitive-complexity // TODO: simplify.
 //revive:disable:cyclomatic // Ditto.
+//nolint:cyclop // Ditto.
 func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("browsing", "key", msg.String())
 
@@ -122,9 +129,12 @@ func (m model) handleBrowsing(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		slog.Debug("focus command")
 
 		return m, m.command.Focus()
+
+	default:
 	}
 
 	var cmd tea.Cmd
+
 	m.list, cmd = m.list.Update(msg)
 
 	return m, cmd
@@ -147,6 +157,7 @@ func (m model) handleFiltering(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	slog.Debug("filtering", "key", msg.String())
 
 	var cmd tea.Cmd
+
 	m.list, cmd = m.list.Update(msg)
 
 	return m, cmd
