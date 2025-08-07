@@ -32,9 +32,9 @@ func (r *RefreshStrategy) String() string {
 		return "force"
 	case PreventRefresh:
 		return "prevent"
+	default:
+		return "unknown"
 	}
-
-	return "unknown"
 }
 
 func (*RefreshStrategy) Allowed() string {
@@ -125,9 +125,7 @@ func (*ForceStrategy) Allowed() string {
 }
 
 func (r *ForceStrategy) Set(value string) error {
-	v := strings.Split(value, ",")
-
-	for _, s := range v {
+	for s := range strings.SplitSeq(value, ",") {
 		switch s {
 		case "apply":
 			*r |= ForceApply

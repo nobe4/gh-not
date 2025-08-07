@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -84,7 +85,7 @@ func editConfig() error {
 		return errNoEditor
 	}
 
-	cmd := exec.Command(editor, config.Path)
+	cmd := exec.CommandContext(context.TODO(), editor, config.Path)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
