@@ -49,7 +49,7 @@ func TestFilter(t *testing.T) {
 			assertErr: func(t *testing.T, err error) {
 				t.Helper()
 				if err == nil {
-					t.Fatalf("expected error but got nil")
+					t.Fatal("expected error but got nil")
 				}
 
 				expected := &gojq.ParseError{}
@@ -134,7 +134,7 @@ func TestValidate(t *testing.T) {
 			assertErr: func(t *testing.T, err error) {
 				t.Helper()
 				if err == nil {
-					t.Fatalf("expected error but got nil")
+					t.Fatal("expected error but got nil")
 				}
 
 				expected := &gojq.ParseError{}

@@ -38,6 +38,8 @@ func initWithWriter(w io.Writer, verbosity int) {
 	case 5:
 		opts.Level = slog.LevelDebug
 		opts.AddSource = true
+	default:
+		opts.Level = slog.LevelInfo
 	}
 
 	handler := slog.NewTextHandler(w, opts)
