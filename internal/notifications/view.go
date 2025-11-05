@@ -3,6 +3,7 @@ package notifications
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -157,7 +158,11 @@ func (n Notifications) Render() error {
 		return fmt.Errorf("failed to render table: %w", err)
 	}
 
-	for i, l := range strings.Split(strings.TrimRight(out.String(), "\n"), "\n") {
+	tableLines := strings.Split(strings.TrimRight(out.String(), "\n"), "\n")
+
+	slog.Info("Rendered notifiation in a table", "notification count", len(n), "table line count", len(tableLines))
+
+	for i, l := range tableLines {
 		n[i].rendered = l
 	}
 
