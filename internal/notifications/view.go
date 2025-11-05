@@ -143,7 +143,7 @@ func (n Notifications) Render() error {
 		printer.AddField(n.prettyState())
 		printer.AddField(n.Repository.FullName)
 		printer.AddField(n.Author.Login)
-		printer.AddField(n.Subject.Title)
+		printer.AddField(strings.ReplaceAll(n.Subject.Title, "\n", " "))
 
 		relativeTime := text.RelativeTimeAgo(time.Now(), n.UpdatedAt)
 		if n.LatestCommentor.Login != "" {
