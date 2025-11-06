@@ -1,4 +1,5 @@
-// Handles storing notification types and provides some helpers.
+// Packaeg notifications handles storing notification types and provides some
+// helpers.
 //
 // Reference: https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28
 
@@ -200,6 +201,7 @@ func (n Notifications) IDList() []string {
 	return ids
 }
 
+// Compact remove all nil notifications.
 // TODO: in-place update.
 func (n Notifications) Compact() Notifications {
 	return slices.DeleteFunc(n, func(n *Notification) bool {
@@ -219,6 +221,7 @@ func (n Notifications) Sort() {
 	})
 }
 
+// Uniq remove all duplicated notifications.
 // TODO: in-place update.
 func (n Notifications) Uniq() Notifications {
 	seenIDs := map[string]bool{}
