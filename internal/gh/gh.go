@@ -1,4 +1,5 @@
-// Interact with GitHub's api, wrapper around cli/go-gh client object.
+// Package gh interact with GitHub's api, wrapper around cli/go-gh client
+// object.
 package gh
 
 import (

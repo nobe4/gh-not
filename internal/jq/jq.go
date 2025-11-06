@@ -15,9 +15,9 @@ var (
 	errNextValue = errors.New("failed to get the next value")
 )
 
+// Filter applies a `.[] | select(filter)` on the notifications.
 // TODO: refactor this as a callback to be called on n.Filter(flt) and have
 // n.Filter call .Compact
-// Filter applies a `.[] | select(filter)` on the notifications.
 //
 //revive:disable:cognitive-complexity // TODO: simplify.
 func Filter(filter string, n notifications.Notifications) (notifications.Notifications, error) {
