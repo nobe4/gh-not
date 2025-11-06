@@ -615,6 +615,7 @@ func TestEnrich(t *testing.T) {
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
 				t.Helper()
+
 				if !errors.Is(err, errSample) {
 					t.Errorf("expected to fail with %#v but got %#v", errSample, err)
 				}
@@ -633,6 +634,7 @@ func TestEnrich(t *testing.T) {
 			notification: mockNotification(0),
 			assertError: func(t *testing.T, err error) {
 				t.Helper()
+
 				if err == nil {
 					t.Fatal("expected error but got nil")
 				}
