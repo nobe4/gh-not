@@ -65,6 +65,10 @@ func (n Notification) prettyState() string {
 	return colors.Yellow("S?")
 }
 
+func (n Notification) prettyTitle() string {
+	return strings.ReplaceAll(n.Subject.Title, "\n", " ")
+}
+
 func (n Notifications) String() string {
 	out := ""
 	for _, n := range n {
@@ -121,7 +125,8 @@ func (n Notifications) Render() error {
 			n.Repository.FullName,
 			n.Author.Login,
 			text.RelativeTimeAgo(time.Now(), n.UpdatedAt),
-			n.Subject.Title)
+			n.prettyTitle(),
+		)
 	}
 
 	// Try to render a table
@@ -142,7 +147,7 @@ func (n Notifications) Render() error {
 		printer.AddField(n.prettyState())
 		printer.AddField(n.Repository.FullName)
 		printer.AddField(n.Author.Login)
-		printer.AddField(n.Subject.Title)
+		printer.AddField(n.prettyTitle())
 
 		relativeTime := text.RelativeTimeAgo(time.Now(), n.UpdatedAt)
 		if n.LatestCommentor.Login != "" {
