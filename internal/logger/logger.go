@@ -31,8 +31,6 @@ func initWithWriter(w io.Writer, verbosity int) {
 		opts.Level = slog.LevelError
 	case 2:
 		opts.Level = slog.LevelWarn
-	case 3:
-		opts.Level = slog.LevelInfo
 	case 4:
 		opts.Level = slog.LevelDebug
 	case 5:

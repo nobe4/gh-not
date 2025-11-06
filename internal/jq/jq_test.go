@@ -48,6 +48,7 @@ func TestFilter(t *testing.T) {
 			filter: "!!!",
 			assertErr: func(t *testing.T, err error) {
 				t.Helper()
+
 				if err == nil {
 					t.Fatal("expected error but got nil")
 				}
@@ -133,6 +134,7 @@ func TestValidate(t *testing.T) {
 			filter: "!!!",
 			assertErr: func(t *testing.T, err error) {
 				t.Helper()
+
 				if err == nil {
 					t.Fatal("expected error but got nil")
 				}
