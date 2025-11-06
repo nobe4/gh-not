@@ -16,4 +16,4 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: nobe4/action-ln@v0
+      - uses: nobe4/action-ln@v0.20.0
