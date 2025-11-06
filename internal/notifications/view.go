@@ -66,12 +66,12 @@ func (n Notification) prettyState() string {
 }
 
 func (n Notifications) String() string {
-	out := ""
+	var out strings.Builder
 	for _, n := range n {
-		out += fmt.Sprintf("%s\n", n)
+		out.WriteString(fmt.Sprintf("%s\n", n))
 	}
 
-	return out
+	return out.String()
 }
 
 func (n Notifications) Visible() Notifications {

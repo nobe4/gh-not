@@ -54,6 +54,7 @@ func (r *RefreshStrategy) ShouldRefresh(expired bool) bool {
 		return false
 
 	case AutoRefresh:
+		//revive:disable:useless-fallthrough // The case and default can't be merged.
 		fallthrough
 	default:
 		slog.Debug("refresh based on cache expiration", "expired", expired)
@@ -93,7 +94,7 @@ const (
 	// ForceNoop prevents any Action from being executed.
 	ForceNoop
 
-	// ForceApply forces the enrichment of all notifications, even the ones
+	// ForceEnrich forces the enrichment of all notifications, even the ones
 	// marked as Done.
 	ForceEnrich
 )
