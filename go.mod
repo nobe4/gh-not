@@ -1,13 +1,13 @@
 module github.com/nobe4/gh-not
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250319133953-166f707985bc
 	github.com/cli/go-gh v1.2.1
-	github.com/cli/go-gh/v2 v2.12.2
+	github.com/cli/go-gh/v2 v2.13.0
 	github.com/itchyny/gojq v0.12.17
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
