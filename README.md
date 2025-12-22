@@ -172,46 +172,41 @@ rule contains three fields and must contain an action and at least one filter.
 
 ### Examples
 
-Mark closed dependabot PRs as done
 ```yaml
-- name: Mark closed dependabot PRs as done
+- name: mark closed dependabot PRs as done
   filters:
-  - .author.login == "dependabot[bot]"
-  - .subject.state == "closed"
+    - .author.login == "dependabot[bot]"
+    - .subject.state == "closed"
   action: done
 ```
 
-Ignore a specific repo.
 ```yaml
-- name: ignore test repo
+- name: ignore a specific repo
   filters:
-  - .repository.name == "greg-ci-tests"
+    - .repository.name == "greg-ci-tests"
   action: done
 ```
 
-Close notifications marked as read
 ```yaml
 - name: close read notifications
   filters:
-  - .unread == false
+    - .unread == false
   action: done
 ```
 
-Mark notifications of PRs closed over a week ago as read
 ```yml
 - name: mark notifications of PRs closed over a week ago as read
   filters:
-  - .subject.state == "closed"
-  - .updated_at | fromdate < now - 604800
+    - .subject.state == "closed"
+    - .updated_at | fromdate < now - 604800
   action: read
 ```
 
-Close read notifications older than 2 weeks
 ```yml
 - name: close read notifications older than 2 weeks
   filters:
-  - .unread == false    
-  - .updated_at | fromdate < now - 1209600
+    - .unread == false    
+    - .updated_at | fromdate < now - 1209600
   action: done
 ```
 
