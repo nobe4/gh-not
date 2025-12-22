@@ -97,7 +97,6 @@ func (m *Manager) Apply() error {
 		runner, ok := m.Actions[rule.Action]
 		if !ok {
 			slog.Error("unknown action", "action", rule.Action)
-
 			continue
 		}
 
