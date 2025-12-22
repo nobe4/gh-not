@@ -47,7 +47,8 @@ type Rule struct {
 }
 
 // Validate tests the rule for correctness. A rule must have an action and at least one filter.
-func (r Rule) Validate() (violations []string) {
+func (r Rule) Validate() []string {
+	var violations []string
 	actionsMap := actions.GetMap(nil)
 	if _, ok := actionsMap[r.Action]; !ok {
 		if r.Action == "" {
