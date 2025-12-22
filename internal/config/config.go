@@ -127,14 +127,13 @@ func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
 	for i, rule := range c.Data.Rules {
 		if violations := rule.Validate(); len(violations) > 0 {
-			errorStr := dent.IndentString(strings.Join(violations, "\n"), "- ")
-			errorStr = dent.IndentString(errorStr, "  ")
+			errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
 
 			yml, yerr := rule.Marshal()
 			if yerr != nil {
 				slog.Error("failed to marshal rule", "err", yerr)
 			}
-			valErr := fmt.Sprintf(`Invalid rule (index %v): 
+			valErr := fmt.Sprintf(`Invalid rule (index %d): 
 %s
 Errors: 
 %s`, i, dent.IndentString(string(yml), "  "), errorStr)
