@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/nobe4/dent.go"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -126,8 +127,8 @@ func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
 	for i, rule := range c.Data.Rules {
 		if violations := rule.Validate(); len(violations) > 0 {
-			errorStr := padLines(strings.Join(violations, "\n"), "- ")
-			errorStr = padLines(errorStr, "  ")
+			errorStr := dent.IndentString(strings.Join(violations, "\n"), "- ")
+			errorStr = dent.IndentString(errorStr, "  ")
 
 			yml, yerr := rule.Marshal()
 			if yerr != nil {
@@ -136,7 +137,7 @@ func (c *Config) ValidateRules() error {
 			valErr := fmt.Sprintf(`Invalid rule (index %v): 
 %s
 Errors: 
-%s`, i, padLines(string(yml), "  "), errorStr)
+%s`, i, dent.IndentString(string(yml), "  "), errorStr)
 			validationErrors = append(validationErrors, valErr)
 		}
 	}
@@ -145,16 +146,4 @@ Errors:
 	}
 
 	return nil
-}
-
-func padLines(s string, pad string) string {
-	var sb strings.Builder
-	sb.WriteString(pad)
-	for _, c := range s {
-		sb.WriteRune(c)
-		if c == '\n' {
-			sb.WriteString(pad)
-		}
-	}
-	return sb.String()
 }
