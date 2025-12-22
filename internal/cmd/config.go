@@ -24,7 +24,8 @@ var (
 		Short: "Print the config to stdout",
 		RunE:  runConfig,
 	}
-	errNoEditor = errors.New("EDITOR environment variable not set")
+	errNoEditor     = errors.New("EDITOR environment variable not set")
+	errConfigExists = errors.New("config file already exists; delete it if you want it overwritten")
 )
 
 //nolint:gochecknoinits // TODO: check if this can be changed.
@@ -39,8 +40,10 @@ func runConfig(c *cobra.Command, _ []string) error {
 	if initConfigFlag {
 		if err := initConfig(); err != nil {
 			c.SilenceUsage = true
+
 			return err
 		}
+
 		return nil
 	}
 
@@ -70,7 +73,7 @@ func initConfig() error {
 	}
 
 	if _, err := os.Stat(initialConfig.ConfigFileUsed()); err == nil {
-		return fmt.Errorf("config file already exists at %s - delete it if you want it overwritten", initialConfig.ConfigFileUsed())
+		return fmt.Errorf("%w: %s", errConfigExists, initialConfig.ConfigFileUsed())
 	}
 
 	if err := initialConfig.WriteConfig(); err != nil {
