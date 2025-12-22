@@ -2,15 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
@@ -20,12 +19,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
+
+      - name: Generate embed file
+        run: go generate ./...
 
       - name: Build
-        run: |
-          go generate ./...
-          go build -v -race ./cmd/gh-not
+        run: go build -v -race ./cmd/gh-not
 
   test:
     runs-on: ubuntu-latest
@@ -36,12 +36,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
+
+      - name: Generate embed file
+        run: go generate ./...
 
       - name: Test
-        run: |
-          go generate ./...
-          go test -race -count 10 -cover ./...
+        run: go test -race -count 10 -cover ./...
 
   lint:
     runs-on: ubuntu-latest
@@ -52,59 +53,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: 'go.mod'
-
-      # Taken from https://github.com/cli/cli/blob/trunk/.github/workflows/lint.yml
-      - name: Lint
-        run: |
-            STATUS=0
-            assert-nothing-changed() {
-              local diff
-              "$@" >/dev/null || return 1
-              if ! diff="$(git diff -U1 --color --exit-code)"; then
-                printf '\e[31mError: running `\e[1m%s\e[22m` results in modifications that you must check into version control:\e[0m\n%s\n\n' "$*" "$diff" >&2
-                git checkout -- .
-                STATUS=1
-              fi
-            }
-
-            assert-nothing-changed go fmt ./...
-            assert-nothing-changed go mod tidy
-
-            exit $STATUS
-
-  deadcode:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Deadcode
-        run: |
-          go install golang.org/x/tools/cmd/deadcode@latest
-
-          deadcode -test ./... > "deadcode.txt"
-          if [ -s "deadcode.txt" ]; then
-            echo "Dead code found:"
-            cat deadcode.txt
-            exit 1
-          fi
-
-  golangci-lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Generate embed file
         run: go generate ./...

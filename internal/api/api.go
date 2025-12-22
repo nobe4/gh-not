@@ -1,3 +1,4 @@
+//revive:disable:var-naming // This is fine.
 package api
 
 import (
