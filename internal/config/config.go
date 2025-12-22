@@ -142,9 +142,9 @@ func (c *Config) ValidateRules() error {
 
 		errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
 
-		yml, yerr := rule.Marshal()
-		if yerr != nil {
-			slog.Error("failed to marshal rule", "err", yerr)
+		yml, err := rule.Marshal()
+		if err != nil {
+			slog.Error("failed to marshal rule", "err", err)
 		}
 
 		valErr := fmt.Sprintf(validationErrorStr,
