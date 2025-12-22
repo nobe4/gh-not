@@ -101,13 +101,25 @@ func New(path string) (*Config, error) {
 	}
 
 	validationErrors := []string{}
-	for _, rule := range c.Data.Rules {
-		if err = rule.Validate(); err != nil {
-			validationErrors = append(validationErrors, err.Error())
+
+	for i, rule := range c.Data.Rules {
+		if violations := rule.Validate(); len(violations) > 0 {
+			errorStr := PadLines(strings.Join(violations, "\n"), "- ")
+			errorStr = PadLines(errorStr, "  ")
+
+			yml, yerr := rule.Marshal()
+			if yerr != nil {
+				slog.Error("failed to marshal rule", "err", yerr)
+			}
+			valErr := fmt.Sprintf(`Invalid rule (index %v): 
+%s
+Errors: 
+%s`, i, PadLines(string(yml), "  "), errorStr)
+			validationErrors = append(validationErrors, valErr)
 		}
 	}
 	if len(validationErrors) > 0 {
-		return nil, fmt.Errorf("invalid rules\n%s", strings.Join(validationErrors, "\n"))
+		return nil, fmt.Errorf("invalid rules\n\n%s", strings.Join(validationErrors, "\n\n"))
 	}
 
 	c.Data.Cache.Path, err = ExpandPathWithoutTilde(c.Data.Cache.Path)
@@ -126,4 +138,16 @@ func (c *Config) Marshal() ([]byte, error) {
 	}
 
 	return marshaled, nil
+}
+
+func PadLines(s string, pad string) string {
+	var sb strings.Builder
+	sb.WriteString(pad)
+	for _, c := range s {
+		sb.WriteRune(c)
+		if c == '\n' {
+			sb.WriteString(pad)
+		}
+	}
+	return sb.String()
 }

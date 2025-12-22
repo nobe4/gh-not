@@ -2,11 +2,11 @@ package config
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
+	"gopkg.in/yaml.v3"
 )
 
 // Rule is a struct to filter and act on notifications.
@@ -46,32 +46,27 @@ type Rule struct {
 }
 
 // Validate tests the rule for correctness. A rule must have an action and at least one filter
-func (r Rule) Validate() error {
-	reasons := []string{}
-
+func (r Rule) Validate() (violations []string) {
 	actions := actions.GetMap(nil)
 	if _, ok := actions[r.Action]; !ok {
 		if r.Action == "" {
-			reasons = append(reasons, "rule action is empty")
+			violations = append(violations, "rule action is empty")
 		} else {
-			reasons = append(reasons, fmt.Sprintf("invalid rule action: \"%v\"", r.Action))
+			violations = append(violations, fmt.Sprintf("invalid rule action: \"%v\"", r.Action))
 		}
 	}
 
 	if len(r.Filters) == 0 {
-		reasons = append(reasons, "rule has no filters")
+		violations = append(violations, "rule has no filters")
 	}
 
 	for _, filter := range r.Filters {
 		if err := jq.Validate(filter); err != nil {
-			reasons = append(reasons, fmt.Sprintf("failed to validate filter %s: %v", filter, err))
+			violations = append(violations, fmt.Sprintf("invalid jq filter %s: %v", filter, err))
 		}
 	}
 
-	if len(reasons) > 0 {
-		return fmt.Errorf("failed to validate rule %q:\n - %s", r.Name, strings.Join(reasons, "\n - "))
-	}
-	return nil
+	return violations
 }
 
 // Filter filters the notifications with the jq filters and returns the IDs.
@@ -88,4 +83,14 @@ func (r Rule) Filter(n notifications.Notifications) (notifications.Notifications
 	}
 
 	return n, nil
+}
+
+func (r Rule) Marshal() ([]byte, error) {
+	//nolint:musttag // The struct is annotated with `mapstructure` tags already
+	marshaled, err := yaml.Marshal(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	return marshaled, nil
 }
