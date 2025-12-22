@@ -3,8 +3,6 @@ package config
 import (
 	"fmt"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
@@ -85,14 +83,4 @@ func (r Rule) Filter(n notifications.Notifications) (notifications.Notifications
 	}
 
 	return n, nil
-}
-
-func (r Rule) Marshal() ([]byte, error) {
-	//nolint:musttag // The struct is annotated with `mapstructure` tags already
-	marshaled, err := yaml.Marshal(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal config: %w", err)
-	}
-
-	return marshaled, nil
 }

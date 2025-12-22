@@ -144,7 +144,7 @@ func (c *Config) ValidateRules() error {
 
 		errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
 
-		yml, err := rule.Marshal()
+		yml, err := yaml.Marshal(rule)
 		if err != nil {
 			slog.Error("failed to marshal rule", "err", err)
 		}
