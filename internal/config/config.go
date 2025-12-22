@@ -3,8 +3,6 @@ Package config provides a way to load the configuration from a file.
 It also comes with a default configuration that can be used if no file is found.
 
 See individual types for more information on the configuration.
-
-Output the default configuration (free of rules) with `gh-not config --init`.
 */
 package config
 
