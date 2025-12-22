@@ -35,11 +35,13 @@ func init() {
 	configCmd.Flags().BoolVarP(&initConfigFlag, "init", "i", false, "Create the default config file")
 }
 
-func runConfig(_ *cobra.Command, _ []string) error {
+func runConfig(c *cobra.Command, _ []string) error {
 	if initConfigFlag {
 		if err := initConfig(); err != nil {
+			c.SilenceUsage = true
 			return err
 		}
+		return nil
 	}
 
 	if editConfigFlag {
@@ -65,6 +67,10 @@ func initConfig() error {
 
 	if err := os.MkdirAll(initialConfigDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	if _, err := os.Stat(initialConfig.ConfigFileUsed()); err == nil {
+		return fmt.Errorf("config file already exists at %s - delete it if you want it overwritten", initialConfig.ConfigFileUsed())
 	}
 
 	if err := initialConfig.WriteConfig(); err != nil {
