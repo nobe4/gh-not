@@ -2,7 +2,9 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -43,14 +45,32 @@ type Rule struct {
 	Args []string `mapstructure:"args"`
 }
 
-// Test tests the rule for correctness.
-func (r Rule) Test() error {
-	for _, filter := range r.Filters {
-		if err := jq.Validate(filter); err != nil {
-			return fmt.Errorf("failed to validate rule %q, filter %s: %w", r.Name, filter, err)
+// Validate tests the rule for correctness. A rule must have an action and at least one filter
+func (r Rule) Validate() error {
+	reasons := []string{}
+
+	actions := actions.GetMap(nil)
+	if _, ok := actions[r.Action]; !ok {
+		if r.Action == "" {
+			reasons = append(reasons, "rule action is empty")
+		} else {
+			reasons = append(reasons, fmt.Sprintf("invalid rule action: \"%v\"", r.Action))
 		}
 	}
 
+	if len(r.Filters) == 0 {
+		reasons = append(reasons, "rule has no filters")
+	}
+
+	for _, filter := range r.Filters {
+		if err := jq.Validate(filter); err != nil {
+			reasons = append(reasons, fmt.Sprintf("failed to validate filter %s: %v", filter, err))
+		}
+	}
+
+	if len(reasons) > 0 {
+		return fmt.Errorf("failed to validate rule %q:\n - %s", r.Name, strings.Join(reasons, "\n - "))
+	}
 	return nil
 }
 

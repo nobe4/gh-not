@@ -17,7 +17,6 @@ import (
 
 	"github.com/nobe4/gh-not/internal/api"
 	"github.com/nobe4/gh-not/internal/cache"
-	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -31,7 +30,30 @@ type Client struct {
 	path     string
 }
 
-func NewClient(a api.Requestor, c cache.RefreshReadWriter, conf config.Endpoint) *Client {
+type Endpoint struct {
+	// Pull all notifications from the endpoint.
+	// By default, only the unread notifications are fetched.
+	// This maps to `?all=true|false` in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	All bool `mapstructure:"all"`
+
+	// The maximum number of retries to fetch notifications.
+	// The Notifications API is notably flaky, retrying HTTP requests is
+	// definitely needed.
+	MaxRetry int `mapstructure:"max_retry"`
+
+	// The number of notification pages to fetch.
+	// This will cap the `?page=X` parameter in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	MaxPage int `mapstructure:"max_page"`
+
+	// The number of notifications to fetch per page.
+	// This maps to `?per_page=X` in the GitHub API.
+	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
+	PerPage int `mapstructure:"per_page"`
+}
+
+func NewClient(a api.Requestor, c cache.RefreshReadWriter, conf Endpoint) *Client {
 	path := url.URL{Path: "notifications"}
 
 	query := path.Query()

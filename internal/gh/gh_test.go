@@ -14,7 +14,6 @@ import (
 	"github.com/cli/go-gh/v2/pkg/api"
 
 	"github.com/nobe4/gh-not/internal/api/mock"
-	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
@@ -203,7 +202,7 @@ func TestNewClient(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			config := &config.Endpoint{
+			config := &Endpoint{
 				All:      test.all,
 				PerPage:  test.perPage,
 				MaxRetry: 1,
