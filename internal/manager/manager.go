@@ -96,9 +96,7 @@ func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
 		runner, ok := m.Actions[rule.Action]
 		if !ok {
-			slog.Error("unknown action", "action", rule.Action)
-
-			continue
+			return fmt.Errorf("unknown action: %s", rule.Action)
 		}
 
 		selectedNotifications, err := rule.Filter(m.Notifications)
