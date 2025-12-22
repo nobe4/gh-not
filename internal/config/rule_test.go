@@ -185,7 +185,7 @@ func TestValidation(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		r    Rule		
+		r    Rule
 		want []string
 	}{
 		{

@@ -131,8 +131,6 @@ func (c *Config) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-
-
 func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
 
@@ -144,6 +142,7 @@ func (c *Config) ValidateRules() error {
 
 		errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
 
+		//nolint:musttag // The struct is annotated with `mapstructure` tags already
 		yml, err := yaml.Marshal(rule)
 		if err != nil {
 			slog.Error("failed to marshal rule", "err", err)
