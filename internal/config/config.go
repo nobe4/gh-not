@@ -26,6 +26,8 @@ const validationErrorStr = `Invalid rule (index %d):
 Errors: 
 %s`
 
+var errRuleValidation = errors.New("invalid rules")
+
 // Config holds the configuration data.
 type Config struct {
 	viper *viper.Viper
@@ -129,7 +131,7 @@ func (c *Config) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-var errRuleValidation = errors.New("invalid rules")
+
 
 func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
