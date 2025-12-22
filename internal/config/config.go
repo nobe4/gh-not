@@ -100,26 +100,8 @@ func New(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	validationErrors := []string{}
-
-	for i, rule := range c.Data.Rules {
-		if violations := rule.Validate(); len(violations) > 0 {
-			errorStr := PadLines(strings.Join(violations, "\n"), "- ")
-			errorStr = PadLines(errorStr, "  ")
-
-			yml, yerr := rule.Marshal()
-			if yerr != nil {
-				slog.Error("failed to marshal rule", "err", yerr)
-			}
-			valErr := fmt.Sprintf(`Invalid rule (index %v): 
-%s
-Errors: 
-%s`, i, PadLines(string(yml), "  "), errorStr)
-			validationErrors = append(validationErrors, valErr)
-		}
-	}
-	if len(validationErrors) > 0 {
-		return nil, fmt.Errorf("invalid rules\n\n%s", strings.Join(validationErrors, "\n\n"))
+	if err = c.ValidateRules(); err != nil {
+		return nil, err
 	}
 
 	c.Data.Cache.Path, err = ExpandPathWithoutTilde(c.Data.Cache.Path)
@@ -140,7 +122,32 @@ func (c *Config) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-func PadLines(s string, pad string) string {
+func (c *Config) ValidateRules() error {
+	validationErrors := []string{}
+	for i, rule := range c.Data.Rules {
+		if violations := rule.Validate(); len(violations) > 0 {
+			errorStr := padLines(strings.Join(violations, "\n"), "- ")
+			errorStr = padLines(errorStr, "  ")
+
+			yml, yerr := rule.Marshal()
+			if yerr != nil {
+				slog.Error("failed to marshal rule", "err", yerr)
+			}
+			valErr := fmt.Sprintf(`Invalid rule (index %v): 
+%s
+Errors: 
+%s`, i, padLines(string(yml), "  "), errorStr)
+			validationErrors = append(validationErrors, valErr)
+		}
+	}
+	if len(validationErrors) > 0 {
+		return fmt.Errorf("invalid rules\n\n%s", strings.Join(validationErrors, "\n\n"))
+	}
+
+	return nil
+}
+
+func padLines(s string, pad string) string {
 	var sb strings.Builder
 	sb.WriteString(pad)
 	for _, c := range s {
