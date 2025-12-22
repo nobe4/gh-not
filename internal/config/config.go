@@ -20,6 +20,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const validationErrorStr = `Invalid rule (index %d): 
+%s
+Errors: 
+%s`
+
 // Config holds the configuration data.
 type Config struct {
 	viper *viper.Viper
@@ -126,20 +131,23 @@ func (c *Config) Marshal() ([]byte, error) {
 func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
 	for i, rule := range c.Data.Rules {
-		if violations := rule.Validate(); len(violations) > 0 {
-			errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
-
-			yml, yerr := rule.Marshal()
-			if yerr != nil {
-				slog.Error("failed to marshal rule", "err", yerr)
-			}
-			valErr := fmt.Sprintf(`Invalid rule (index %d): 
-%s
-Errors: 
-%s`, i, dent.IndentString(string(yml), "  "), errorStr)
-			validationErrors = append(validationErrors, valErr)
+		violations := rule.Validate()
+		if len(violations) == 0 {
+			continue
 		}
+
+		errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
+
+		yml, yerr := rule.Marshal()
+		if yerr != nil {
+			slog.Error("failed to marshal rule", "err", yerr)
+		}
+		valErr := fmt.Sprintf(validationErrorStr,
+			i,
+			dent.IndentString(string(yml), "  "), errorStr)
+		validationErrors = append(validationErrors, valErr)
 	}
+
 	if len(validationErrors) > 0 {
 		return fmt.Errorf("invalid rules\n\n%s", strings.Join(validationErrors, "\n\n"))
 	}
