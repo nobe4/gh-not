@@ -180,3 +180,64 @@ func TestFilterIds(t *testing.T) {
 		})
 	}
 }
+
+func TestValidation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		r    Rule
+		want []string
+	}{
+		{
+			r: Rule{
+				Name: "parenthesis work also across filters",
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+			},
+			want: []string{"rule action is empty"},
+		},
+		{
+			r: Rule{
+				Name:    "parenthesis work also across filters",
+				Filters: []string{},
+				Action:  "done",
+			},
+			want: []string{"rule has no filters"},
+		},
+		{
+			r: Rule{
+				Name: "parenthesis work also across filters",
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+				Action: "done",
+			},
+			want: []string{},
+		},
+		{
+			r: Rule{
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+				Action: "done",
+			},
+			want: []string{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.r.Name, func(t *testing.T) {
+			t.Parallel()
+
+			violations := test.r.Validate()
+
+			if !slices.Equal(violations, test.want) {
+				t.Fatalf("want %#v, but got %#v", test.want, violations)
+			}
+		})
+	}
+}

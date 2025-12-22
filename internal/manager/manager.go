@@ -15,6 +15,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
+var errInvalidAction = errors.New("invalid action")
+
 type Manager struct {
 	Notifications notifications.Notifications
 	Cache         cache.RefreshReadWriter
@@ -95,10 +97,9 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
 		runner, ok := m.Actions[rule.Action]
-		if !ok {
-			slog.Error("unknown action", "action", rule.Action)
 
-			continue
+		if !ok {
+			return fmt.Errorf("%w: %v", errInvalidAction, rule.Action)
 		}
 
 		selectedNotifications, err := rule.Filter(m.Notifications)

@@ -84,7 +84,7 @@ func init() {
 	rootCmd.MarkFlagsMutuallyExclusive("json", "repl", "tags")
 }
 
-func setupGlobals(_ *cobra.Command, _ []string) error {
+func setupGlobals(c *cobra.Command, _ []string) error {
 	logger.Init(verbosityFlag)
 
 	slog.Debug("flags",
@@ -103,6 +103,8 @@ func setupGlobals(_ *cobra.Command, _ []string) error {
 
 	config, err = configpkg.New(configPathFlag)
 	if err != nil {
+		c.SilenceUsage = true
+
 		return fmt.Errorf("failed to load the config: %w", err)
 	}
 

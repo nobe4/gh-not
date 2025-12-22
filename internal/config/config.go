@@ -12,10 +12,21 @@ import (
 	"io/fs"
 	"log/slog"
 	"path/filepath"
+	"strings"
 
+	"github.com/nobe4/dent.go"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
+
+	"github.com/nobe4/gh-not/internal/gh"
 )
+
+const validationErrorStr = `Invalid rule (index %d): 
+%s
+Errors: 
+%s`
+
+var errRuleValidation = errors.New("invalid rules")
 
 // Config holds the configuration data.
 type Config struct {
@@ -26,37 +37,11 @@ type Config struct {
 
 // Data holds the configuration data.
 type Data struct {
-	Cache    Cache    `mapstructure:"cache"`
-	Endpoint Endpoint `mapstructure:"endpoint"`
-	Keymap   Keymap   `mapstructure:"keymap"`
-	View     View     `mapstructure:"view"`
-	Rules    []Rule   `mapstructure:"rules"`
-}
-
-// Endpoint is the configuration for the GitHub API endpoint.
-//
-//nolint:lll // Links can be long.
-type Endpoint struct {
-	// Pull all notifications from the endpoint.
-	// By default, only the unread notifications are fetched.
-	// This maps to `?all=true|false` in the GitHub API.
-	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
-	All bool `mapstructure:"all"`
-
-	// The maximum number of retries to fetch notifications.
-	// The Notifications API is notably flaky, retrying HTTP requests is
-	// definitely needed.
-	MaxRetry int `mapstructure:"max_retry"`
-
-	// The number of notification pages to fetch.
-	// This will cap the `?page=X` parameter in the GitHub API.
-	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
-	MaxPage int `mapstructure:"max_page"`
-
-	// The number of notifications to fetch per page.
-	// This maps to `?per_page=X` in the GitHub API.
-	// See https://docs.github.com/en/rest/activity/notifications?apiVersion=2022-11-28#list-notifications-for-the-authenticated-user
-	PerPage int `mapstructure:"per_page"`
+	Cache    Cache       `mapstructure:"cache"`
+	Endpoint gh.Endpoint `mapstructure:"endpoint"`
+	Keymap   Keymap      `mapstructure:"keymap"`
+	View     View        `mapstructure:"view"`
+	Rules    []Rule      `mapstructure:"rules"`
 }
 
 // Cache is the configuration for the cache file.
@@ -124,10 +109,8 @@ func New(path string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	for _, rule := range c.Data.Rules {
-		if err = rule.Test(); err != nil {
-			return nil, err
-		}
+	if err = c.ValidateRules(); err != nil {
+		return nil, err
 	}
 
 	c.Data.Cache.Path, err = ExpandPathWithoutTilde(c.Data.Cache.Path)
@@ -146,4 +129,34 @@ func (c *Config) Marshal() ([]byte, error) {
 	}
 
 	return marshaled, nil
+}
+
+func (c *Config) ValidateRules() error {
+	validationErrors := []string{}
+
+	for i, rule := range c.Data.Rules {
+		violations := rule.Validate()
+		if len(violations) == 0 {
+			continue
+		}
+
+		errorStr := dent.IndentString(strings.Join(violations, "\n"), "  - ")
+
+		//nolint:musttag // The struct is annotated with `mapstructure` tags already
+		yml, err := yaml.Marshal(rule)
+		if err != nil {
+			slog.Error("failed to marshal rule", "err", err)
+		}
+
+		valErr := fmt.Sprintf(validationErrorStr,
+			i,
+			dent.IndentString(string(yml), "  "), errorStr)
+		validationErrors = append(validationErrors, valErr)
+	}
+
+	if len(validationErrors) > 0 {
+		return fmt.Errorf("%w\n\n%s", errRuleValidation, strings.Join(validationErrors, "\n\n"))
+	}
+
+	return nil
 }

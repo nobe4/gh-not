@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
@@ -43,15 +44,31 @@ type Rule struct {
 	Args []string `mapstructure:"args"`
 }
 
-// Test tests the rule for correctness.
-func (r Rule) Test() error {
-	for _, filter := range r.Filters {
-		if err := jq.Validate(filter); err != nil {
-			return fmt.Errorf("failed to validate rule %q, filter %s: %w", r.Name, filter, err)
+// Validate tests the rule for correctness. A rule must have an action and at least one filter.
+func (r Rule) Validate() []string {
+	var violations []string
+
+	actionsMap := actions.GetMap(nil)
+
+	if _, ok := actionsMap[r.Action]; !ok {
+		if r.Action == "" {
+			violations = append(violations, "rule action is empty")
+		} else {
+			violations = append(violations, fmt.Sprintf("invalid rule action: \"%v\"", r.Action))
 		}
 	}
 
-	return nil
+	if len(r.Filters) == 0 {
+		violations = append(violations, "rule has no filters")
+	}
+
+	for _, filter := range r.Filters {
+		if err := jq.Validate(filter); err != nil {
+			violations = append(violations, fmt.Sprintf("invalid jq filter %s: %v", filter, err))
+		}
+	}
+
+	return violations
 }
 
 // Filter filters the notifications with the jq filters and returns the IDs.

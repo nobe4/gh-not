@@ -134,7 +134,7 @@ E.g.
 ## Rules
 
 The configuration file contains the rules to apply to the notifications. Each
-rule contains three fields:
+rule contains three fields and must contain an action and at least one filter.
 
 - `name`: the display name
 
@@ -169,6 +169,46 @@ rule contains three fields:
     ```
 
     See more at [`config.go`](./internal/config/config.go) and [`rule.go`](./internal/config/rule.go).
+
+### Examples
+
+```yaml
+- name: mark closed dependabot PRs as done
+  filters:
+    - .author.login == "dependabot[bot]"
+    - .subject.state == "closed"
+  action: done
+```
+
+```yaml
+- name: ignore a specific repo
+  filters:
+    - .repository.name == "greg-ci-tests"
+  action: done
+```
+
+```yaml
+- name: close read notifications
+  filters:
+    - .unread == false
+  action: done
+```
+
+```yml
+- name: mark notifications of PRs closed over a week ago as read
+  filters:
+    - .subject.state == "closed"
+    - .updated_at | fromdate < now - 604800
+  action: read
+```
+
+```yml
+- name: close read notifications older than 2 weeks
+  filters:
+    - .unread == false    
+    - .updated_at | fromdate < now - 1209600
+  action: done
+```
 
 # Automatic fetching
 
