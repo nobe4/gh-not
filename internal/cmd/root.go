@@ -104,6 +104,7 @@ func setupGlobals(c *cobra.Command, _ []string) error {
 	config, err = configpkg.New(configPathFlag)
 	if err != nil {
 		c.SilenceUsage = true
+
 		return fmt.Errorf("failed to load the config: %w", err)
 	}
 

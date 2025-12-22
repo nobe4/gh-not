@@ -94,10 +94,7 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 //revive:disable:cognitive-complexity // TODO: simplify.
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {
-		runner, ok := m.Actions[rule.Action]
-		if !ok {
-			return fmt.Errorf("unknown action: %s", rule.Action)
-		}
+		runner := m.Actions[rule.Action]
 
 		selectedNotifications, err := rule.Filter(m.Notifications)
 		if err != nil {

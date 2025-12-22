@@ -3,10 +3,11 @@ package config
 import (
 	"fmt"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/nobe4/gh-not/internal/actions"
 	"github.com/nobe4/gh-not/internal/jq"
 	"github.com/nobe4/gh-not/internal/notifications"
-	"gopkg.in/yaml.v3"
 )
 
 // Rule is a struct to filter and act on notifications.
@@ -45,10 +46,10 @@ type Rule struct {
 	Args []string `mapstructure:"args"`
 }
 
-// Validate tests the rule for correctness. A rule must have an action and at least one filter
+// Validate tests the rule for correctness. A rule must have an action and at least one filter.
 func (r Rule) Validate() (violations []string) {
-	actions := actions.GetMap(nil)
-	if _, ok := actions[r.Action]; !ok {
+	actionsMap := actions.GetMap(nil)
+	if _, ok := actionsMap[r.Action]; !ok {
 		if r.Action == "" {
 			violations = append(violations, "rule action is empty")
 		} else {

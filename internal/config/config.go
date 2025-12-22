@@ -15,9 +15,10 @@ import (
 	"strings"
 
 	"github.com/nobe4/dent.go"
-	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
+
+	"github.com/nobe4/gh-not/internal/gh"
 )
 
 const validationErrorStr = `Invalid rule (index %d): 
@@ -128,8 +129,11 @@ func (c *Config) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
+var errRuleValidation = errors.New("invalid rules")
+
 func (c *Config) ValidateRules() error {
 	validationErrors := []string{}
+
 	for i, rule := range c.Data.Rules {
 		violations := rule.Validate()
 		if len(violations) == 0 {
@@ -142,6 +146,7 @@ func (c *Config) ValidateRules() error {
 		if yerr != nil {
 			slog.Error("failed to marshal rule", "err", yerr)
 		}
+
 		valErr := fmt.Sprintf(validationErrorStr,
 			i,
 			dent.IndentString(string(yml), "  "), errorStr)
@@ -149,7 +154,7 @@ func (c *Config) ValidateRules() error {
 	}
 
 	if len(validationErrors) > 0 {
-		return fmt.Errorf("invalid rules\n\n%s", strings.Join(validationErrors, "\n\n"))
+		return fmt.Errorf("%w\n\n%s", errRuleValidation, strings.Join(validationErrors, "\n\n"))
 	}
 
 	return nil

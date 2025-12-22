@@ -182,6 +182,8 @@ func TestFilterIds(t *testing.T) {
 }
 
 func TestValidationEmptyAction(t *testing.T) {
+	t.Parallel()
+
 	r := Rule{
 		Name: "parenthesis work also across filters",
 		Filters: []string{
@@ -189,13 +191,17 @@ func TestValidationEmptyAction(t *testing.T) {
 			`(.unread == true or .id == "1")`,
 		},
 	}
+
 	err := r.Validate()
+
 	if err == nil {
 		t.Fatal("rule with no action passed validation (it shouldn't)")
 	}
 }
 
 func TestValidationEmptyFilters(t *testing.T) {
+	t.Parallel()
+
 	r := Rule{
 		Name:    "parenthesis work also across filters",
 		Filters: []string{},
@@ -207,6 +213,8 @@ func TestValidationEmptyFilters(t *testing.T) {
 }
 
 func TestValidationPass(t *testing.T) {
+	t.Parallel()
+
 	r := Rule{
 		Name: "parenthesis work also across filters",
 		Filters: []string{
@@ -221,6 +229,8 @@ func TestValidationPass(t *testing.T) {
 }
 
 func TestValidationPassEvenWithNoName(t *testing.T) {
+	t.Parallel()
+
 	r := Rule{
 		Filters: []string{
 			`(.reason == "test" or .id == "2")`,
