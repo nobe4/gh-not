@@ -22,11 +22,7 @@ type Runner struct {
 
 func (a *Runner) Run(n *notifications.Notification, _ []string, w io.Writer) error {
 	r, err := a.Client.API.Request(http.MethodPatch, n.URL, nil)
-
-	// go-gh currently fails to handle HTTP-205 correctly, however it's possible
-	// to catch this case.
-	// ref: https://github.com/cli/go-gh/issues/161
-	if err != nil && err.Error() != "unexpected end of JSON input" {
+	if err != nil {
 		return fmt.Errorf("failed to mark notification as read: %w", err)
 	}
 
