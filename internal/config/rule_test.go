@@ -181,64 +181,63 @@ func TestFilterIds(t *testing.T) {
 	}
 }
 
-func TestValidationEmptyAction(t *testing.T) {
+func TestValidation(t *testing.T) {
 	t.Parallel()
 
-	r := Rule{
-		Name: "parenthesis work also across filters",
-		Filters: []string{
-			`(.reason == "test" or .id == "2")`,
-			`(.unread == true or .id == "1")`,
+	tests := []struct {
+		r    Rule		
+		want []string
+	}{
+		{
+			r: Rule{
+				Name: "parenthesis work also across filters",
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+			},
+			want: []string{"rule action is empty"},
+		},
+		{
+			r: Rule{
+				Name:    "parenthesis work also across filters",
+				Filters: []string{},
+				Action:  "done",
+			},
+			want: []string{"rule has no filters"},
+		},
+		{
+			r: Rule{
+				Name: "parenthesis work also across filters",
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+				Action: "done",
+			},
+			want: []string{},
+		},
+		{
+			r: Rule{
+				Filters: []string{
+					`(.reason == "test" or .id == "2")`,
+					`(.unread == true or .id == "1")`,
+				},
+				Action: "done",
+			},
+			want: []string{},
 		},
 	}
 
-	err := r.Validate()
+	for _, test := range tests {
+		t.Run(test.r.Name, func(t *testing.T) {
+			t.Parallel()
 
-	if err == nil {
-		t.Fatal("rule with no action passed validation (it shouldn't)")
-	}
-}
+			violations := test.r.Validate()
 
-func TestValidationEmptyFilters(t *testing.T) {
-	t.Parallel()
-
-	r := Rule{
-		Name:    "parenthesis work also across filters",
-		Filters: []string{},
-		Action:  "done",
-	}
-	if r.Validate() == nil {
-		t.Fatal("rule with no filter passed validation (it shouldn't)")
-	}
-}
-
-func TestValidationPass(t *testing.T) {
-	t.Parallel()
-
-	r := Rule{
-		Name: "parenthesis work also across filters",
-		Filters: []string{
-			`(.reason == "test" or .id == "2")`,
-			`(.unread == true or .id == "1")`,
-		},
-		Action: "done",
-	}
-	if r.Validate() != nil {
-		t.Fatal("rule that should pass validation didn't")
-	}
-}
-
-func TestValidationPassEvenWithNoName(t *testing.T) {
-	t.Parallel()
-
-	r := Rule{
-		Filters: []string{
-			`(.reason == "test" or .id == "2")`,
-			`(.unread == true or .id == "1")`,
-		},
-		Action: "done",
-	}
-	if r.Validate() != nil {
-		t.Fatal("rule that should pass validation didn't")
+			if !slices.Equal(violations, test.want) {
+				t.Fatalf("want %#v, but got %#v", test.want, violations)
+			}
+		})
 	}
 }
