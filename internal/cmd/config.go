@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 
 	configpkg "github.com/nobe4/gh-not/internal/config"
@@ -94,7 +95,14 @@ func editConfig() error {
 		return errNoEditor
 	}
 
-	cmd := exec.CommandContext(context.TODO(), editor, config.Path)
+	args, err := shlex.Split(editor)
+	if err != nil {
+		return fmt.Errorf("failed to parse $EDITOR: %w", err)
+	}
+
+	args = append(args, config.Path)
+
+	cmd := exec.CommandContext(context.TODO(), args[0], args[1:]...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
