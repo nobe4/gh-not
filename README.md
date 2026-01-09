@@ -7,8 +7,9 @@
 [![CodeQL](https://github.com/nobe4/gh-not/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/nobe4/gh-not/actions/workflows/github-code-scanning/codeql)
 
 > [!IMPORTANT]
-> Under heavy development, expect nothing.
-> PRs/issues welcome!
+> The project is mostly "done" at this point. I won't be adding any new features.
+>
+> I will accept PRs/issues for bug/improvements.
 
 ![demo.gif](./docs/demo.gif)
 
