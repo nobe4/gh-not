@@ -43,7 +43,7 @@ func (m model) initView() model {
 	m.command.PromptStyle = noStyle
 	m.command.Placeholder = "command"
 
-	suggestions := []string{}
+	suggestions := make([]string, 0, len(m.actions))
 	for k := range m.actions {
 		suggestions = append(suggestions, k)
 	}
