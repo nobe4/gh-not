@@ -49,7 +49,7 @@ func mockNotification(id int) *notifications.Notification {
 }
 
 func mockNotifications(ids []int) []*notifications.Notification {
-	n := []*notifications.Notification{}
+	n := make([]*notifications.Notification, 0, len(ids))
 	for _, id := range ids {
 		n = append(n, mockNotification(id))
 	}
