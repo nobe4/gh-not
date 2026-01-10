@@ -102,7 +102,7 @@ func editConfig() error {
 
 	args = append(args, config.Path)
 
-	//nolint:gosec // We trust the `$EDITOR` explicitely.
+	//nolint:gosec // We trust the `$EDITOR` explicitly.
 	cmd := exec.CommandContext(context.TODO(), args[0], args[1:]...)
 
 	cmd.Stdin = os.Stdin
