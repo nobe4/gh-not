@@ -211,6 +211,14 @@ rule contains three fields and must contain an action and at least one filter.
   action: done
 ```
 
+```yml
+- name: mark pull requests merged by yourself as read
+  filters:    
+    - .merged_by.login == "Tethik"
+    - .subject.state == "closed"
+  action: read
+```
+
 # Automatic fetching
 
 To automatically fetch new notifications and apply the rules, it is recommended
