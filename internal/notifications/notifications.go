@@ -36,6 +36,7 @@ type Notification struct {
 	Assignees       []User `json:"assignees"`
 	Reviewers       []User `json:"requested_reviewers"`
 	ReviewersTeams  []Team `json:"requested_teams"`
+	MergedBy        User   `json:"merged_by"`
 
 	// gh-not specific fields
 	// Those fields are not part of the GitHub API and will persist between
