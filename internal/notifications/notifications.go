@@ -36,6 +36,7 @@ type Notification struct {
 	Assignees       []User `json:"assignees"`
 	Reviewers       []User `json:"requested_reviewers"`
 	ReviewersTeams  []Team `json:"requested_teams"`
+	MergedBy        User   `json:"merged_by"`
 
 	// gh-not specific fields
 	// Those fields are not part of the GitHub API and will persist between
@@ -162,7 +163,7 @@ func (n Notification) Interface() (any, error) {
 }
 
 func (n Notifications) Debug() string {
-	out := []string{}
+	out := make([]string, 0, len(n))
 	for _, n := range n {
 		out = append(out, n.Debug())
 	}
@@ -184,7 +185,7 @@ func (n Notifications) Map() NotificationMap {
 }
 
 func (m NotificationMap) List() Notifications {
-	l := Notifications{}
+	l := make(Notifications, 0, len(m))
 	for _, n := range m {
 		l = append(l, n)
 	}
@@ -193,7 +194,7 @@ func (m NotificationMap) List() Notifications {
 }
 
 func (n Notifications) IDList() []string {
-	ids := []string{}
+	ids := make([]string, 0, len(n))
 	for _, n := range n {
 		ids = append(ids, n.ID)
 	}

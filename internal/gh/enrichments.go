@@ -17,6 +17,7 @@ type ThreadExtra struct {
 	Assignees      []notifications.User `json:"assignees"`
 	Reviewers      []notifications.User `json:"requested_reviewers"`
 	ReviewersTeams []notifications.Team `json:"requested_teams"`
+	MergedBy       notifications.User   `json:"merged_by"`
 }
 
 func (c *Client) Enrich(n *notifications.Notification) error {
@@ -35,6 +36,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	n.Assignees = threadExtra.Assignees
 	n.Reviewers = threadExtra.Reviewers
 	n.ReviewersTeams = threadExtra.ReviewersTeams
+	n.MergedBy = threadExtra.MergedBy
 
 	lastCommentor, err := c.getLastCommentor(n)
 	if err != nil {

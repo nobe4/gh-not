@@ -34,8 +34,7 @@ type model struct {
 }
 
 func Init(n notifications.Notifications, a actions.Map, keymap config.Keymap, view config.View) error {
-	items := []list.Item{}
-
+	items := make([]list.Item, 0, len(n))
 	for _, notification := range n {
 		items = append(items, item{notification: notification})
 	}

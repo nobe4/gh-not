@@ -211,6 +211,14 @@ rule contains three fields and must contain an action and at least one filter.
   action: done
 ```
 
+```yml
+- name: mark pull requests merged by yourself as read
+  filters:    
+    - .merged_by.login == "Tethik"
+    - .subject.state == "closed"
+  action: read
+```
+
 # Automatic fetching
 
 To automatically fetch new notifications and apply the rules, it is recommended
@@ -259,5 +267,36 @@ E.g.
     ```
 
     It is recommended to use https://launched.zerowidth.com/ for generating such Plist.
+
+- `systemd`
+
+  `~/.config/systemd/user/gh-not.service`
+  ```conf
+  [Unit]
+  Description=Manage github notifications
+
+  [Service]
+  Type=oneshot
+  ExecStart=gh not sync
+  ```
+
+  `~/.config/systemd/user/gh-not.timer`
+  ```conf
+  [Unit]
+  Description=Run script every hour
+
+  [Timer]
+  OnCalendar=*-*-* *:13:37
+  Persistent=true
+
+  [Install]
+  WantedBy=timers.target
+  ```
+
+  ```sh
+  systemctl --user daemon-reload # reload systemd services
+  systemctl --user start gh-not.timer # start the service once to test it
+  systemctl --user enable gh-not.timer # enable the timer to run it on the set schedule
+  ```
 
 [^gojq]: Technically, [`gojq`](https://github.com/itchyny/gojq) is used.
