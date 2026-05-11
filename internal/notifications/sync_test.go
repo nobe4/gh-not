@@ -169,4 +169,35 @@ func TestSync(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("preserve enriched fields when UpdatedAt unchanged", func(t *testing.T) {
+		t.Parallel()
+
+		local := &Notification{
+			ID:        "0",
+			UpdatedAt: time.Unix(0, 1),
+			Author:    User{Login: "alice"},
+			Subject:   Subject{Title: "stale", State: "open"},
+		}
+		remote := &Notification{
+			ID:        "0",
+			UpdatedAt: time.Unix(0, 1),
+			Subject:   Subject{Title: "fresh"},
+		}
+
+		got := Sync(Notifications{local}, Notifications{remote})
+
+		if got[0].Author.Login != "alice" {
+			t.Errorf("expected enriched Author preserved, got %q", got[0].Author.Login)
+		}
+
+		if got[0].Subject.State != "open" {
+			t.Errorf("expected enriched Subject.State preserved, got %q", got[0].Subject.State)
+		}
+
+		// Non-enriched remote fields should still take over.
+		if got[0].Subject.Title != "fresh" {
+			t.Errorf("expected Subject.Title from remote, got %q", got[0].Subject.Title)
+		}
+	})
 }

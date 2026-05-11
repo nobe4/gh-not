@@ -27,7 +27,7 @@
     "id": "2 exists",
     "subject": {
       "url": "enrichment#2",
-      "state": ""
+      "state": "open"
     },
     "meta": {
       "remote_exists": true,

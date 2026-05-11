@@ -65,6 +65,14 @@ func Sync(local, remote Notifications) Notifications {
 				local[i].Meta.Done = false
 			}
 
+			// Preserve enriched fields when the notification hasn't changed
+			// upstream. The remote payload from the notifications list
+			// endpoint never contains them, so without this we'd discard
+			// them on every sync and force a full re-enrichment.
+			if remote.UpdatedAt.Equal(local[i].UpdatedAt) {
+				preserveEnrichedFields(remote, local[i])
+			}
+
 			remote.Meta = local[i].Meta
 			n = append(n, remote)
 		} else {
@@ -86,4 +94,18 @@ func Sync(local, remote Notifications) Notifications {
 	// TODO: add uniq here
 
 	return n
+}
+
+// preserveEnrichedFields copies fields populated by Manager.Enrich from src
+// onto dst. The fields are not part of the notifications list response and
+// would otherwise be lost when the local notification is replaced by the
+// remote one during sync.
+func preserveEnrichedFields(dst, src *Notification) {
+	dst.Author = src.Author
+	dst.LatestCommentor = src.LatestCommentor
+	dst.Assignees = src.Assignees
+	dst.Reviewers = src.Reviewers
+	dst.ReviewersTeams = src.ReviewersTeams
+	dst.Subject.State = src.Subject.State
+	dst.Subject.HTMLURL = src.Subject.HTMLURL
 }
