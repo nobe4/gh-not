@@ -51,9 +51,11 @@ func (e *enrichRequestor) Request(_ string, path string, _ io.Reader) (*http.Res
 		id := strings.TrimPrefix(path, "https://subject.url/")
 
 		return jsonResponse(struct {
-			User notifications.User `json:"user"`
+			User    notifications.User `json:"user"`
+			HTMLURL string             `json:"html_url"`
 		}{
-			User: notifications.User{Login: "author-" + id, Type: "User"},
+			User:    notifications.User{Login: "author-" + id, Type: "User"},
+			HTMLURL: "https://html.url/" + id,
 		})
 	case strings.HasPrefix(path, "https://latest.comment.url/"):
 		id := strings.TrimPrefix(path, "https://latest.comment.url/")
@@ -149,41 +151,30 @@ func TestEnrichSkipsDoneWithoutForce(t *testing.T) {
 	}
 }
 
-func TestEnrichEmptyList(t *testing.T) {
+func TestEnrichSkipsOnlyFullyCachedNotifications(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
 	m := testManager(requestor)
 
-	got := m.Enrich(notifications.Notifications{})
+	cached := testNotification(1)
+	cached.Subject.HTMLURL = "https://cached.html/1"
+	cached.LatestCommentor = notifications.User{Login: "cached-commentor", Type: "User"}
 
-	if len(got) != 0 {
-		t.Fatalf("expected empty result, got %d", len(got))
-	}
+	partial := testNotification(2)
+	partial.Subject.HTMLURL = "https://cached.html/2"
 
-	if requestor.requestMade != 0 {
-		t.Fatalf("expected no requests, got %d", requestor.requestMade)
-	}
-}
-
-func TestEnrichSkipsAlreadyEnriched(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testManager(requestor)
-
-	enriched := testNotification(1)
-	enriched.Author = notifications.User{Login: "cached", Type: "User"}
-
-	fresh := testNotification(2)
-
-	_ = m.Enrich(notifications.Notifications{enriched, fresh})
+	_ = m.Enrich(notifications.Notifications{cached, partial})
 
 	if requestor.requestMade != 2 {
-		t.Fatalf("expected only fresh notification to be enriched (2 requests), got %d", requestor.requestMade)
+		t.Fatalf("expected only partial notification to be enriched (2 requests), got %d", requestor.requestMade)
 	}
 
-	if enriched.Author.Login != "cached" {
-		t.Fatalf("expected cached author preserved, got %q", enriched.Author.Login)
+	if cached.LatestCommentor.Login != "cached-commentor" {
+		t.Fatalf("expected cached notification preserved, got %q", cached.LatestCommentor.Login)
+	}
+
+	if partial.LatestCommentor.Login != "commentor-2" {
+		t.Fatalf("expected partial notification to be enriched, got %q", partial.LatestCommentor.Login)
 	}
 }

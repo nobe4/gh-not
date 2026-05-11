@@ -46,10 +46,23 @@ func (m *Manager) shouldEnrich(notification *notifications.Notification) bool {
 		return false
 	}
 
-	// Skip notifications that already carry enriched data. Sync preserves
-	// these fields when UpdatedAt hasn't moved, so the values are still
-	// fresh and we can avoid the API call.
-	if notification.Author.Login != "" {
+	if hasCachedEnrichment(notification) {
+		return false
+	}
+
+	return true
+}
+
+func hasCachedEnrichment(notification *notifications.Notification) bool {
+	if notification.Subject.URL == "" && notification.Subject.LatestCommentURL == "" {
+		return true
+	}
+
+	if notification.Subject.URL != "" && notification.Subject.HTMLURL == "" {
+		return false
+	}
+
+	if notification.Subject.LatestCommentURL != "" && notification.LatestCommentor.Login == "" {
 		return false
 	}
 
