@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const testStateOpen = "open"
+
 func TestSync(t *testing.T) {
 	t.Parallel()
 
@@ -169,35 +171,56 @@ func TestSync(t *testing.T) {
 			})
 		}
 	})
+}
 
-	t.Run("preserve enriched fields when UpdatedAt unchanged", func(t *testing.T) {
-		t.Parallel()
+func TestSyncPreservesCachedEnrichmentOnUpdate(t *testing.T) {
+	t.Parallel()
 
-		local := &Notification{
-			ID:        "0",
-			UpdatedAt: time.Unix(0, 1),
-			Author:    User{Login: "alice"},
-			Subject:   Subject{Title: "stale", State: "open"},
-		}
-		remote := &Notification{
-			ID:        "0",
-			UpdatedAt: time.Unix(0, 1),
-			Subject:   Subject{Title: "fresh"},
-		}
+	local := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{URL: "local-url", State: testStateOpen},
+		Meta:      Meta{Enriched: true},
+	}
+	remote := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{URL: "remote-url"},
+	}
 
-		got := Sync(Notifications{local}, Notifications{remote})
+	got := Sync(Notifications{local}, Notifications{remote})
 
-		if got[0].Author.Login != "alice" {
-			t.Errorf("expected enriched Author preserved, got %q", got[0].Author.Login)
-		}
+	if !got[0].Meta.Enriched {
+		t.Fatal("expected Enriched to be preserved")
+	}
 
-		if got[0].Subject.State != "open" {
-			t.Errorf("expected enriched Subject.State preserved, got %q", got[0].Subject.State)
-		}
+	if got[0].Subject.URL != "remote-url" {
+		t.Fatalf("expected remote URL but got %q", got[0].Subject.URL)
+	}
 
-		// Non-enriched remote fields should still take over.
-		if got[0].Subject.Title != "fresh" {
-			t.Errorf("expected Subject.Title from remote, got %q", got[0].Subject.Title)
-		}
-	})
+	if got[0].Subject.State != testStateOpen {
+		t.Fatalf("expected cached state to be preserved but got %q", got[0].Subject.State)
+	}
+}
+
+func TestSyncResetsCachedEnrichmentForNewerRemote(t *testing.T) {
+	t.Parallel()
+
+	local := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{State: testStateOpen},
+		Meta:      Meta{Enriched: true},
+	}
+	remote := &Notification{ID: "0", UpdatedAt: time.Unix(0, 2)}
+
+	got := Sync(Notifications{local}, Notifications{remote})
+
+	if got[0].Meta.Enriched {
+		t.Fatal("expected Enriched to be reset for newer remote notification")
+	}
+
+	if got[0].Subject.State != "" {
+		t.Fatalf("expected stale state to be cleared but got %q", got[0].Subject.State)
+	}
 }

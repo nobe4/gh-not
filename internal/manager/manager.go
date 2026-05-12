@@ -49,6 +49,8 @@ func (m *Manager) Load() error {
 		slog.Warn("cannot read the cache", "error", err)
 	}
 
+	m.Notifications.BackfillEnriched()
+
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
 
 	return nil
@@ -132,9 +134,9 @@ func (m *Manager) refreshNotifications() error {
 
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
 	m.Notifications = m.Notifications.Uniq()
-	m.Notifications = m.Enrich(m.Notifications)
+	m.Notifications, err = m.Enrich(m.Notifications)
 
 	m.Cache.Refresh(time.Now())
 
-	return nil
+	return err
 }

@@ -8,7 +8,8 @@
     "meta": {
       "remote_exists": true,
       "done": false,
-      "hidden": false
+      "hidden": false,
+      "enriched": true
     }
   },
   {
@@ -20,7 +21,8 @@
     "meta": {
       "remote_exists": false,
       "done": false,
-      "hidden": false
+      "hidden": false,
+      "enriched": true
     }
   },
   {
@@ -32,7 +34,8 @@
     "meta": {
       "remote_exists": true,
       "done": true,
-      "hidden": false
+      "hidden": false,
+      "enriched": true
     }
   },
   {
@@ -44,7 +47,8 @@
     "meta": {
       "remote_exists": true,
       "done": false,
-      "hidden": true
+      "hidden": true,
+      "enriched": true
     }
   }
 ]
