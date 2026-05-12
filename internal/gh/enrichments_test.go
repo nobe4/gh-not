@@ -25,13 +25,22 @@ func TestEnrichLeavesNotificationUnchangedOnFailure(t *testing.T) {
 		`"merged_by":{"login":"merger","type":"User"}` +
 		`}`
 
-	// seed builds a notification that already has some enriched fields, as it
-	// would after a prior (partially successful) Enrich pass.
+	oldUser := func(login string) notifications.User {
+		return notifications.User{Login: login, Type: "User"}
+	}
+
+	// seed builds a notification that already has enriched fields, as it could
+	// after a prior successful Enrich pass.
 	seed := func() *notifications.Notification {
 		n := mockNotification(0)
-		n.Author = notifications.User{Login: "old-author", Type: "User"}
+		n.Author = oldUser("old-author")
 		n.Subject.State = "closed"
-		n.LatestCommentor = notifications.User{Login: "old-commentor", Type: "User"}
+		n.Subject.HTMLURL = "https://example.com/old"
+		n.Assignees = []notifications.User{oldUser("old-assignee")}
+		n.Reviewers = []notifications.User{oldUser("old-reviewer")}
+		n.ReviewersTeams = []notifications.Team{{Name: "old-team", ID: 7}}
+		n.MergedBy = oldUser("old-merger")
+		n.LatestCommentor = oldUser("old-commentor")
 
 		return n
 	}
