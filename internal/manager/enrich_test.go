@@ -93,7 +93,7 @@ func testNotification(id int) *notifications.Notification {
 	}
 }
 
-func testManager(requestor *enrichRequestor, workers int) *Manager {
+func testEnrichManager(requestor *enrichRequestor, workers int) *Manager {
 	return &Manager{
 		client:        gh.NewClient(requestor, nil, gh.Endpoint{}),
 		config:        &config.Data{Enrichment: config.Enrichment{Workers: workers}},
@@ -105,7 +105,7 @@ func TestEnrichDefaultsToSequential(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 0)
+	m := testEnrichManager(requestor, 0)
 
 	ns := make(notifications.Notifications, 0, 3)
 	for i := range 3 {
@@ -138,7 +138,7 @@ func TestEnrichParallelWhenConfigured(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 10)
+	m := testEnrichManager(requestor, 10)
 
 	ns := make(notifications.Notifications, 0, 30)
 	for i := range 30 {
@@ -171,7 +171,7 @@ func TestEnrichSkipsDoneWithoutForce(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 0)
+	m := testEnrichManager(requestor, 0)
 
 	done := testNotification(1)
 	done.Meta.Done = true
@@ -204,7 +204,7 @@ func TestEnrichSkipsEnrichedNotifications(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 0)
+	m := testEnrichManager(requestor, 0)
 
 	cached := testNotification(1)
 	cached.Meta.Enriched = true
@@ -239,7 +239,7 @@ func TestEnrichForceBypassesCachedAndDone(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 0)
+	m := testEnrichManager(requestor, 0)
 	m.ForceStrategy = ForceEnrich
 
 	doneCached := testNotification(1)
@@ -268,7 +268,7 @@ func TestEnrichContinuesAfterFailure(t *testing.T) {
 	t.Parallel()
 
 	requestor := &enrichRequestor{}
-	m := testManager(requestor, 0)
+	m := testEnrichManager(requestor, 0)
 
 	failed := testNotification(1)
 	failed.Subject.URL = "https://unexpected.url/1"
