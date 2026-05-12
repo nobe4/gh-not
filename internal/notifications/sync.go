@@ -60,13 +60,7 @@ func Sync(local, remote Notifications) Notifications {
 			// (2) Update
 			slog.Debug("sync", "action", "update", "id", remote.ID)
 
-			if local[i].Meta.Done && remote.UpdatedAt.After(local[i].UpdatedAt) {
-				slog.Debug("sync", "action", "resetting done", "id", local[i].ID)
-				local[i].Meta.Done = false
-			}
-
-			remote.Meta = local[i].Meta
-			n = append(n, remote)
+			n = append(n, local[i].MergeUpdatedNotification(remote))
 		} else {
 			if local[i].Meta.Done || local[i].Meta.Hidden {
 				// (4) Drop

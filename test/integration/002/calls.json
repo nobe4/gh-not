@@ -11,29 +11,5 @@
         { "id": "3 exists", "subject": { "url": "enrichment#3" } }
       ]
     }
-  },
-  {
-    "verb": "GET",
-    "endpoint": "enrichment#1",
-    "response": {
-      "status_code": 200,
-      "body": { "state": "open" }
-    }
-  },
-  {
-    "verb": "GET",
-    "endpoint": "enrichment#1",
-    "response": {
-      "status_code": 200,
-      "body": { "state": "open" }
-    }
-  },
-  {
-    "verb": "GET",
-    "endpoint": "enrichment#3",
-    "response": {
-      "status_code": 200,
-      "body": { "state": "open" }
-    }
   }
 ]

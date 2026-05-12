@@ -59,6 +59,9 @@ type Meta struct {
 	// remote list (i.e. the API).
 	RemoteExists bool `json:"remote_exists"`
 
+	// Enriched marks notifications whose enriched API fields are cached.
+	Enriched bool `json:"enriched"`
+
 	// Tags is a list of tags that can be used to filter notifications.
 	// They can be added/removed with the `tag` action.
 	Tags []string `json:"tags"`
@@ -113,7 +116,7 @@ func (n Notifications) Equal(others Notifications) bool {
 
 //nolint:cyclop // TODO: add sub struct equality.
 //revive:disable:cyclomatic
-func (n Notification) Equal(other *Notification) bool {
+func (n *Notification) Equal(other *Notification) bool {
 	return n.ID == other.ID &&
 		n.Unread == other.Unread &&
 		n.Reason == other.Reason &&
@@ -136,10 +139,57 @@ func (n Notification) Equal(other *Notification) bool {
 		n.LatestCommentor.Type == other.LatestCommentor.Type &&
 		n.Meta.Hidden == other.Meta.Hidden &&
 		n.Meta.Done == other.Meta.Done &&
-		n.Meta.RemoteExists == other.Meta.RemoteExists
+		n.Meta.RemoteExists == other.Meta.RemoteExists &&
+		n.Meta.Enriched == other.Meta.Enriched
 }
 
-func (n Notification) Marshal() ([]byte, error) {
+// MergeUpdatedNotification copies cached metadata from n onto remote. If remote
+// is newer, it resets Done/Enriched and drops stale enrichment; otherwise it
+// preserves cached enrichment. It mutates and returns remote.
+func (n *Notification) MergeUpdatedNotification(remote *Notification) *Notification {
+	meta := n.Meta
+	meta.RemoteExists = true
+
+	if remote.UpdatedAt.After(n.UpdatedAt) {
+		meta.Done = false
+		meta.Enriched = false
+
+		remote.clearEnrichment()
+	} else if meta.Enriched {
+		remote.copyEnrichmentFrom(n)
+	}
+
+	remote.Meta = meta
+
+	return remote
+}
+
+// BackfillEnriched sets Meta.Enriched on cached notifications saved before the
+// field existed. Without this, every notification would re-enrich on the first
+// refresh after upgrade.
+func (n Notifications) BackfillEnriched() {
+	for _, notification := range n {
+		if notification != nil {
+			notification.BackfillEnriched()
+		}
+	}
+}
+
+// BackfillEnriched sets Meta.Enriched=true when n carries enrichment-only
+// subject fields. No-op if the flag is already set or no signal is present.
+func (n *Notification) BackfillEnriched() {
+	if n.Meta.Enriched {
+		return
+	}
+
+	if n.Subject.State == "" && n.Subject.HTMLURL == "" {
+		return
+	}
+
+	n.Meta.Enriched = true
+}
+
+func (n *Notification) Marshal() ([]byte, error) {
 	marshaled, err := json.Marshal(n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal notifications: %w", err)
@@ -148,7 +198,7 @@ func (n Notification) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-func (n Notification) Interface() (any, error) {
+func (n *Notification) Interface() (any, error) {
 	marshaled, err := n.Marshal()
 	if err != nil {
 		return nil, err
@@ -171,8 +221,23 @@ func (n Notifications) Debug() string {
 	return strings.Join(out, "\n")
 }
 
-func (n Notification) Debug() string {
-	return fmt.Sprintf("%#v", n)
+func (n *Notification) Debug() string {
+	return fmt.Sprintf("%#v", *n)
+}
+
+func (n *Notification) copyEnrichmentFrom(other *Notification) {
+	n.Author = other.Author
+	n.LatestCommentor = other.LatestCommentor
+	n.Assignees = other.Assignees
+	n.Reviewers = other.Reviewers
+	n.ReviewersTeams = other.ReviewersTeams
+	n.MergedBy = other.MergedBy
+	n.Subject.State = other.Subject.State
+	n.Subject.HTMLURL = other.Subject.HTMLURL
+}
+
+func (n *Notification) clearEnrichment() {
+	n.copyEnrichmentFrom(&Notification{})
 }
 
 func (n Notifications) Map() NotificationMap {

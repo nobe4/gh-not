@@ -49,6 +49,8 @@ func (m *Manager) Load() error {
 		slog.Warn("cannot read the cache", "error", err)
 	}
 
+	m.Notifications.BackfillEnriched()
+
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
 
 	return nil
@@ -76,7 +78,7 @@ func (m *Manager) Save() error {
 
 func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
 	for i, n := range ns {
-		if n.Meta.Done && !m.ForceStrategy.Has(ForceEnrich) {
+		if !m.ForceStrategy.Has(ForceEnrich) && (n.Meta.Done || n.Meta.Enriched) {
 			continue
 		}
 
@@ -85,8 +87,11 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 			// enrichment to continue.
 			// TODO: suggest to re-run the enrichment
 			slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
+
+			continue
 		}
 
+		n.Meta.Enriched = true
 		ns[i] = n
 	}
 
