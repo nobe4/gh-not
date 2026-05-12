@@ -143,10 +143,9 @@ func (n *Notification) Equal(other *Notification) bool {
 		n.Meta.Enriched == other.Meta.Enriched
 }
 
-// MergeUpdatedNotification copies cached metadata from n onto remote. When
-// remote is genuinely newer (UpdatedAt advanced), Done and Enriched reset and
-// the cached enrichment is dropped; otherwise the enriched fields are
-// preserved. It mutates and returns remote.
+// MergeUpdatedNotification copies cached metadata from n onto remote. If remote
+// is newer, it resets Done/Enriched and drops stale enrichment; otherwise it
+// preserves cached enrichment. It mutates and returns remote.
 func (n *Notification) MergeUpdatedNotification(remote *Notification) *Notification {
 	meta := n.Meta
 	meta.RemoteExists = true
@@ -223,7 +222,7 @@ func (n Notifications) Debug() string {
 }
 
 func (n *Notification) Debug() string {
-	return fmt.Sprintf("%#v", n)
+	return fmt.Sprintf("%#v", *n)
 }
 
 func (n *Notification) copyEnrichmentFrom(other *Notification) {
