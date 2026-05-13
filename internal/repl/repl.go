@@ -83,6 +83,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		return m.handleKeyMsg(msg)
+
+	default:
+		// continue
 	}
 
 	var cmd tea.Cmd
