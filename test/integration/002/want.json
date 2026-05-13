@@ -29,13 +29,13 @@
     "id": "2 exists",
     "subject": {
       "url": "enrichment#2",
-      "state": "open"
+      "state": ""
     },
     "meta": {
       "remote_exists": true,
       "done": true,
       "hidden": false,
-      "enriched": true
+      "enriched": false
     }
   },
   {

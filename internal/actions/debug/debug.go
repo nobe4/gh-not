@@ -1,6 +1,7 @@
 /*
 Package debug implements an [actions.Runner] that prints a notification with a DEBUG prefix.
 */
+//revive:disable:var-naming // This is the name I want.
 package debug
 
 import (

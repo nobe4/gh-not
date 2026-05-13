@@ -18,6 +18,26 @@ var errMockEnrich = errors.New("mock enrich failure")
 func TestEnrich(t *testing.T) {
 	t.Parallel()
 
+	mockResponse := func(body string) *http.Response {
+		t.Helper()
+
+		return &http.Response{
+			Body: io.NopCloser(strings.NewReader(body)),
+		}
+	}
+
+	testManager := func(t *testing.T, calls []mock.Call) (*Manager, *mock.Mock) {
+		t.Helper()
+
+		m := New(&config.Data{
+			Cache: config.Cache{Path: filepath.Join(t.TempDir(), "cache.json")},
+		})
+		caller := &mock.Mock{Calls: calls}
+		m.SetCaller(caller)
+
+		return m, caller
+	}
+
 	t.Run("continues after per-notification failure", func(t *testing.T) {
 		t.Parallel()
 
@@ -30,16 +50,13 @@ func TestEnrich(t *testing.T) {
 			&notifications.Notification{ID: "good", Subject: notifications.Subject{URL: "good-url"}},
 		}
 
-		got, err := m.Enrich(ns)
-		if err != nil {
-			t.Fatalf("expected no error but got %#v", err)
-		}
+		m.Enrich(ns)
 
-		if got[0].Meta.Enriched {
+		if ns[0].Meta.Enriched {
 			t.Fatal("expected failed notification to remain unenriched")
 		}
 
-		if !got[1].Meta.Enriched {
+		if !ns[1].Meta.Enriched {
 			t.Fatal("expected later notification to be enriched")
 		}
 
@@ -63,39 +80,18 @@ func TestEnrich(t *testing.T) {
 			},
 		}
 
-		got, err := m.Enrich(ns)
-		if err != nil {
-			t.Fatalf("expected no error but got %#v", err)
-		}
+		m.Enrich(ns)
 
-		if !got[0].Meta.Enriched {
+		if !ns[0].Meta.Enriched {
 			t.Fatal("expected notification to remain enriched")
 		}
 
-		if got[0].Subject.State != "closed" {
-			t.Fatalf("expected state to be closed but got %q", got[0].Subject.State)
+		if ns[0].Subject.State != "closed" {
+			t.Fatalf("expected state to be closed but got %q", ns[0].Subject.State)
 		}
 
 		if err := caller.Done(); err != nil {
 			t.Fatal(err)
 		}
 	})
-}
-
-func testManager(t *testing.T, calls []mock.Call) (*Manager, *mock.Mock) {
-	t.Helper()
-
-	m := New(&config.Data{
-		Cache: config.Cache{Path: filepath.Join(t.TempDir(), "cache.json")},
-	})
-	caller := &mock.Mock{Calls: calls}
-	m.SetCaller(caller)
-
-	return m, caller
-}
-
-func mockResponse(body string) *http.Response {
-	return &http.Response{
-		Body: io.NopCloser(strings.NewReader(body)),
-	}
 }

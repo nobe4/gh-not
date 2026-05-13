@@ -8,8 +8,8 @@ import (
 func TestIDList(t *testing.T) {
 	t.Parallel()
 
-	n := Notifications{}
 	ids := []string{"0", "1", "2"}
+	n := make(Notifications, 0, len(ids))
 
 	for _, id := range ids {
 		n = append(n, &Notification{ID: id})
@@ -167,47 +167,5 @@ func TestFilterFromIds(t *testing.T) {
 
 	if got[1] != n2 {
 		t.Fatalf("expected %+v but got %+v", n2, got[1])
-	}
-}
-
-func TestBackfillEnriched(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name         string
-		notification *Notification
-		want         bool
-	}{
-		{
-			name:         "empty notification",
-			notification: &Notification{},
-		},
-		{
-			name:         "already enriched",
-			notification: &Notification{Meta: Meta{Enriched: true}},
-			want:         true,
-		},
-		{
-			name:         "subject state",
-			notification: &Notification{Subject: Subject{State: testStateOpen}},
-			want:         true,
-		},
-		{
-			name:         "subject html url",
-			notification: &Notification{Subject: Subject{HTMLURL: "https://github.com/nobe4/gh-not/issues/1"}},
-			want:         true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-
-			test.notification.BackfillEnriched()
-
-			if test.notification.Meta.Enriched != test.want {
-				t.Fatalf("expected Enriched to be %v but got %v", test.want, test.notification.Meta.Enriched)
-			}
-		})
 	}
 }

@@ -112,20 +112,17 @@ func TestEnrichDefaultsToSequential(t *testing.T) {
 		ns = append(ns, testNotification(i))
 	}
 
-	got, err := m.Enrich(ns)
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
+	m.Enrich(ns)
+
+	if ns[2].Author.Login != "author-2" {
+		t.Fatalf("expected author to be enriched, got %q", ns[2].Author.Login)
 	}
 
-	if got[2].Author.Login != "author-2" {
-		t.Fatalf("expected author to be enriched, got %q", got[2].Author.Login)
+	if ns[2].LatestCommentor.Login != "commentor-2" {
+		t.Fatalf("expected latest commentor to be enriched, got %q", ns[2].LatestCommentor.Login)
 	}
 
-	if got[2].LatestCommentor.Login != "commentor-2" {
-		t.Fatalf("expected latest commentor to be enriched, got %q", got[2].LatestCommentor.Login)
-	}
-
-	if !got[2].Meta.Enriched {
+	if !ns[2].Meta.Enriched {
 		t.Fatal("expected notification to be marked enriched")
 	}
 
@@ -145,20 +142,17 @@ func TestEnrichParallelWhenConfigured(t *testing.T) {
 		ns = append(ns, testNotification(i))
 	}
 
-	got, err := m.Enrich(ns)
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
+	m.Enrich(ns)
+
+	if ns[13].Author.Login != "author-13" {
+		t.Fatalf("expected author to be enriched, got %q", ns[13].Author.Login)
 	}
 
-	if got[13].Author.Login != "author-13" {
-		t.Fatalf("expected author to be enriched, got %q", got[13].Author.Login)
+	if ns[13].LatestCommentor.Login != "commentor-13" {
+		t.Fatalf("expected latest commentor to be enriched, got %q", ns[13].LatestCommentor.Login)
 	}
 
-	if got[13].LatestCommentor.Login != "commentor-13" {
-		t.Fatalf("expected latest commentor to be enriched, got %q", got[13].LatestCommentor.Login)
-	}
-
-	if !got[13].Meta.Enriched {
+	if !ns[13].Meta.Enriched {
 		t.Fatal("expected notification to be marked enriched")
 	}
 
@@ -178,10 +172,7 @@ func TestEnrichSkipsDoneWithoutForce(t *testing.T) {
 
 	notDone := testNotification(2)
 
-	_, err := m.Enrich(notifications.Notifications{done, notDone})
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
-	}
+	m.Enrich(notifications.Notifications{done, notDone})
 
 	if requestor.requestMade != 2 {
 		t.Fatalf("expected only non-done notification to be enriched (2 requests), got %d", requestor.requestMade)
@@ -213,10 +204,7 @@ func TestEnrichSkipsEnrichedNotifications(t *testing.T) {
 
 	notCached := testNotification(2)
 
-	_, err := m.Enrich(notifications.Notifications{cached, notCached})
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
-	}
+	m.Enrich(notifications.Notifications{cached, notCached})
 
 	if cached.LatestCommentor.Login != "cached-commentor" {
 		t.Fatalf("expected cached notification preserved, got %q", cached.LatestCommentor.Login)
@@ -246,10 +234,7 @@ func TestEnrichForceBypassesCachedAndDone(t *testing.T) {
 	doneCached.Meta.Done = true
 	doneCached.Meta.Enriched = true
 
-	_, err := m.Enrich(notifications.Notifications{doneCached})
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
-	}
+	m.Enrich(notifications.Notifications{doneCached})
 
 	if requestor.requestMade != 2 {
 		t.Fatalf("expected force to enrich done cached notification (2 requests), got %d", requestor.requestMade)
@@ -274,10 +259,7 @@ func TestEnrichContinuesAfterFailure(t *testing.T) {
 	failed.Subject.URL = "https://unexpected.url/1"
 	successful := testNotification(2)
 
-	_, err := m.Enrich(notifications.Notifications{failed, successful})
-	if err != nil {
-		t.Fatalf("expected no error but got %v", err)
-	}
+	m.Enrich(notifications.Notifications{failed, successful})
 
 	if failed.Meta.Enriched {
 		t.Fatal("expected failed notification to remain unenriched")

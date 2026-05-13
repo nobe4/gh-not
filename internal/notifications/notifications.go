@@ -143,52 +143,6 @@ func (n *Notification) Equal(other *Notification) bool {
 		n.Meta.Enriched == other.Meta.Enriched
 }
 
-// MergeUpdatedNotification copies cached metadata from n onto remote. If remote
-// is newer, it resets Done/Enriched and drops stale enrichment; otherwise it
-// preserves cached enrichment. It mutates and returns remote.
-func (n *Notification) MergeUpdatedNotification(remote *Notification) *Notification {
-	meta := n.Meta
-	meta.RemoteExists = true
-
-	if remote.UpdatedAt.After(n.UpdatedAt) {
-		meta.Done = false
-		meta.Enriched = false
-
-		remote.clearEnrichment()
-	} else if meta.Enriched {
-		remote.copyEnrichmentFrom(n)
-	}
-
-	remote.Meta = meta
-
-	return remote
-}
-
-// BackfillEnriched sets Meta.Enriched on cached notifications saved before the
-// field existed. Without this, every notification would re-enrich on the first
-// refresh after upgrade.
-func (n Notifications) BackfillEnriched() {
-	for _, notification := range n {
-		if notification != nil {
-			notification.BackfillEnriched()
-		}
-	}
-}
-
-// BackfillEnriched sets Meta.Enriched=true when n carries enrichment-only
-// subject fields. No-op if the flag is already set or no signal is present.
-func (n *Notification) BackfillEnriched() {
-	if n.Meta.Enriched {
-		return
-	}
-
-	if n.Subject.State == "" && n.Subject.HTMLURL == "" {
-		return
-	}
-
-	n.Meta.Enriched = true
-}
-
 func (n *Notification) Marshal() ([]byte, error) {
 	marshaled, err := json.Marshal(n)
 	if err != nil {
@@ -223,21 +177,6 @@ func (n Notifications) Debug() string {
 
 func (n *Notification) Debug() string {
 	return fmt.Sprintf("%#v", *n)
-}
-
-func (n *Notification) copyEnrichmentFrom(other *Notification) {
-	n.Author = other.Author
-	n.LatestCommentor = other.LatestCommentor
-	n.Assignees = other.Assignees
-	n.Reviewers = other.Reviewers
-	n.ReviewersTeams = other.ReviewersTeams
-	n.MergedBy = other.MergedBy
-	n.Subject.State = other.Subject.State
-	n.Subject.HTMLURL = other.Subject.HTMLURL
-}
-
-func (n *Notification) clearEnrichment() {
-	n.copyEnrichmentFrom(&Notification{})
 }
 
 func (n Notifications) Map() NotificationMap {

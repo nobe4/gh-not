@@ -7,11 +7,8 @@ import (
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
+func (m *Manager) Enrich(ns notifications.Notifications) {
 	workers := m.enrichWorkers()
-	if workers == 1 {
-		return m.enrichSequentially(ns), nil
-	}
 
 	var wg sync.WaitGroup
 
@@ -27,25 +24,16 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 		wg.Go(func() {
 			defer func() { <-sem }()
 
-			m.enrichNotification(n)
+			if err := m.client.Enrich(n); err != nil {
+				// Enrichment of a single notification should not prevent the
+				// enrichment to continue.
+				// TODO: suggest to re-run the enrichment
+				slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
+			}
 		})
 	}
 
 	wg.Wait()
-
-	return ns, nil
-}
-
-func (m *Manager) enrichSequentially(ns notifications.Notifications) notifications.Notifications {
-	for _, n := range ns {
-		if !m.shouldEnrich(n) {
-			continue
-		}
-
-		m.enrichNotification(n)
-	}
-
-	return ns
 }
 
 func (m *Manager) enrichWorkers() int {
@@ -74,17 +62,4 @@ func (m *Manager) shouldEnrich(notification *notifications.Notification) bool {
 	}
 
 	return true
-}
-
-func (m *Manager) enrichNotification(notification *notifications.Notification) {
-	if err := m.client.Enrich(notification); err != nil {
-		// Enrichment of a single notification should not prevent the
-		// enrichment to continue.
-		// TODO: suggest to re-run the enrichment
-		slog.Warn("failed to enrich notification", "notification", notification.ID, "error", err.Error())
-
-		return
-	}
-
-	notification.Meta.Enriched = true
 }

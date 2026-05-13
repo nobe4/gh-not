@@ -30,6 +30,11 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 		return err
 	}
 
+	lastCommentor, err := c.getLastCommentor(n)
+	if err != nil {
+		return err
+	}
+
 	n.Author = threadExtra.User
 	n.Subject.State = threadExtra.State
 	n.Subject.HTMLURL = threadExtra.HTMLURL
@@ -37,13 +42,8 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	n.Reviewers = threadExtra.Reviewers
 	n.ReviewersTeams = threadExtra.ReviewersTeams
 	n.MergedBy = threadExtra.MergedBy
-
-	lastCommentor, err := c.getLastCommentor(n)
-	if err != nil {
-		return err
-	}
-
 	n.LatestCommentor = lastCommentor
+	n.Meta.Enriched = true
 
 	return nil
 }
