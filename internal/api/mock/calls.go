@@ -17,6 +17,7 @@ type Call struct {
 	Data     any
 	Error    error
 	Response *http.Response
+	Matched  bool
 }
 
 type RawCall struct {
@@ -76,4 +77,16 @@ func LoadCallsFromFile(path string) ([]Call, error) {
 	}
 
 	return calls, nil
+}
+
+func (c *Call) matches(verb, endpoint string) bool {
+	if c.Verb != "" && c.Verb != verb {
+		return false
+	}
+
+	if c.URL != "" && c.URL != endpoint {
+		return false
+	}
+
+	return true
 }
