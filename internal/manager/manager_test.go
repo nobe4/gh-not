@@ -18,6 +18,26 @@ var errMockEnrich = errors.New("mock enrich failure")
 func TestEnrich(t *testing.T) {
 	t.Parallel()
 
+	mockResponse := func(body string) *http.Response {
+		t.Helper()
+
+		return &http.Response{
+			Body: io.NopCloser(strings.NewReader(body)),
+		}
+	}
+
+	testManager := func(t *testing.T, calls []mock.Call) (*Manager, *mock.Mock) {
+		t.Helper()
+
+		m := New(&config.Data{
+			Cache: config.Cache{Path: filepath.Join(t.TempDir(), "cache.json")},
+		})
+		caller := &mock.Mock{Calls: calls}
+		m.SetCaller(caller)
+
+		return m, caller
+	}
+
 	t.Run("continues after per-notification failure", func(t *testing.T) {
 		t.Parallel()
 
@@ -80,22 +100,4 @@ func TestEnrich(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
-}
-
-func testManager(t *testing.T, calls []mock.Call) (*Manager, *mock.Mock) {
-	t.Helper()
-
-	m := New(&config.Data{
-		Cache: config.Cache{Path: filepath.Join(t.TempDir(), "cache.json")},
-	})
-	caller := &mock.Mock{Calls: calls}
-	m.SetCaller(caller)
-
-	return m, caller
-}
-
-func mockResponse(body string) *http.Response {
-	return &http.Response{
-		Body: io.NopCloser(strings.NewReader(body)),
-	}
 }
