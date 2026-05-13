@@ -37,11 +37,12 @@ type Config struct {
 
 // Data holds the configuration data.
 type Data struct {
-	Cache    Cache       `mapstructure:"cache"`
-	Endpoint gh.Endpoint `mapstructure:"endpoint"`
-	Keymap   Keymap      `mapstructure:"keymap"`
-	View     View        `mapstructure:"view"`
-	Rules    []Rule      `mapstructure:"rules"`
+	Cache      Cache       `mapstructure:"cache"`
+	Endpoint   gh.Endpoint `mapstructure:"endpoint"`
+	Enrichment Enrichment  `mapstructure:"enrichment"`
+	Keymap     Keymap      `mapstructure:"keymap"`
+	View       View        `mapstructure:"view"`
+	Rules      []Rule      `mapstructure:"rules"`
 }
 
 // Cache is the configuration for the cache file.
@@ -51,6 +52,12 @@ type Cache struct {
 
 	// The time-to-live of the cache in hours.
 	TTLInHours int `mapstructure:"ttl_in_hours"`
+}
+
+// Enrichment is the configuration for notification enrichment.
+type Enrichment struct {
+	// Workers is the number of notifications to enrich concurrently.
+	Workers int `mapstructure:"workers"`
 }
 
 // View is the configuration for the terminal view.

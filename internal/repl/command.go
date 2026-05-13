@@ -124,8 +124,9 @@ func (m model) applyNext() tea.Cmd {
 		}
 
 		current, tail := m.processQueue[0], m.processQueue[1:]
-		//nolint:revive // This seems to be working, but I am not sure why.
+
 		// TODO: investigate why not passing a pointer here does work.
+		//revive:disable:modifies-value-receiver // see TODO
 		m.processQueue = tail
 
 		slog.Debug("apply next", "notification", current.notification.String())

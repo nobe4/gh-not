@@ -9,8 +9,6 @@ import (
 
 type Mock struct {
 	Calls []Call
-
-	index int
 }
 
 type Error struct {
@@ -24,15 +22,17 @@ func (e *Error) Error() string {
 }
 
 func (m *Mock) Done() error {
-	if m.index < len(m.Calls) {
-		return &Error{"", "", fmt.Sprintf("%d calls remaining", len(m.Calls)-m.index)}
+	for _, c := range m.Calls {
+		if !c.Matched {
+			return &Error{c.Verb, c.URL, "call not matched"}
+		}
 	}
 
 	return nil
 }
 
 func (m *Mock) Request(verb, endpoint string, _ io.Reader) (*http.Response, error) {
-	call, err := m.call(verb, endpoint)
+	call, err := m.nextCall(verb, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -40,23 +40,23 @@ func (m *Mock) Request(verb, endpoint string, _ io.Reader) (*http.Response, erro
 	return call.Response, call.Error
 }
 
-func (m *Mock) call(verb, endpoint string) (Call, error) {
-	if m.index >= len(m.Calls) {
-		return Call{}, &Error{verb, endpoint, "unexpected call: no more calls"}
-	}
-
-	call := m.Calls[m.index]
-	if (call.Verb != "" && call.Verb != verb) || (call.URL != "" && call.URL != endpoint) {
-		return Call{}, &Error{
-			verb,
-			endpoint,
-			fmt.Sprintf("unexpected call: mismatch, expected [%s %s]", call.Verb, call.URL),
+func (m *Mock) nextCall(verb, endpoint string) (*Call, error) {
+	for i := range m.Calls {
+		c := &m.Calls[i]
+		if c.Matched {
+			continue
 		}
+
+		if !c.matches(verb, endpoint) {
+			continue
+		}
+
+		c.Matched = true
+
+		slog.Debug("mock call", "verb", verb, "endpoint", endpoint, "call", c)
+
+		return c, nil
 	}
 
-	m.index++
-
-	slog.Debug("mock call", "verb", verb, "endpoint", endpoint, "call", call)
-
-	return call, nil
+	return nil, &Error{verb, endpoint, "unexpected call: no match found"}
 }

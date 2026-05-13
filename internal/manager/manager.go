@@ -74,21 +74,6 @@ func (m *Manager) Save() error {
 	return nil
 }
 
-func (m *Manager) Enrich(ns notifications.Notifications) {
-	for _, n := range ns {
-		if !m.ForceStrategy.Has(ForceEnrich) && (n.Meta.Done || n.Meta.Enriched) {
-			continue
-		}
-
-		if err := m.client.Enrich(n); err != nil {
-			// Enrichment of a single Notifications should not prevent the
-			// enrichment to continue.
-			// TODO: suggest to re-run the enrichment
-			slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
-		}
-	}
-}
-
 //revive:disable:cognitive-complexity // TODO: simplify.
 func (m *Manager) Apply() error {
 	for _, rule := range m.config.Rules {

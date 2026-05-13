@@ -132,6 +132,17 @@ E.g.
     ```
     Use it with `gh-not --config config.gheio.yaml`.
 
+## Enrichment
+
+Enrichment fetches extra data for each notification, such as authors, state, and
+latest commenters.
+
+It contains 1 field:
+
+- `workers`: the number of notifications to enrich concurrently. The default is
+  `1`, which preserves sequential API calls. Increase it only if your API
+  limits can handle parallel requests.
+
 ## Rules
 
 The configuration file contains the rules to apply to the notifications. Each

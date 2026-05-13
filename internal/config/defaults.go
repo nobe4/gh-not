@@ -12,6 +12,8 @@ var Defaults = map[string]any{
 	"endpoint.max_page":  5,
 	"endpoint.per_page":  100,
 
+	"enrichment.workers": 1,
+
 	"view.height":   40,
 	"view.log_path": path.Join(StateDir(), "debug.log"),
 
