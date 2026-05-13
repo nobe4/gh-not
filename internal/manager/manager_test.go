@@ -50,16 +50,13 @@ func TestEnrich(t *testing.T) {
 			&notifications.Notification{ID: "good", Subject: notifications.Subject{URL: "good-url"}},
 		}
 
-		got, err := m.Enrich(ns)
-		if err != nil {
-			t.Fatalf("expected no error but got %#v", err)
-		}
+		m.Enrich(ns)
 
-		if got[0].Meta.Enriched {
+		if ns[0].Meta.Enriched {
 			t.Fatal("expected failed notification to remain unenriched")
 		}
 
-		if !got[1].Meta.Enriched {
+		if !ns[1].Meta.Enriched {
 			t.Fatal("expected later notification to be enriched")
 		}
 
@@ -83,17 +80,14 @@ func TestEnrich(t *testing.T) {
 			},
 		}
 
-		got, err := m.Enrich(ns)
-		if err != nil {
-			t.Fatalf("expected no error but got %#v", err)
-		}
+		m.Enrich(ns)
 
-		if !got[0].Meta.Enriched {
+		if !ns[0].Meta.Enriched {
 			t.Fatal("expected notification to remain enriched")
 		}
 
-		if got[0].Subject.State != "closed" {
-			t.Fatalf("expected state to be closed but got %q", got[0].Subject.State)
+		if ns[0].Subject.State != "closed" {
+			t.Fatalf("expected state to be closed but got %q", ns[0].Subject.State)
 		}
 
 		if err := caller.Done(); err != nil {

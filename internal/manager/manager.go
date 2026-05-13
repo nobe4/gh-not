@@ -74,8 +74,8 @@ func (m *Manager) Save() error {
 	return nil
 }
 
-func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifications, error) {
-	for i, n := range ns {
+func (m *Manager) Enrich(ns notifications.Notifications) {
+	for _, n := range ns {
 		if !m.ForceStrategy.Has(ForceEnrich) && (n.Meta.Done || n.Meta.Enriched) {
 			continue
 		}
@@ -85,15 +85,8 @@ func (m *Manager) Enrich(ns notifications.Notifications) (notifications.Notifica
 			// enrichment to continue.
 			// TODO: suggest to re-run the enrichment
 			slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
-
-			continue
 		}
-
-		n.Meta.Enriched = true
-		ns[i] = n
 	}
-
-	return ns, nil
 }
 
 //revive:disable:cognitive-complexity // TODO: simplify.
@@ -154,9 +147,9 @@ func (m *Manager) refreshNotifications() error {
 
 	m.Notifications = notifications.Sync(m.Notifications, remoteNotifications)
 	m.Notifications = m.Notifications.Uniq()
-	m.Notifications, err = m.Enrich(m.Notifications)
+	m.Enrich(m.Notifications)
 
 	m.Cache.Refresh(time.Now())
 
-	return err
+	return nil
 }
