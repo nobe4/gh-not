@@ -15,15 +15,15 @@ import (
 func TestEnrichLeavesNotificationUnchangedOnFailure(t *testing.T) {
 	t.Parallel()
 
-	threadExtraBody := `{` +
-		`"user":{"login":"new-author","type":"User"},` +
-		`"state":"open",` +
-		`"html_url":"https://example.com/issues/1",` +
-		`"assignees":[{"login":"assignee1","type":"User"}],` +
-		`"requested_reviewers":[{"login":"reviewer1","type":"User"}],` +
-		`"requested_teams":[{"name":"team1","id":42}],` +
-		`"merged_by":{"login":"merger","type":"User"}` +
-		`}`
+	threadExtraBody := `{
+		"user": { "login": "new-author", "type": "User" },
+		"state": "open",
+		"html_url": "https://example.com/issues/1",
+		"assignees": [{ "login": "assignee1", "type": "User" }],
+		"requested_reviewers": [{ "login": "reviewer1", "type": "User" }],
+		"requested_teams": [{ "name": "team1", "id": 42 }],
+		"merged_by": { "login": "merger", "type": "User" }
+	}`
 
 	oldUser := func(login string) notifications.User {
 		return notifications.User{Login: login, Type: "User"}
