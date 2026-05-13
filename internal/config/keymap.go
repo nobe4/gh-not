@@ -1,3 +1,4 @@
+//nolint:goconst // Leaving all values as explicit is better here.
 package config
 
 import (
