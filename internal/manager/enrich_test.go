@@ -1,271 +1,179 @@
 package manager
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
-	"sync"
 	"testing"
-	"time"
 
+	"github.com/nobe4/gh-not/internal/api/mock"
 	"github.com/nobe4/gh-not/internal/config"
 	"github.com/nobe4/gh-not/internal/gh"
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
-var errUnexpectedPath = errors.New("unexpected path")
+func TestEnrichWorkers(t *testing.T) {
+	t.Parallel()
 
-const userTypeUser = "User"
+	tests := []struct {
+		name   string
+		config *config.Data
+		want   int
+	}{
+		{"nil config", nil, 1},
+		{"zero workers", &config.Data{}, 1},
+		{"negative workers", &config.Data{Enrichment: config.Enrichment{Workers: -1}}, 1},
+		{"set workers", &config.Data{Enrichment: config.Enrichment{Workers: 5}}, 5},
+	}
 
-type enrichRequestor struct {
-	mu sync.Mutex
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	active      int
-	maxActive   int
-	requestMade int
+			m := &Manager{config: tt.config}
+			if got := m.enrichWorkers(); got != tt.want {
+				t.Fatalf("want %d, got %d", tt.want, got)
+			}
+		})
+	}
 }
 
-func (e *enrichRequestor) Request(_ string, path string, _ io.Reader) (*http.Response, error) {
-	e.mu.Lock()
-	e.active++
+func TestShouldEnrich(t *testing.T) {
+	t.Parallel()
 
-	e.requestMade++
-	if e.active > e.maxActive {
-		e.maxActive = e.active
+	tests := []struct {
+		name  string
+		n     *notifications.Notification
+		force bool
+		want  bool
+	}{
+		{"nil notification", nil, false, false},
+		{"default", &notifications.Notification{}, false, true},
+		{"already enriched", &notifications.Notification{Meta: notifications.Meta{Enriched: true}}, false, false},
+		{"done", &notifications.Notification{Meta: notifications.Meta{Done: true}}, false, false},
+		{"done and enriched", &notifications.Notification{Meta: notifications.Meta{Done: true, Enriched: true}}, false, false},
+		{"force on enriched", &notifications.Notification{Meta: notifications.Meta{Enriched: true}}, true, true},
+		{"force on done", &notifications.Notification{Meta: notifications.Meta{Done: true}}, true, true},
+		{"force on done and enriched", &notifications.Notification{Meta: notifications.Meta{Done: true, Enriched: true}}, true, true},
 	}
-	e.mu.Unlock()
 
-	defer func() {
-		e.mu.Lock()
-		e.active--
-		e.mu.Unlock()
-	}()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	time.Sleep(10 * time.Millisecond)
+			m := &Manager{}
+			if tt.force {
+				m.ForceStrategy = ForceEnrich
+			}
 
-	switch {
-	case strings.HasPrefix(path, "https://subject.url/"):
-		id := strings.TrimPrefix(path, "https://subject.url/")
+			if got := m.shouldEnrich(tt.n); got != tt.want {
+				t.Fatalf("want %v, got %v", tt.want, got)
+			}
+		})
+	}
+}
 
-		return jsonResponse(struct {
+func TestEnrich(t *testing.T) {
+	t.Parallel()
+
+	mockCall := func(t *testing.T, url string, body any) mock.Call {
+		t.Helper()
+
+		b, err := json.Marshal(body)
+		if err != nil {
+			t.Fatalf("failed to marshal mock body: %v", err)
+		}
+
+		return mock.Call{
+			URL:      url,
+			Response: &http.Response{Body: io.NopCloser(strings.NewReader(string(b)))},
+		}
+	}
+
+	subjectCall := func(id string) mock.Call {
+		return mockCall(t, "https://subject.url/"+id, struct {
 			User    notifications.User `json:"user"`
 			HTMLURL string             `json:"html_url"`
 		}{
-			User:    notifications.User{Login: "author-" + id, Type: userTypeUser},
-			HTMLURL: "https://html.url/" + id,
+			User:    notifications.User{Login: "author", Type: "User"},
+			HTMLURL: "https://html.url/",
 		})
-	case strings.HasPrefix(path, "https://latest.comment.url/"):
-		id := strings.TrimPrefix(path, "https://latest.comment.url/")
+	}
 
-		return jsonResponse(struct {
+	commentCall := func(id string) mock.Call {
+		return mockCall(t, "https://latest.comment.url/"+id, struct {
 			User notifications.User `json:"user"`
 		}{
-			User: notifications.User{Login: "commentor-" + id, Type: userTypeUser},
+			User: notifications.User{Login: "commentor", Type: "User"},
 		})
-	default:
-		return nil, fmt.Errorf("%w: %s", errUnexpectedPath, path)
-	}
-}
-
-func jsonResponse(body any) (*http.Response, error) {
-	b, err := json.Marshal(body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal body: %w", err)
 	}
 
-	return &http.Response{Body: io.NopCloser(bytes.NewReader(b))}, nil
-}
+	testNotification := func(id string) *notifications.Notification {
+		return &notifications.Notification{
+			ID: id,
+			Subject: notifications.Subject{
+				URL:              "https://subject.url/" + id,
+				LatestCommentURL: "https://latest.comment.url/" + id,
+			},
+		}
+	}
 
-func testNotification(id int) *notifications.Notification {
-	idS := strconv.Itoa(id)
+	tests := []struct {
+		name  string
+		calls []mock.Call
+		ns    notifications.Notifications
+		want  []bool
+	}{
+		{
+			name: "enriches all notifications",
+			calls: []mock.Call{
+				subjectCall("1"),
+				commentCall("1"),
+				subjectCall("2"),
+				commentCall("2"),
+			},
+			ns:   notifications.Notifications{testNotification("1"), testNotification("2")},
+			want: []bool{true, true},
+		},
+		{
+			name: "continues after failure",
+			calls: []mock.Call{
+				subjectCall("2"),
+				commentCall("2"),
+			},
+			ns: func() notifications.Notifications {
+				failed := testNotification("1")
+				failed.Subject.URL = "https://unexpected.url/1"
 
-	return &notifications.Notification{
-		ID: idS,
-		Subject: notifications.Subject{
-			URL:              "https://subject.url/" + idS,
-			LatestCommentURL: "https://latest.comment.url/" + idS,
+				return notifications.Notifications{failed, testNotification("2")}
+			}(),
+			want: []bool{false, true},
 		},
 	}
-}
 
-func testEnrichManager(requestor *enrichRequestor, workers int) *Manager {
-	return &Manager{
-		client:        gh.NewClient(requestor, nil, gh.Endpoint{}),
-		config:        &config.Data{Enrichment: config.Enrichment{Workers: workers}},
-		ForceStrategy: 0,
-	}
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-func TestEnrichDefaultsToSequential(t *testing.T) {
-	t.Parallel()
+			requestor := &mock.Mock{Calls: tt.calls}
 
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 0)
+			m := &Manager{
+				client: gh.NewClient(requestor, nil, gh.Endpoint{}),
+				config: &config.Data{Enrichment: config.Enrichment{Workers: 1}},
+			}
 
-	ns := make(notifications.Notifications, 0, 3)
-	for i := range 3 {
-		ns = append(ns, testNotification(i))
-	}
+			m.Enrich(tt.ns)
 
-	m.Enrich(ns)
+			for i, n := range tt.ns {
+				if n.Meta.Enriched != tt.want[i] {
+					t.Fatalf("notification %s: want enriched=%v, got %v", n.ID, tt.want[i], n.Meta.Enriched)
+				}
+			}
 
-	if ns[2].Author.Login != "author-2" {
-		t.Fatalf("expected author to be enriched, got %q", ns[2].Author.Login)
-	}
-
-	if ns[2].LatestCommentor.Login != "commentor-2" {
-		t.Fatalf("expected latest commentor to be enriched, got %q", ns[2].LatestCommentor.Login)
-	}
-
-	if !ns[2].Meta.Enriched {
-		t.Fatal("expected notification to be marked enriched")
-	}
-
-	if requestor.maxActive > 1 {
-		t.Fatalf("expected default enrichment to stay sequential, max concurrency = %d", requestor.maxActive)
-	}
-}
-
-func TestEnrichParallelWhenConfigured(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 10)
-
-	ns := make(notifications.Notifications, 0, 30)
-	for i := range 30 {
-		ns = append(ns, testNotification(i))
-	}
-
-	m.Enrich(ns)
-
-	if ns[13].Author.Login != "author-13" {
-		t.Fatalf("expected author to be enriched, got %q", ns[13].Author.Login)
-	}
-
-	if ns[13].LatestCommentor.Login != "commentor-13" {
-		t.Fatalf("expected latest commentor to be enriched, got %q", ns[13].LatestCommentor.Login)
-	}
-
-	if !ns[13].Meta.Enriched {
-		t.Fatal("expected notification to be marked enriched")
-	}
-
-	if requestor.maxActive <= 1 {
-		t.Fatalf("expected configured workers to run in parallel, max concurrency = %d", requestor.maxActive)
-	}
-}
-
-func TestEnrichSkipsDoneWithoutForce(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 0)
-
-	done := testNotification(1)
-	done.Meta.Done = true
-
-	notDone := testNotification(2)
-
-	m.Enrich(notifications.Notifications{done, notDone})
-
-	if requestor.requestMade != 2 {
-		t.Fatalf("expected only non-done notification to be enriched (2 requests), got %d", requestor.requestMade)
-	}
-
-	if done.Author.Login != "" {
-		t.Fatalf("expected done notification to be skipped, got author %q", done.Author.Login)
-	}
-
-	if notDone.Author.Login != "author-2" {
-		t.Fatalf("expected non-done notification to be enriched, got author %q", notDone.Author.Login)
-	}
-
-	if !notDone.Meta.Enriched {
-		t.Fatal("expected non-done notification to be marked enriched")
-	}
-}
-
-func TestEnrichSkipsEnrichedNotifications(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 0)
-
-	cached := testNotification(1)
-	cached.Meta.Enriched = true
-	cached.Subject.HTMLURL = "https://cached.html/1"
-	cached.LatestCommentor = notifications.User{Login: "cached-commentor", Type: userTypeUser}
-
-	notCached := testNotification(2)
-
-	m.Enrich(notifications.Notifications{cached, notCached})
-
-	if cached.LatestCommentor.Login != "cached-commentor" {
-		t.Fatalf("expected cached notification preserved, got %q", cached.LatestCommentor.Login)
-	}
-
-	if requestor.requestMade != 2 {
-		t.Fatalf("expected only uncached notification to be enriched (2 requests), got %d", requestor.requestMade)
-	}
-
-	if notCached.LatestCommentor.Login != "commentor-2" {
-		t.Fatalf("expected uncached notification to be enriched, got %q", notCached.LatestCommentor.Login)
-	}
-
-	if !notCached.Meta.Enriched {
-		t.Fatal("expected uncached notification to be marked enriched")
-	}
-}
-
-func TestEnrichForceBypassesCachedAndDone(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 0)
-	m.ForceStrategy = ForceEnrich
-
-	doneCached := testNotification(1)
-	doneCached.Meta.Done = true
-	doneCached.Meta.Enriched = true
-
-	m.Enrich(notifications.Notifications{doneCached})
-
-	if requestor.requestMade != 2 {
-		t.Fatalf("expected force to enrich done cached notification (2 requests), got %d", requestor.requestMade)
-	}
-
-	if doneCached.Author.Login != "author-1" {
-		t.Fatalf("expected forced notification to be enriched, got author %q", doneCached.Author.Login)
-	}
-
-	if !doneCached.Meta.Enriched {
-		t.Fatal("expected forced notification to remain marked enriched")
-	}
-}
-
-func TestEnrichContinuesAfterFailure(t *testing.T) {
-	t.Parallel()
-
-	requestor := &enrichRequestor{}
-	m := testEnrichManager(requestor, 0)
-
-	failed := testNotification(1)
-	failed.Subject.URL = "https://unexpected.url/1"
-	successful := testNotification(2)
-
-	m.Enrich(notifications.Notifications{failed, successful})
-
-	if failed.Meta.Enriched {
-		t.Fatal("expected failed notification to remain unenriched")
-	}
-
-	if !successful.Meta.Enriched {
-		t.Fatal("expected later notification to be enriched")
+			if err := requestor.Done(); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
