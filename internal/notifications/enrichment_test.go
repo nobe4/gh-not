@@ -165,7 +165,7 @@ func TestMergeUpdatedNotification(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := tt.n.MergeUpdatedNotification(tt.o)
+			got := tt.n.Update(tt.o)
 
 			if got != tt.o {
 				t.Fatal("expected returned notification to be o")

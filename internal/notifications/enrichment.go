@@ -1,7 +1,7 @@
 package notifications
 
-// MergeUpdatedNotification merges n into o, preserving enrichment if still fresh.
-func (n *Notification) MergeUpdatedNotification(o *Notification) *Notification {
+// Update merges n into o, preserving enrichment if still fresh.
+func (n *Notification) Update(o *Notification) *Notification {
 	meta := n.Meta
 	meta.RemoteExists = true
 
