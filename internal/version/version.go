@@ -1,3 +1,4 @@
+//revive:disable:var-naming // This is the name I want.
 package version
 
 import (

@@ -8,8 +8,8 @@ import (
 func TestIDList(t *testing.T) {
 	t.Parallel()
 
-	n := Notifications{}
 	ids := []string{"0", "1", "2"}
+	n := make(Notifications, 0, len(ids))
 
 	for _, id := range ids {
 		n = append(n, &Notification{ID: id})
