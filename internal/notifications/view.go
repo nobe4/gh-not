@@ -72,7 +72,7 @@ func (n *Notification) prettyTitle() string {
 func (n Notifications) String() string {
 	var out strings.Builder
 	for _, n := range n {
-		out.WriteString(fmt.Sprintf("%s\n", n))
+		fmt.Fprintf(&out, "%s\n", n)
 	}
 
 	return out.String()

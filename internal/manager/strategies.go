@@ -22,23 +22,33 @@ const (
 	PreventRefresh
 )
 
+const (
+	strategyAuto    = "auto"
+	strategyForce   = "force"
+	strategyPrevent = "prevent"
+	strategyApply   = "apply"
+	strategyNoop    = "noop"
+	strategyEnrich  = "enrich"
+	strategyUnknown = "unknown"
+)
+
 var errNotAllowed = errors.New("not allowed")
 
 func (r *RefreshStrategy) String() string {
 	switch *r {
 	case AutoRefresh:
-		return "auto"
+		return strategyAuto
 	case ForceRefresh:
-		return "force"
+		return strategyForce
 	case PreventRefresh:
-		return "prevent"
+		return strategyPrevent
 	default:
-		return "unknown"
+		return strategyUnknown
 	}
 }
 
 func (*RefreshStrategy) Allowed() string {
-	return "auto, force, prevent"
+	return strings.Join([]string{strategyAuto, strategyForce, strategyPrevent}, ", ")
 }
 
 func (r *RefreshStrategy) ShouldRefresh(expired bool) bool {
@@ -65,11 +75,11 @@ func (r *RefreshStrategy) ShouldRefresh(expired bool) bool {
 
 func (r *RefreshStrategy) Set(value string) error {
 	switch value {
-	case "auto":
+	case strategyAuto:
 		*r = AutoRefresh
-	case "force":
+	case strategyForce:
 		*r = ForceRefresh
-	case "prevent":
+	case strategyPrevent:
 		*r = PreventRefresh
 	default:
 		return fmt.Errorf(`%s must be one of %s: %w`, value, r.Allowed(), errNotAllowed)
@@ -107,32 +117,32 @@ func (r *ForceStrategy) String() string {
 	s := []string{}
 
 	if r.Has(ForceApply) {
-		s = append(s, "apply")
+		s = append(s, strategyApply)
 	}
 
 	if r.Has(ForceNoop) {
-		s = append(s, "noop")
+		s = append(s, strategyNoop)
 	}
 
 	if r.Has(ForceEnrich) {
-		s = append(s, "enrich")
+		s = append(s, strategyEnrich)
 	}
 
 	return strings.Join(s, ", ")
 }
 
 func (*ForceStrategy) Allowed() string {
-	return "apply, noop, enrich"
+	return strings.Join([]string{strategyApply, strategyNoop, strategyEnrich}, ", ")
 }
 
 func (r *ForceStrategy) Set(value string) error {
 	for s := range strings.SplitSeq(value, ",") {
 		switch s {
-		case "apply":
+		case strategyApply:
 			*r |= ForceApply
-		case "noop":
+		case strategyNoop:
 			*r |= ForceNoop
-		case "enrich":
+		case strategyEnrich:
 			*r |= ForceEnrich
 		default:
 			return fmt.Errorf(`%s must be one of %s: %w`, s, r.Allowed(), errNotAllowed)
