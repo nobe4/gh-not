@@ -2,38 +2,32 @@ package manager
 
 import (
 	"log/slog"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/nobe4/gh-not/internal/notifications"
 )
 
 func (m *Manager) Enrich(ns notifications.Notifications) {
-	workers := m.enrichWorkers()
-
-	var wg sync.WaitGroup
-
-	sem := make(chan struct{}, workers)
+	g := new(errgroup.Group)
+	g.SetLimit(m.enrichWorkers())
 
 	for _, n := range ns {
 		if !m.shouldEnrich(n) {
 			continue
 		}
 
-		sem <- struct{}{}
-
-		wg.Go(func() {
-			defer func() { <-sem }()
-
+		g.Go(func() error {
 			if err := m.client.Enrich(n); err != nil {
-				// Enrichment of a single notification should not prevent the
-				// enrichment to continue.
-				// TODO: suggest to re-run the enrichment
 				slog.Warn("failed to enrich notification", "notification", n.ID, "error", err.Error())
 			}
+
+			return nil
 		})
 	}
 
-	wg.Wait()
+	//nolint:errcheck // We don't do anything with the errgroup's final error.
+	g.Wait()
 }
 
 func (m *Manager) enrichWorkers() int {
