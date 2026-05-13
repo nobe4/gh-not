@@ -33,7 +33,7 @@ var prettyState = map[string]string{
 	"merged": colors.Magenta("MG"),
 }
 
-func (n Notification) String() string {
+func (n *Notification) String() string {
 	if n.rendered != "" {
 		return n.rendered
 	}
@@ -41,7 +41,7 @@ func (n Notification) String() string {
 	return fmt.Sprintf("[%s] %s at %s: %s", n.ID, n.Author.Login, n.UpdatedAt, n.Subject.Title)
 }
 
-func (n Notification) prettyRead() string {
+func (n *Notification) prettyRead() string {
 	if p, ok := prettyRead[n.Unread]; ok {
 		return p
 	}
@@ -49,7 +49,7 @@ func (n Notification) prettyRead() string {
 	return colors.Yellow("R?")
 }
 
-func (n Notification) prettyType() string {
+func (n *Notification) prettyType() string {
 	if p, ok := prettyTypes[n.Subject.Type]; ok {
 		return p
 	}
@@ -57,7 +57,7 @@ func (n Notification) prettyType() string {
 	return colors.Yellow("T?")
 }
 
-func (n Notification) prettyState() string {
+func (n *Notification) prettyState() string {
 	if p, ok := prettyState[n.Subject.State]; ok {
 		return p
 	}
@@ -65,14 +65,14 @@ func (n Notification) prettyState() string {
 	return colors.Yellow("S?")
 }
 
-func (n Notification) prettyTitle() string {
+func (n *Notification) prettyTitle() string {
 	return strings.ReplaceAll(n.Subject.Title, "\n", " ")
 }
 
 func (n Notifications) String() string {
 	var out strings.Builder
 	for _, n := range n {
-		out.WriteString(fmt.Sprintf("%s\n", n))
+		fmt.Fprintf(&out, "%s\n", n)
 	}
 
 	return out.String()
@@ -102,7 +102,7 @@ func (n Notifications) TagsMap() map[string]int {
 	return tags
 }
 
-func (n Notification) Visible() bool {
+func (n *Notification) Visible() bool {
 	return !n.Meta.Done && !n.Meta.Hidden
 }
 

@@ -6,7 +6,7 @@ would with `jq`:
 
 	:json .subject.url
 */
-//revive:disable:var-naming // This name is ok.
+//revive:disable:var-naming,package-naming // This name is ok.
 package json
 
 import (

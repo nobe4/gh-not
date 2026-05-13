@@ -22,7 +22,6 @@ linters:
     - wsl # deprecated
 
   settings:
-
     misspell:
       mode: default
       locale: US
@@ -51,7 +50,7 @@ linters:
 
         - name: context-as-argument
           arguments:
-            - allowTypesBefore: '*testing.T'
+            - allowTypesBefore: "*testing.T"
 
         - name: comment-spacings
           arguments:
@@ -87,6 +86,7 @@ linters:
           - bodyclose
           - cyclop
           - gocognit
+          - goconst
         path: _test.go
       - linters:
           - revive
@@ -115,7 +115,6 @@ linters:
       - examples$
 
 formatters:
-
   enable:
     - gci
     - gofmt

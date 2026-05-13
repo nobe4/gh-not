@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const testStateOpen = "open"
+
 func TestSync(t *testing.T) {
 	t.Parallel()
 
@@ -169,4 +171,56 @@ func TestSync(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestSyncPreservesCachedEnrichmentOnUpdate(t *testing.T) {
+	t.Parallel()
+
+	local := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{URL: "local-url", State: testStateOpen},
+		Meta:      Meta{Enriched: true},
+	}
+	remote := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{URL: "remote-url"},
+	}
+
+	got := Sync(Notifications{local}, Notifications{remote})
+
+	if !got[0].Meta.Enriched {
+		t.Fatal("expected Enriched to be preserved")
+	}
+
+	if got[0].Subject.URL != "remote-url" {
+		t.Fatalf("expected remote URL but got %q", got[0].Subject.URL)
+	}
+
+	if got[0].Subject.State != testStateOpen {
+		t.Fatalf("expected cached state to be preserved but got %q", got[0].Subject.State)
+	}
+}
+
+func TestSyncResetsCachedEnrichmentForNewerRemote(t *testing.T) {
+	t.Parallel()
+
+	local := &Notification{
+		ID:        "0",
+		UpdatedAt: time.Unix(0, 1),
+		Subject:   Subject{State: testStateOpen},
+		Meta:      Meta{Enriched: true},
+	}
+	remote := &Notification{ID: "0", UpdatedAt: time.Unix(0, 2)}
+
+	got := Sync(Notifications{local}, Notifications{remote})
+
+	if got[0].Meta.Enriched {
+		t.Fatal("expected Enriched to be reset for newer remote notification")
+	}
+
+	if got[0].Subject.State != "" {
+		t.Fatalf("expected stale state to be cleared but got %q", got[0].Subject.State)
+	}
 }

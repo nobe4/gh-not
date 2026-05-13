@@ -43,6 +43,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	n.ReviewersTeams = threadExtra.ReviewersTeams
 	n.MergedBy = threadExtra.MergedBy
 	n.LatestCommentor = lastCommentor
+	n.Meta.Enriched = true
 
 	return nil
 }

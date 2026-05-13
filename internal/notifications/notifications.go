@@ -59,6 +59,9 @@ type Meta struct {
 	// remote list (i.e. the API).
 	RemoteExists bool `json:"remote_exists"`
 
+	// Enriched marks notifications whose enriched API fields are cached.
+	Enriched bool `json:"enriched"`
+
 	// Tags is a list of tags that can be used to filter notifications.
 	// They can be added/removed with the `tag` action.
 	Tags []string `json:"tags"`
@@ -113,7 +116,7 @@ func (n Notifications) Equal(others Notifications) bool {
 
 //nolint:cyclop // TODO: add sub struct equality.
 //revive:disable:cyclomatic
-func (n Notification) Equal(other *Notification) bool {
+func (n *Notification) Equal(other *Notification) bool {
 	return n.ID == other.ID &&
 		n.Unread == other.Unread &&
 		n.Reason == other.Reason &&
@@ -136,10 +139,11 @@ func (n Notification) Equal(other *Notification) bool {
 		n.LatestCommentor.Type == other.LatestCommentor.Type &&
 		n.Meta.Hidden == other.Meta.Hidden &&
 		n.Meta.Done == other.Meta.Done &&
-		n.Meta.RemoteExists == other.Meta.RemoteExists
+		n.Meta.RemoteExists == other.Meta.RemoteExists &&
+		n.Meta.Enriched == other.Meta.Enriched
 }
 
-func (n Notification) Marshal() ([]byte, error) {
+func (n *Notification) Marshal() ([]byte, error) {
 	marshaled, err := json.Marshal(n)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal notifications: %w", err)
@@ -148,7 +152,7 @@ func (n Notification) Marshal() ([]byte, error) {
 	return marshaled, nil
 }
 
-func (n Notification) Interface() (any, error) {
+func (n *Notification) Interface() (any, error) {
 	marshaled, err := n.Marshal()
 	if err != nil {
 		return nil, err
@@ -171,8 +175,8 @@ func (n Notifications) Debug() string {
 	return strings.Join(out, "\n")
 }
 
-func (n Notification) Debug() string {
-	return fmt.Sprintf("%#v", n)
+func (n *Notification) Debug() string {
+	return fmt.Sprintf("%#v", *n)
 }
 
 func (n Notifications) Map() NotificationMap {
