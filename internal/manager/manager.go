@@ -49,8 +49,6 @@ func (m *Manager) Load() error {
 		slog.Warn("cannot read the cache", "error", err)
 	}
 
-	m.Notifications.BackfillEnriched()
-
 	slog.Info("Loaded notifications", "count", len(m.Notifications))
 
 	return nil
