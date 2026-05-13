@@ -6,7 +6,8 @@
       "state": "open"
     },
     "meta": {
-      "remote_exists": true
+      "remote_exists": true,
+      "enriched": true
     }
   },
   {
@@ -16,7 +17,8 @@
       "state": "closed"
     },
     "meta": {
-      "remote_exists": true
+      "remote_exists": true,
+      "enriched": true
     }
   }
 ]

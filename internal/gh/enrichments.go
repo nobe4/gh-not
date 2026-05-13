@@ -44,6 +44,7 @@ func (c *Client) Enrich(n *notifications.Notification) error {
 	}
 
 	n.LatestCommentor = lastCommentor
+	n.Meta.Enriched = true
 
 	return nil
 }
