@@ -1,6 +1,6 @@
 # Changelog
 
-### Next
+## Next
 
 ## [v0.7.0](https://github.com/nobe4/gh-not/releases/tag/v0.7.0) - 2026-05-13
 
