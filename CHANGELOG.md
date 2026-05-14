@@ -2,6 +2,9 @@
 
 ## Next
 
+* docs(contributing): add contributing guide by @nobe4 in https://github.com/nobe4/gh-not/pull/316
+* docs(changelog): add an initial changelog version by @nobe4 in https://github.com/nobe4/gh-not/pull/315
+
 ## [v0.7.0](https://github.com/nobe4/gh-not/releases/tag/v0.7.0) - 2026-05-13
 
 * doc: how to run gh-not as a systemd service by @Tethik in https://github.com/nobe4/gh-not/pull/305
